@@ -16,10 +16,6 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
-import org.springframework.boot.httpclient.config.HttpClientConfigurationHelper;
-import org.springframework.boot.httpclient.constants.ConfigurationConstants;
-import org.springframework.boot.httpclient.internal.RequestConfigurer;
-import org.springframework.boot.httpclient.utils.HttpClientUtils;
 import org.springframework.stereotype.Component;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -28,6 +24,10 @@ import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.Retry.Context;
+import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
+import io.github.springboot.httpclient.constants.ConfigurationConstants;
+import io.github.springboot.httpclient.internal.RequestConfigurer;
+import io.github.springboot.httpclient.utils.HttpClientUtils;
 import io.github.resilience4j.retry.RetryConfig;
 
 /**
