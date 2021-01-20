@@ -8,12 +8,14 @@
 		<version>2.3.8.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+	
 	<groupId>io.github.springboot-addons</groupId>
 	<artifactId>spring-boot-starter-httpclient-parent</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 	<name>spring-boot-starter-httpclient-parent</name>
 	<description>Spring Boot AutoConfiguration for Apache HttpClient</description>
+	
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>
