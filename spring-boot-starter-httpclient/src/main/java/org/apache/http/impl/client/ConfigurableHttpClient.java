@@ -45,6 +45,7 @@ public class ConfigurableHttpClient extends CloseableHttpClient {
   private final RateLimiterRegistry rlregstry;
   private final HttpClientConfigurationHelper config;
 
+  // TODO Chain of responsability of client.doExecute() inspired from javax.servlet.Filter 
   public ConfigurableHttpClient(HttpClientConfigurationHelper config, CircuitBreakerRegistry cbRegistry,
       RateLimiterRegistry rlregstry, final CloseableHttpClient client, final RequestConfigurer configurer) {
     this.config = config;

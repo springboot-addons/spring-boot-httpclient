@@ -27,6 +27,7 @@ public class HttpInterceptorsProviderConfig {
     private HeadersPropagationInterceptor headerInterceptor;
 
     @Bean
+    // TODO ObjectProvider with order cf MongoAutoConfiguration 
     public HttpInterceptorsProvider httpInterceptors() {
         final HttpInterceptorsProvider provider = new HttpInterceptorsProvider();
         provider.firstRequestInterceptors.add(new ContentLengthHeaderRemoverInterceptor(config));

@@ -86,6 +86,7 @@ public class HttpClientProvider {
   }
 
   @Bean
+  // TODO CloseableHttpClientCustomizer for metrics InstrumentedHttpRequestExecutor
   public CloseableHttpClient httpClient() {
     // Create HttpClient
     final HttpClientBuilder clientBuilder = HttpClientBuilder.create();
