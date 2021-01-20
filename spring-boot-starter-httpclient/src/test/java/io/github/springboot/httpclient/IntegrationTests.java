@@ -1,4 +1,4 @@
-package org.springframework.boot.httpclient;
+package io.github.springboot.httpclient;
 
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

@@ -1,4 +1,4 @@
-package org.springframework.boot.httpclient;
+package io.github.springboot.httpclient;
 
 import java.io.IOException;
 import java.util.Base64;

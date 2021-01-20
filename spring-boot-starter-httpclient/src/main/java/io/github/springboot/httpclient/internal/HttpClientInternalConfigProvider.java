@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HeaderElement;
@@ -24,10 +25,6 @@ import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.impl.auth.BasicSchemeFactory;
-import org.apache.http.impl.auth.DigestSchemeFactory;
-import org.apache.http.impl.auth.KerberosSchemeFactory;
-import org.apache.http.impl.auth.SPNegoSchemeFactory;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.message.BasicHeaderElementIterator;
@@ -41,7 +38,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.web.context.annotation.RequestScope;
 
-import io.github.springboot.httpclient.auth.cifs.JCIFSNTLMSchemeFactory;
 import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
 import io.github.springboot.httpclient.config.model.Authentication;
 import io.github.springboot.httpclient.config.model.HostConfiguration;
@@ -61,6 +57,7 @@ public class HttpClientInternalConfigProvider {
 	protected HttpClientConfigurationHelper config;
 
 	@Bean
+	// TODO Profil spring & CookieStoreProvider in own class
 	@ConditionalOnProperty(name = "junit.testcase", havingValue = "true")
 	public CookieStore threadLocalCookieStore() {
 		return new ThreadLocalCookieStore();
@@ -75,21 +72,17 @@ public class HttpClientInternalConfigProvider {
 	}
 
 	@Bean
-	public Registry<AuthSchemeProvider> getAuthSchemeProviders() {
-		final RegistryBuilder<AuthSchemeProvider> registryBuilder = RegistryBuilder.<AuthSchemeProvider>create()
-				.register(AuthSchemes.NTLM, new JCIFSNTLMSchemeFactory())
-				.register(AuthSchemes.BASIC, new BasicSchemeFactory());
+	public Registry<AuthSchemeProvider> getAuthSchemeProviders(List<NamedAuthSchemeProvider> authSchemeProviders) {
+		final RegistryBuilder<AuthSchemeProvider> registryBuilder = RegistryBuilder.<AuthSchemeProvider>create() ;
+		authSchemeProviders.forEach(n -> {
+			registryBuilder.register(n.getName(), n.getProvider()) ;
+		}) ;
 
-		if (System.getProperty(HttpClientConstants.KERBEROS_PARAM_PROPERTY) != null) {
-			registryBuilder.register(AuthSchemes.SPNEGO, new SPNegoSchemeFactory(true));
-			registryBuilder.register(AuthSchemes.KERBEROS, new KerberosSchemeFactory(true));
-		}
-
-		registryBuilder.register(AuthSchemes.DIGEST, new DigestSchemeFactory());
 		return registryBuilder.build();
 	}
 
 	@Bean
+	// TODO CredentialsProviderCustomizer
 	public CredentialsProvider getCredentialsProvider() {
 		final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 
@@ -108,14 +101,9 @@ public class HttpClientInternalConfigProvider {
 						ConfigurationConstants.AUTHENTICATION_AUTH_TYPE);
 
 				Credentials credentials = null;
-				if (Authentication.AUTH_TYPE_NTLM.equalsIgnoreCase(authType)) {
+				if (AuthSchemes.NTLM.equalsIgnoreCase(authType)) {
 					credentials = new NTCredentials(httpUser, httpPassword, getLocalhostName(), httpDomain);
-				} else if (Authentication.AUTH_TYPE_CAS.equalsIgnoreCase(authType)) {
-					// NOOP
-					// Deja géré dans httpclient.utils.CasAuthenticator via
-					// httpclient.internal.RequestConfigurer.configureRequest(String, int,
-					// HttpRequest)
-				} else if (Authentication.AUTH_TYPE_BASIC.equalsIgnoreCase(authType)) {
+				} else if (AuthSchemes.BASIC.equalsIgnoreCase(authType)) {
 					credentials = new UsernamePasswordCredentials(httpUser, httpPassword);
 				}
 
@@ -147,7 +135,7 @@ public class HttpClientInternalConfigProvider {
 					final String proxyAuthType = proxyConfiguration.getAuthentification().getAuthType();
 
 					Credentials proxyCrendentials = null;
-					if (Authentication.AUTH_TYPE_NTLM.equalsIgnoreCase(proxyAuthType)) {
+					if (AuthSchemes.NTLM.equalsIgnoreCase(proxyAuthType)) {
 						final String proxyHttpDomain = proxyConfiguration.getAuthentification().getDomain();
 						proxyCrendentials = new NTCredentials(proxyHttpUser, proxyHttpPassword, getLocalhostName(),
 								proxyHttpDomain);

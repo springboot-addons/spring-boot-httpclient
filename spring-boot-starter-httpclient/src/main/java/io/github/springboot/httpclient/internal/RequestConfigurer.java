@@ -19,6 +19,7 @@ import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
 import io.github.springboot.httpclient.config.model.Authentication;
 import io.github.springboot.httpclient.config.model.ProxyConfiguration;
 import io.github.springboot.httpclient.constants.ConfigurationConstants;
+import io.github.springboot.httpclient.constants.HttpClientConstants;
 import io.github.springboot.httpclient.utils.HttpClientUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,7 +64,7 @@ public class RequestConfigurer {
       final String authenticationEndPoint = config.getConfiguration(requestUri, requestMethod,
           ConfigurationConstants.AUTHENTICATION_DOMAIN);
 
-      if (Authentication.AUTH_TYPE_CAS.equals(authentication) && casAuth != null) {
+      if (HttpClientConstants.CAS_AUTHENTIFICATION_SCHEME.equals(authentication) && casAuth != null) {
         casAuth.authCas(request, authenticationEndPoint);
       }
 

@@ -9,6 +9,23 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>spring-boot-starter-httpclient-security-ntlm</artifactId>
+	<name>spring-boot-starter-httpclient-security-ntlm</name>
+
+	<description>Spring Boot starter for ntlm jcifs and httpClient integration</description>
+
+	<properties>
+		<version.samba.jcifs>1.3.17</version.samba.jcifs>
+	</properties>
+
     <dependencies>
+		<dependency>
+	        <groupId>io.github.springboot-addons</groupId>
+	        <artifactId>spring-boot-starter-httpclient</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jcifs</groupId>
+			<artifactId>jcifs</artifactId>
+			<version>${version.samba.jcifs}</version>
+		</dependency>
     </dependencies>
 </project>

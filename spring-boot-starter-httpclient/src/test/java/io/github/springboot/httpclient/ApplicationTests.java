@@ -1,4 +1,4 @@
-package org.springframework.boot.httpclient;
+package io.github.springboot.httpclient;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;

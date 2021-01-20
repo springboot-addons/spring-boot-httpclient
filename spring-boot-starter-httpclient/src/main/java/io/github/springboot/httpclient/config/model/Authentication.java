@@ -24,7 +24,6 @@ public class Authentication implements Serializable {
 	private static final long serialVersionUID = -1391642922590563052L;
 
 	public static final String AUTH_TYPE_BASIC = "Basic";
-	public static final String AUTH_TYPE_NTLM = "NTLM";
 	public static final String AUTH_TYPE_CAS = "CAS";
 	public static final String AUTH_TYPE_CERT = "CLIENT_CERTIFICATE";
 	public static final String SYSTEM_DEFAULT = "SYSTEM";
