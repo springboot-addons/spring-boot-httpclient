@@ -10,6 +10,6 @@
     http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd" default-lazy-init="true">
 
-    <context:component-scan base-package="org.springframework.boot.httpclient" />
+    <context:component-scan base-package="io.github.springboot.httpclient" />
 
 </beans>

@@ -15,7 +15,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.httpclient.stats.actuator.HttpClientEndpoint;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
@@ -23,6 +22,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.springboot.httpclient.stats.actuator.HttpClientEndpoint;
 
 /**
  * http client auto configuration tests
@@ -31,7 +31,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = { "junit.testcase=true" }, webEnvironment = WebEnvironment.NONE)
-@ComponentScan("org.springframework.boot.httpclient")
+@ComponentScan("io.github.springboot.httpclient")
 public class ApplicationTests {
 
     @Autowired

@@ -1,9 +1,8 @@
-app:
-  httpclient:
+httpclient:
     broken-circuit-action: 503
     connection:
       buffer-size: 4096
-      compression: gzip,deflate,br
+      compression: gzip,deflate
       connect-timeout: 2000
       cookie-policy: standard
       max-active: 20
@@ -94,6 +93,7 @@ app:
     resolve-dns: false
     retry-attempts: 2
     retry-wait-duration: 100
+app:
   name: '@project.name@'
 endpoints:
   health:
@@ -109,11 +109,12 @@ info:
     version: '@project.version@'
 logging:
   level:
-    fr: INFO
-    org.springframework.boot.httpclient.config: INFO
+    io.github.springboot.httpclient: INFO
+
 management:
   security:
     enabled: false
+
 resilience4j:
   circuitbreaker:
     instances:
@@ -138,10 +139,12 @@ resilience4j:
         timeoutDuration: 5s
         limitRefreshPeriod: 10s
         registerHealthIndicator: true
+
 server:
   port: 8282
   servlet:
     context-path: /httpclient
+
 spring:
   application:
     name: '@project.name@'
