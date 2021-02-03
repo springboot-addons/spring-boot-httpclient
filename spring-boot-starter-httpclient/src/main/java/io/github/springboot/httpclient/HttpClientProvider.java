@@ -1,7 +1,5 @@
 package io.github.springboot.httpclient;
 
-import java.util.List;
-
 import javax.inject.Provider;
 
 import org.apache.http.HttpRequestInterceptor;
@@ -19,6 +17,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.ConfigurableHttpClient;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -35,7 +34,6 @@ import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.springboot.httpclient.auth.CookieProcessingTargetAuthenticationStrategy;
 import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
 import io.github.springboot.httpclient.constants.ConfigurationConstants;
-import io.github.springboot.httpclient.interceptors.HttpInterceptorsProviderConfig.HttpInterceptorsProvider;
 import io.github.springboot.httpclient.internal.RequestConfigurer;
 
 /**
@@ -50,7 +48,10 @@ public class HttpClientProvider {
   private Provider<CookieStore> cookieStore;
 
   @Autowired
-  private HttpInterceptorsProvider interceptors;
+  private ObjectProvider<HttpRequestInterceptor> requestInterceptors ;
+
+  @Autowired
+  private ObjectProvider<HttpResponseInterceptor> responseInterceptors ;
 
   @Autowired
   private RequestConfigurer configurer;
@@ -105,32 +106,8 @@ public class HttpClientProvider {
     final String userAgent = config.getGlobalConfiguration(ConfigurationConstants.USER_AGENT);
     clientBuilder.setUserAgent(userAgent);
 
-    final List<HttpRequestInterceptor> requestInterceptors = interceptors.getRequestInterceptors();
-    if (requestInterceptors != null && !requestInterceptors.isEmpty()) {
-      for (final HttpRequestInterceptor interceptor : requestInterceptors) {
-        clientBuilder.addInterceptorLast(interceptor);
-      }
-    }
-    final List<HttpResponseInterceptor> responseInterceptors = interceptors.getResponseInterceptors();
-    if (responseInterceptors != null && !responseInterceptors.isEmpty()) {
-      for (final HttpResponseInterceptor interceptor : responseInterceptors) {
-        clientBuilder.addInterceptorLast(interceptor);
-      }
-    }
-
-    final List<HttpRequestInterceptor> firstRequestInterceptors = interceptors.getFirstRequestInterceptors();
-    if (firstRequestInterceptors != null && !firstRequestInterceptors.isEmpty()) {
-      for (final HttpRequestInterceptor interceptor : requestInterceptors) {
-        clientBuilder.addInterceptorFirst(interceptor);
-      }
-    }
-
-    final List<HttpResponseInterceptor> firstResponseInterceptors = interceptors.getFirstResponseInterceptors();
-    if (firstResponseInterceptors != null && !firstResponseInterceptors.isEmpty()) {
-      for (final HttpResponseInterceptor interceptor : firstResponseInterceptors) {
-        clientBuilder.addInterceptorFirst(interceptor);
-      }
-    }
+    requestInterceptors.forEach(clientBuilder::addInterceptorLast);
+    responseInterceptors.forEach(clientBuilder::addInterceptorLast);
 
     if (config.isCookieManagementDisabled() || cookieStore.get() == null) {
       clientBuilder.disableCookieManagement();

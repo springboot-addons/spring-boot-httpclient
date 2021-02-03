@@ -21,13 +21,11 @@ import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import io.github.springboot.httpclient.interceptors.headers.RequestHeadersProviders.RequestHeadersStorage;
 import lombok.extern.slf4j.Slf4j;
 
-@Component
 @Slf4j
 public class HeadersPropagationInterceptor implements Filter, HttpRequestInterceptor, HttpResponseInterceptor {
 

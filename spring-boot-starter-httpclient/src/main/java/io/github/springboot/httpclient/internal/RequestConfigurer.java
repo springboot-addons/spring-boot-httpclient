@@ -14,12 +14,9 @@ import org.apache.http.protocol.HttpContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.github.springboot.httpclient.auth.cas.CasAuthenticator;
 import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
-import io.github.springboot.httpclient.config.model.Authentication;
 import io.github.springboot.httpclient.config.model.ProxyConfiguration;
 import io.github.springboot.httpclient.constants.ConfigurationConstants;
-import io.github.springboot.httpclient.constants.HttpClientConstants;
 import io.github.springboot.httpclient.utils.HttpClientUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,9 +26,6 @@ public class RequestConfigurer {
 
   @Autowired
   private HttpClientConfigurationHelper config;
-
-  @Autowired(required = false)
-  private CasAuthenticator casAuth;
 
   public void configureRequest(HttpHost target, HttpRequest request, HttpContext context) {
     try {
@@ -57,15 +51,6 @@ public class RequestConfigurer {
             MethodUtils.invokeMethod(request, "removeHeaders", header);
           }
         }
-      }
-
-      final String authentication = config.getConfiguration(requestUri, requestMethod,
-          ConfigurationConstants.AUTHENTICATION_AUTH_TYPE);
-      final String authenticationEndPoint = config.getConfiguration(requestUri, requestMethod,
-          ConfigurationConstants.AUTHENTICATION_DOMAIN);
-
-      if (HttpClientConstants.CAS_AUTHENTIFICATION_SCHEME.equals(authentication) && casAuth != null) {
-        casAuth.authCas(request, authenticationEndPoint);
       }
 
       // Proxy
