@@ -11,27 +11,27 @@
     <artifactId>spring-boot-starter-httpclient-security-cas</artifactId>
 
     <dependencies>
-		<dependency>
-	        <groupId>io.github.springboot-addons</groupId>
-	        <artifactId>spring-boot-starter-httpclient</artifactId>
-		</dependency>
-    
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-cas</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+            <groupId>io.github.springboot-addons</groupId>
+            <artifactId>spring-boot-starter-httpclient</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-cas</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-core</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
