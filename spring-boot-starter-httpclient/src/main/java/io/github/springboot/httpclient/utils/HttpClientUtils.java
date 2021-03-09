@@ -122,6 +122,18 @@ public final class HttpClientUtils {
     return uri;
   }
 
+  public static URI getUri(HttpHost httpHost, HttpContext httpContext) throws IOException {
+	  try {
+		return new URI(getSb().append(httpHost.getSchemeName()).append("://")
+				  .append(httpHost.getHostName())
+				  .append(":")
+				  .append(httpHost.getPort())
+				  .toString());
+	} catch (URISyntaxException e) {
+        throw new IOException(e.getMessage(), e);
+	}
+  }
+  
   public static HttpHost getHttpHost(final String pUri) throws URISyntaxException {
     URI uri = new URI(pUri);
     final int port = HostUtils.getPort(uri);

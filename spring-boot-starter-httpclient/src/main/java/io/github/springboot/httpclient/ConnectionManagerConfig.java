@@ -23,26 +23,27 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.config.ConnectionConfig;
+import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.HttpClientConnectionOperator;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.conn.DefaultHttpClientConnectionOperator;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
-
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.httpclient.InstrumentedHttpClientConnectionManager;
 
 import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
 import io.github.springboot.httpclient.config.model.Authentication;
@@ -69,60 +70,80 @@ public class ConnectionManagerConfig {
             + "/lib/security/cacerts";
 
     @Autowired
-    @Qualifier("legacyMetricRegistry")
-    private MetricRegistry metricRegistry;
-
-    @Autowired
     protected HttpClientConfigurationHelper configHelper;
-
+    
     @Bean
     public HostnameVerifier getHostnameVerifier() {
         return new ConfigurableHostnameVerifier(configHelper);
     }
 
     @Bean
-    public PoolingHttpClientConnectionManager connectionManager() {
+    public Registry<ConnectionSocketFactory> connectionSocketFactoryRegistry() {
 
         RegistryBuilder<ConnectionSocketFactory> registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register(HostUtils.HTTP, PlainConnectionSocketFactory.getSocketFactory())
                 .register(HostUtils.HTTPS, new SSLConnectionSocketFactory(getSslContext(), getHostnameVerifier()));
+        return registryBuilder.build();
+    }
 
-        // Registry<ConnectionSocketFactory> build = registryBuilder.build();
-//
-//    InstrumentedHttpClientConnectionManager.builder(metricsRegistry)
-
-        PoolingHttpClientConnectionManager cm = new InstrumentedHttpClientConnectionManager(metricRegistry,
-                registryBuilder.build());
-
-        final int maxConnection = configHelper.getGlobalConfiguration(ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
-
-        cm.setMaxTotal(maxConnection);
-        cm.setDefaultMaxPerRoute(maxConnection);
-
-        for (final HostConfiguration h : configHelper.getAllConfigurations().getHosts().values()) {
-            final HttpRoute httpRoute = getHttpRoute(h.getBaseUrl());
-            if (httpRoute == null) {
-                continue;
-            }
-
-            final Integer maxRoute = configHelper.getConfiguration(h.getBaseUrl(),
-                    ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
-            cm.setMaxPerRoute(httpRoute, maxRoute);
-
-            final Integer bufferSize = configHelper.getConfiguration(h.getBaseUrl(),
-                    ConfigurationConstants.BUFFER_SIZE);
-            ConnectionConfig connectionConfig = ConnectionConfig.custom().setBufferSize(bufferSize).build();
-            cm.setConnectionConfig(httpRoute.getTargetHost(), connectionConfig);
-        }
-
-        final int lingerTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.LINGER_TIMEOUT);
-        final int socketTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.SOCKET_TIMEOUT);
-
-        final SocketConfig defaultSocketConfig = SocketConfig.custom().setSoTimeout(socketTimeout)
-                .setSoLinger(lingerTimeout).build();
-        cm.setDefaultSocketConfig(defaultSocketConfig);
-
-        return cm;
+    @Bean
+    @ConditionalOnMissingBean(HttpClientConnectionOperator.class)
+    public HttpClientConnectionOperator defaultHttpClientConnectionOperator(Registry<ConnectionSocketFactory> registry) {
+        return new DefaultHttpClientConnectionOperator(registry, null, null);
+    }
+    
+    @Bean
+    @ConditionalOnMissingBean(PoolingHttpClientConnectionManager.class)
+    public PoolingHttpClientConnectionManager connectionManager(HttpClientConnectionOperator operator) {
+        return new PoolingHttpClientConnectionManager(operator, null, -1, TimeUnit.MILLISECONDS);
+    }
+    
+    @Bean
+    public HttpClientConnectionManagerCustomizerSupport httpClientConnectionManagerCustomizerSupport(
+    		ObjectProvider<HttpClientConnectionManagerCustomizer> httpClientConnectionManagerCustomizers, 
+    		PoolingHttpClientConnectionManager cm) {
+    	return new HttpClientConnectionManagerCustomizerSupport(httpClientConnectionManagerCustomizers, cm) ;
+    }
+    
+    public static class HttpClientConnectionManagerCustomizerSupport {
+    	public HttpClientConnectionManagerCustomizerSupport(
+    			ObjectProvider<HttpClientConnectionManagerCustomizer> customizers,
+    			PoolingHttpClientConnectionManager cm) {
+    		customizers.orderedStream().forEach(c -> c.customize(cm));
+    	}
+    }
+    
+    @Bean
+    public HttpClientConnectionManagerCustomizer defaultHttpClientConnectionManagerCustomizerSupport() {
+    	return cm -> { 
+	    	final int maxConnection = configHelper.getGlobalConfiguration(ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
+	
+	        cm.setMaxTotal(maxConnection);
+	        cm.setDefaultMaxPerRoute(maxConnection);
+	
+	        for (final HostConfiguration h : configHelper.getAllConfigurations().getHosts().values()) {
+	            final HttpRoute httpRoute = getHttpRoute(h.getBaseUrl());
+	            if (httpRoute == null) {
+	                continue;
+	            }
+	
+	            final Integer maxRoute = configHelper.getConfiguration(h.getBaseUrl(),
+	                    ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
+	            cm.setMaxPerRoute(httpRoute, maxRoute);
+	
+	            final Integer bufferSize = configHelper.getConfiguration(h.getBaseUrl(),
+	                    ConfigurationConstants.BUFFER_SIZE);
+	            ConnectionConfig connectionConfig = ConnectionConfig.custom().setBufferSize(bufferSize).build();
+	            cm.setConnectionConfig(httpRoute.getTargetHost(), connectionConfig);
+	        }
+	
+	        final int lingerTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.LINGER_TIMEOUT);
+	        final int socketTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.SOCKET_TIMEOUT);
+	
+	        final SocketConfig defaultSocketConfig = SocketConfig.custom().setSoTimeout(socketTimeout)
+	                .setSoLinger(lingerTimeout).build();
+	        cm.setDefaultSocketConfig(defaultSocketConfig);
+    	};
     }
 
     protected SSLContext getSslContext() {
