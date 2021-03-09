@@ -110,7 +110,7 @@ info:
     version: '@project.version@'
 logging:
   level:
-    io.github.springboot.httpclient: INFO
+    io.github.springboot.httpclient.core: INFO
 
 management:
   security:

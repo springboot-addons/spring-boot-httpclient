@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
- io.github.springboot.httpclient.HttpClientProvider
+ io.github.springboot.httpclient.core.autoconfigure.HttpClientAutoConfiguration

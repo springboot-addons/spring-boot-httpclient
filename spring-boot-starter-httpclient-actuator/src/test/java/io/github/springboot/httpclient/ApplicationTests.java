@@ -28,7 +28,7 @@ import io.github.springboot.httpclient.actuator.HttpClientEndpoint;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
-@ComponentScan("io.github.springboot.httpclient")
+@ComponentScan("io.github.springboot.httpclient.core")
 public class ApplicationTests {
 
 	@Autowired

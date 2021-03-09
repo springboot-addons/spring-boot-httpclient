@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
  * @author srouthiau
  */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
-@ComponentScan("io.github.springboot.httpclient")
+@ComponentScan("io.github.springboot.httpclient.core")
 public class ApplicationTests {
 
 	@Test

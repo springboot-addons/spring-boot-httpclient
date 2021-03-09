@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 import io.github.springboot.httpclient.auth.cas.CasAuthenticationHttpRequestInterceptor;
 import io.github.springboot.httpclient.auth.cas.CasAuthenticator;
-import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
+import io.github.springboot.httpclient.core.config.HttpClientConfigurationHelper;
 
 @Configuration
 public class CasAuthenticationAutoConfiguration {

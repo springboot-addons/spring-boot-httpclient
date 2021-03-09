@@ -21,9 +21,9 @@ import com.codahale.metrics.jmx.JmxReporter;
 
 import io.github.springboot.httpclient.actuator.ChainableInstrumentedHttpRequestExecutor;
 import io.github.springboot.httpclient.actuator.HttpClientEndpoint;
-import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
-import io.github.springboot.httpclient.constants.ConfigurationConstants;
-import io.github.springboot.httpclient.internal.ChainableHttpRequestExecutor;
+import io.github.springboot.httpclient.core.config.HttpClientConfigurationHelper;
+import io.github.springboot.httpclient.core.constants.ConfigurationConstants;
+import io.github.springboot.httpclient.core.internal.ChainableHttpRequestExecutor;
 
 @Configuration
 @ConditionalOnProperty(name = "httpclient.core.actuator.enabled", havingValue = "true", matchIfMissing = true)

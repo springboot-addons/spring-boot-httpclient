@@ -18,7 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
  */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
-@ComponentScan("io.github.springboot.httpclient")
+@ComponentScan("io.github.springboot.httpclient.core")
 public class ApplicationTests {
 	@Autowired
 	ApplicationContext context;

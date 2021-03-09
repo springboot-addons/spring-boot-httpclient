@@ -23,12 +23,12 @@ import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.Retry.Context;
+import io.github.springboot.httpclient.core.config.HttpClientConfigurationHelper;
+import io.github.springboot.httpclient.core.constants.ConfigurationConstants;
+import io.github.springboot.httpclient.core.internal.ChainableHttpRequestExecutor;
+import io.github.springboot.httpclient.core.internal.HttpRequestExecutorChain;
+import io.github.springboot.httpclient.core.utils.HttpClientUtils;
 import io.github.resilience4j.retry.RetryConfig;
-import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
-import io.github.springboot.httpclient.constants.ConfigurationConstants;
-import io.github.springboot.httpclient.internal.ChainableHttpRequestExecutor;
-import io.github.springboot.httpclient.internal.HttpRequestExecutorChain;
-import io.github.springboot.httpclient.utils.HttpClientUtils;
 
 /**
  * ResilienceHttpRequestExecutor

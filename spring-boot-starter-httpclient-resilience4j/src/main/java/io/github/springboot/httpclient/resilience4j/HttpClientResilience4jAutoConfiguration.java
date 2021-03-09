@@ -12,8 +12,8 @@ import org.springframework.core.annotation.Order;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
-import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
-import io.github.springboot.httpclient.internal.ChainableHttpRequestExecutor;
+import io.github.springboot.httpclient.core.config.HttpClientConfigurationHelper;
+import io.github.springboot.httpclient.core.internal.ChainableHttpRequestExecutor;
 
 @Configuration
 @ConditionalOnProperty(name = "httpclient.core.resilience4j.enabled", havingValue = "true", matchIfMissing = true)

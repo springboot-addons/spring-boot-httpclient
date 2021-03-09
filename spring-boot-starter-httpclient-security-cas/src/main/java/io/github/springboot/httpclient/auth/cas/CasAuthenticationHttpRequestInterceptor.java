@@ -8,10 +8,10 @@ import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.RequestLine;
 import org.apache.http.protocol.HttpContext;
 
-import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
-import io.github.springboot.httpclient.constants.ConfigurationConstants;
-import io.github.springboot.httpclient.constants.HttpClientConstants;
-import io.github.springboot.httpclient.utils.HttpClientUtils;
+import io.github.springboot.httpclient.core.config.HttpClientConfigurationHelper;
+import io.github.springboot.httpclient.core.constants.ConfigurationConstants;
+import io.github.springboot.httpclient.core.constants.HttpClientConstants;
+import io.github.springboot.httpclient.core.utils.HttpClientUtils;
 
 public class CasAuthenticationHttpRequestInterceptor implements HttpRequestInterceptor {
 

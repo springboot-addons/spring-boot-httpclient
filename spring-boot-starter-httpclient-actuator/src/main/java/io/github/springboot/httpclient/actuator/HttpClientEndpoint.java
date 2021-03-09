@@ -12,7 +12,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 
-import io.github.springboot.httpclient.config.model.HttpClientConfiguration;
+import io.github.springboot.httpclient.core.config.model.HttpClientConfiguration;
 
 /**
  * Http Client endpoint

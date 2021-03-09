@@ -14,8 +14,8 @@ import org.apache.http.protocol.HttpContext;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
-import io.github.springboot.httpclient.utils.HttpClientUtils;
+import io.github.springboot.httpclient.core.config.HttpClientConfigurationHelper;
+import io.github.springboot.httpclient.core.utils.HttpClientUtils;
 
 public class Resilience4JHttpClientConnectionOperator extends DefaultHttpClientConnectionOperator {
 

@@ -20,8 +20,8 @@ import org.springframework.security.cas.authentication.CasAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import io.github.springboot.httpclient.constants.HttpClientConstants;
-import io.github.springboot.httpclient.utils.HostUtils;
+import io.github.springboot.httpclient.core.constants.HttpClientConstants;
+import io.github.springboot.httpclient.core.utils.HostUtils;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

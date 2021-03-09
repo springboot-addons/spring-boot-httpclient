@@ -13,8 +13,8 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.httpclient.HttpClientMetricNameStrategy;
 
-import io.github.springboot.httpclient.internal.ChainableHttpRequestExecutor;
-import io.github.springboot.httpclient.internal.HttpRequestExecutorChain;
+import io.github.springboot.httpclient.core.internal.ChainableHttpRequestExecutor;
+import io.github.springboot.httpclient.core.internal.HttpRequestExecutorChain;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.github.springboot.httpclient.auth.cifs.JCIFSNTLMSchemeFactory;
-import io.github.springboot.httpclient.internal.NamedAuthSchemeProvider;
+import io.github.springboot.httpclient.core.internal.NamedAuthSchemeProvider;
 
 @Configuration
 public class NtlmAuthenticationAutoConfiguration {
