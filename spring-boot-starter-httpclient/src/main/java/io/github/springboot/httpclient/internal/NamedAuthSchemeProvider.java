@@ -6,6 +6,6 @@ import lombok.Data;
 
 @Data
 public class NamedAuthSchemeProvider {
-	final private String name ;
-	final private AuthSchemeProvider provider ;
+	final private String name;
+	final private AuthSchemeProvider provider;
 }

@@ -24,7 +24,8 @@ public class HeaderRemoverInterceptor implements HttpRequestInterceptor {
 	public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
 		final String requestUri = HttpClientUtils.getUri(request, context).toString();
 		if (requestUri != null) {
-			final List<String> headersToRemove = config.getConfiguration(requestUri.toString(), ConfigurationConstants.REMOVE_HEADERS);
+			final List<String> headersToRemove = config.getConfiguration(requestUri.toString(),
+					ConfigurationConstants.REMOVE_HEADERS);
 			if (headersToRemove != null) {
 				headersToRemove.forEach(request::removeHeaders);
 			}

@@ -27,46 +27,45 @@ import io.github.springboot.httpclient.actuator.HttpClientEndpoint;
  * @author linux_china
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = { "junit.testcase=true" }, webEnvironment = WebEnvironment.NONE)
+@SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ComponentScan("io.github.springboot.httpclient")
 public class ApplicationTests {
 
-    @Autowired
-    ApplicationContext context;
+	@Autowired
+	ApplicationContext context;
 
-    @Test
-    public void testHttpsClientWithStats() throws Exception {
-        final HttpClient httpClient = context.getBean(HttpClient.class);
-        final HttpGet httpGet = new HttpGet("https://httpbin.org/headers");
-        final HttpResponse response = httpClient.execute(httpGet);
-        EntityUtils.toString(response.getEntity());
-        HttpClientEndpoint stats = getStats();
-        Assert.assertNotNull(stats);
-        Assert.assertNotNull(stats.getMetrics());
-    }
+	@Test
+	public void testHttpsClientWithStats() throws Exception {
+		final HttpClient httpClient = context.getBean(HttpClient.class);
+		final HttpGet httpGet = new HttpGet("https://httpbin.org/headers");
+		final HttpResponse response = httpClient.execute(httpGet);
+		EntityUtils.toString(response.getEntity());
+		HttpClientEndpoint stats = getStats();
+		Assert.assertNotNull(stats);
+		Assert.assertNotNull(stats.getMetrics());
+	}
 
-    @Test
-    public void testHttpClientPostSoTimeout() throws Exception {
-        final HttpClient httpClient = context.getBean(HttpClient.class);
-        final HttpPost httpPost = new HttpPost("https://httpbin.org/delay/4");
-        try {
-            httpClient.execute(httpPost);
-        } catch (final Exception e) {
-            Assert.fail("Timeout not should have occured");
-        }
-    }
+	@Test
+	public void testHttpClientPostSoTimeout() throws Exception {
+		final HttpClient httpClient = context.getBean(HttpClient.class);
+		final HttpPost httpPost = new HttpPost("https://httpbin.org/delay/4");
+		try {
+			httpClient.execute(httpPost);
+		} catch (final Exception e) {
+			Assert.fail("Timeout not should have occured");
+		}
+	}
 
-    @Test
-    public void testExecutor() throws Exception {
-        final Executor executor = context.getBean(Executor.class);
-        final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
-        Assert.assertTrue(content.contains("httpclient"));
-    }
+	@Test
+	public void testExecutor() throws Exception {
+		final Executor executor = context.getBean(Executor.class);
+		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
+		Assert.assertTrue(content.contains("httpclient"));
+	}
 
-
-    private HttpClientEndpoint getStats() {
-        final HttpClientEndpoint endpoint = context.getBean(HttpClientEndpoint.class);
-        System.out.println(ToStringBuilder.reflectionToString(endpoint, ToStringStyle.JSON_STYLE));
-        return endpoint;
-    }
+	private HttpClientEndpoint getStats() {
+		final HttpClientEndpoint endpoint = context.getBean(HttpClientEndpoint.class);
+		System.out.println(ToStringBuilder.reflectionToString(endpoint, ToStringStyle.JSON_STYLE));
+		return endpoint;
+	}
 }

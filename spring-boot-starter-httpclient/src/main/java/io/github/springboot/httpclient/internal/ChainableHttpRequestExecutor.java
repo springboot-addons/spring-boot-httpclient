@@ -10,9 +10,6 @@ import org.apache.http.protocol.HttpContext;
 
 public interface ChainableHttpRequestExecutor {
 
-    public HttpResponse doExecute(
-            final HttpRequest request,
-            final HttpClientConnection conn,
-            final HttpContext context,
-            HttpRequestExecutorChain chain) throws IOException, HttpException ;
+	public HttpResponse doExecute(final HttpRequest request, final HttpClientConnection conn, final HttpContext context,
+			HttpRequestExecutorChain chain) throws IOException, HttpException;
 }

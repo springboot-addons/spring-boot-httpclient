@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DefaultAuthSchemesConfiguration {
-	
+
 	@Bean
 	@ConditionalOnProperty(name = "httpclient.core.auth.basic.enabled", havingValue = "true", matchIfMissing = true)
 	public NamedAuthSchemeProvider basicAuthScheme() {

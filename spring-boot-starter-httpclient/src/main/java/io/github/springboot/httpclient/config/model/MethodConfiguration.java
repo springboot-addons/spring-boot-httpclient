@@ -14,10 +14,10 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class MethodConfiguration {
 
-  private ConnectionConfiguration connection = new ConnectionConfiguration();
-  
+	private ConnectionConfiguration connection = new ConnectionConfiguration();
+
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE) ;
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE);
 	}
 }

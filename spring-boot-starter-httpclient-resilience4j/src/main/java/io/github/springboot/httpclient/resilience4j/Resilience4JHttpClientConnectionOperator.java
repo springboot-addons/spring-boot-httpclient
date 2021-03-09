@@ -22,7 +22,8 @@ public class Resilience4JHttpClientConnectionOperator extends DefaultHttpClientC
 	private HttpClientConfigurationHelper config;
 	private CircuitBreakerRegistry cbRegistry;
 
-	public Resilience4JHttpClientConnectionOperator(HttpClientConfigurationHelper config, CircuitBreakerRegistry cbRegistry, Lookup<ConnectionSocketFactory> socketFactoryRegistry) {
+	public Resilience4JHttpClientConnectionOperator(HttpClientConfigurationHelper config,
+			CircuitBreakerRegistry cbRegistry, Lookup<ConnectionSocketFactory> socketFactoryRegistry) {
 		super(socketFactoryRegistry, null, null);
 		this.config = config;
 		this.cbRegistry = cbRegistry;
@@ -32,7 +33,8 @@ public class Resilience4JHttpClientConnectionOperator extends DefaultHttpClientC
 	public void connect(ManagedHttpClientConnection conn, HttpHost host, InetSocketAddress localAddress,
 			int connectTimeout, SocketConfig socketConfig, HttpContext context) throws IOException {
 		final String requestUri = HttpClientUtils.getUri(host, context).toString();
-		final String circuitName = config.getConfigurationKeyForRequestUri(requestUri, HttpClientResilience4jAutoConfiguration.DEFAULT_CIRCUIT);
+		final String circuitName = config.getConfigurationKeyForRequestUri(requestUri,
+				HttpClientResilience4jAutoConfiguration.DEFAULT_CIRCUIT);
 
 		final CircuitBreaker circuitBreaker = cbRegistry.circuitBreaker(circuitName);
 
@@ -46,9 +48,8 @@ public class Resilience4JHttpClientConnectionOperator extends DefaultHttpClientC
 				final long durationInNanos = System.nanoTime() - start;
 				circuitBreaker.onError(durationInNanos, TimeUnit.NANOSECONDS, throwable);
 			}
-		}
-		else {
-			throw new IOException("Broken circuit : " + circuitBreaker.toString()) ;
+		} else {
+			throw new IOException("Broken circuit : " + circuitBreaker.toString());
 		}
 	}
 }

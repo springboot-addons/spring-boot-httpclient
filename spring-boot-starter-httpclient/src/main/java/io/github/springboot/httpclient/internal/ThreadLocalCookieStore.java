@@ -9,29 +9,29 @@ import org.apache.http.impl.client.BasicCookieStore;
 
 public class ThreadLocalCookieStore implements CookieStore {
 
-  private final ThreadLocal<BasicCookieStore> cookieStores = ThreadLocal.withInitial(() -> new BasicCookieStore());
+	private final ThreadLocal<BasicCookieStore> cookieStores = ThreadLocal.withInitial(() -> new BasicCookieStore());
 
-  public ThreadLocalCookieStore() {
-  }
+	public ThreadLocalCookieStore() {
+	}
 
-  @Override
-  public void addCookie(Cookie cookie) {
-    cookieStores.get().addCookie(cookie);
-  }
+	@Override
+	public void addCookie(Cookie cookie) {
+		cookieStores.get().addCookie(cookie);
+	}
 
-  @Override
-  public List<Cookie> getCookies() {
-    return cookieStores.get().getCookies();
-  }
+	@Override
+	public List<Cookie> getCookies() {
+		return cookieStores.get().getCookies();
+	}
 
-  @Override
-  public boolean clearExpired(Date date) {
-    return cookieStores.get().clearExpired(date);
-  }
+	@Override
+	public boolean clearExpired(Date date) {
+		return cookieStores.get().clearExpired(date);
+	}
 
-  @Override
-  public void clear() {
-    cookieStores.get().clear();
-  }
+	@Override
+	public void clear() {
+		cookieStores.get().clear();
+	}
 
 }

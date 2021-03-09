@@ -37,13 +37,13 @@ public class HttpClientConfiguration {
 	private ConnectionConfiguration connection = new ConnectionConfiguration();
 	private MonitoringConfiguration monitoring = new MonitoringConfiguration();
 	private ProxyConfiguration proxy = new ProxyConfiguration();
-	private HeadersPropagation headersProparation = new HeadersPropagation() ;
+	private HeadersPropagation headersProparation = new HeadersPropagation();
 
 	private Map<String, HostConfiguration> hosts = new HashMap<String, HostConfiguration>();
 
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE) ;
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE);
 	}
 
 }

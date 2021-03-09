@@ -23,53 +23,49 @@ public class HttpRequestExecutorChain extends HttpRequestExecutor {
 	private List<ChainableHttpRequestExecutor> allExecutors;
 	private Stack<ChainableHttpRequestExecutor> currentExecutors;
 
-	public HttpRequestExecutorChain(ObjectProvider<ChainableHttpRequestExecutor> executors ) {
-		this(executors.orderedStream().collect(Collectors.toList())) ;
+	public HttpRequestExecutorChain(ObjectProvider<ChainableHttpRequestExecutor> executors) {
+		this(executors.orderedStream().collect(Collectors.toList()));
 	}
 
 	public HttpRequestExecutorChain(List<ChainableHttpRequestExecutor> executors) {
-		this(executors, HttpRequestExecutor.DEFAULT_WAIT_FOR_CONTINUE) ;
-		
+		this(executors, HttpRequestExecutor.DEFAULT_WAIT_FOR_CONTINUE);
+
 	}
 
-	public HttpRequestExecutorChain(List<ChainableHttpRequestExecutor> executors , int waitForContinue) {
+	public HttpRequestExecutorChain(List<ChainableHttpRequestExecutor> executors, int waitForContinue) {
 		super(waitForContinue);
-		
+
 		this.allExecutors = new ArrayList<>(executors);
 		this.currentExecutors = new Stack<ChainableHttpRequestExecutor>();
-		Collections.reverse(executors) ;
-		this.currentExecutors.addAll(executors) ;
+		Collections.reverse(executors);
+		this.currentExecutors.addAll(executors);
 	}
-	
+
 	@Override
 	public HttpResponse execute(HttpRequest request, HttpClientConnection conn, HttpContext context)
 			throws IOException, HttpException {
-		HttpRequestExecutorChain executorChain = new HttpRequestExecutorChain(allExecutors) ;
-		return executorChain.doExecute(request, conn, context) ;
+		HttpRequestExecutorChain executorChain = new HttpRequestExecutorChain(allExecutors);
+		return executorChain.doExecute(request, conn, context);
 	}
 
-	public HttpResponse doExecute(HttpRequest request, HttpClientConnection conn,
-			HttpContext context) throws IOException, HttpException {
+	public HttpResponse doExecute(HttpRequest request, HttpClientConnection conn, HttpContext context)
+			throws IOException, HttpException {
 		if (!currentExecutors.isEmpty()) {
 			ChainableHttpRequestExecutor next = currentExecutors.pop();
 			try {
 				log.info("before {} doExecute()", next.getClass());
-				return next.doExecute(request, conn, context, this) ;
-			}
-			finally {
+				return next.doExecute(request, conn, context, this);
+			} finally {
 				log.info("after {} doExecute()", next.getClass());
 			}
-		}
-		else {
+		} else {
 			log.info("before {} execute()", HttpRequestExecutor.class);
 			try {
-				return super.execute(request, conn, context) ;
-			}
-			finally {
+				return super.execute(request, conn, context);
+			} finally {
 				log.info("after {} execute()", HttpRequestExecutor.class);
 			}
 		}
 	}
-	
-	
+
 }

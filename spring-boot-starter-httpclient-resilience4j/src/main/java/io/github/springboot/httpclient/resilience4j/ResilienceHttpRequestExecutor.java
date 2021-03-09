@@ -55,7 +55,8 @@ public class ResilienceHttpRequestExecutor implements ChainableHttpRequestExecut
 	public HttpResponse doExecute(HttpRequest request, HttpClientConnection conn, HttpContext context,
 			HttpRequestExecutorChain chain) throws IOException, HttpException {
 		final String requestUri = HttpClientUtils.getUri(request, context).toString();
-		final String circuitName = config.getConfigurationKeyForRequestUri(requestUri, HttpClientResilience4jAutoConfiguration.DEFAULT_CIRCUIT);
+		final String circuitName = config.getConfigurationKeyForRequestUri(requestUri,
+				HttpClientResilience4jAutoConfiguration.DEFAULT_CIRCUIT);
 
 		final CircuitBreaker circuitBreaker = cbRegistry.circuitBreaker(circuitName);
 

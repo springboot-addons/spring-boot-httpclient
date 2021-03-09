@@ -17,16 +17,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GetPeerCertificatesResponseInterceptor implements HttpResponseInterceptor {
 
-    @Override
-    public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
-        final ManagedHttpClientConnection routedConnection = (ManagedHttpClientConnection) context
-                .getAttribute(HttpCoreContext.HTTP_CONNECTION);
-        final SSLSession sslSession = routedConnection.getSSLSession();
-        log.info("Getting peer certificates");
-        if (sslSession != null) {
-            final java.security.cert.Certificate[] certificates = sslSession.getPeerCertificates();
-            context.setAttribute(HttpClientConstants.PEER_CERTIFICATES, certificates);
-        }
-    }
+	@Override
+	public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
+		final ManagedHttpClientConnection routedConnection = (ManagedHttpClientConnection) context
+				.getAttribute(HttpCoreContext.HTTP_CONNECTION);
+		final SSLSession sslSession = routedConnection.getSSLSession();
+		log.info("Getting peer certificates");
+		if (sslSession != null) {
+			final java.security.cert.Certificate[] certificates = sslSession.getPeerCertificates();
+			context.setAttribute(HttpClientConstants.PEER_CERTIFICATES, certificates);
+		}
+	}
 
 }

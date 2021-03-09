@@ -31,10 +31,10 @@ public class HttpClientActuatorAutoConfiguration {
 
 	@Autowired
 	protected HttpClientConfigurationHelper config;
-	
-	@Autowired 
-	private HttpClientConnectionOperator httpClientConnectionOperator ;
-	
+
+	@Autowired
+	private HttpClientConnectionOperator httpClientConnectionOperator;
+
 	@Bean("legacyMetricRegistry")
 	public MetricRegistry getMetricsRegistry() {
 		return new MetricRegistry();
@@ -47,8 +47,7 @@ public class HttpClientActuatorAutoConfiguration {
 
 	@Bean
 	public JmxReporter jmxExporter(@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
-		final JmxReporter reporter = JmxReporter
-				.forRegistry(metricRegistry)
+		final JmxReporter reporter = JmxReporter.forRegistry(metricRegistry)
 				.inDomain(config.getGlobalConfiguration(ConfigurationConstants.JMX_DOMAIN)).build();
 		reporter.start();
 		return reporter;
@@ -58,7 +57,8 @@ public class HttpClientActuatorAutoConfiguration {
 	@Order(Ordered.LOWEST_PRECEDENCE)
 	public ChainableHttpRequestExecutor chainableInstrumentedHttpRequestExecutor(
 			@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
-		HttpClientMetricNameStrategy metricNameStrategy = getMetricNameStrategy(config.getGlobalConfiguration(ConfigurationConstants.METRIC_NANE_STRATEGY));
+		HttpClientMetricNameStrategy metricNameStrategy = getMetricNameStrategy(
+				config.getGlobalConfiguration(ConfigurationConstants.METRIC_NANE_STRATEGY));
 		return new ChainableInstrumentedHttpRequestExecutor(metricRegistry, metricNameStrategy);
 	}
 
@@ -72,13 +72,12 @@ public class HttpClientActuatorAutoConfiguration {
 
 		return nameStrategy;
 	}
-	
-    @Bean
-    @Primary
-    public PoolingHttpClientConnectionManager instrumentedConnectionManager(Registry<ConnectionSocketFactory> registry, @Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
-        return InstrumentedHttpClientConnectionManager.builder(metricRegistry)
-        		.httpClientConnectionOperator(httpClientConnectionOperator)
-        		.socketFactoryRegistry(registry)
-        		.build() ;
-    }
+
+	@Bean
+	@Primary
+	public PoolingHttpClientConnectionManager instrumentedConnectionManager(Registry<ConnectionSocketFactory> registry,
+			@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
+		return InstrumentedHttpClientConnectionManager.builder(metricRegistry)
+				.httpClientConnectionOperator(httpClientConnectionOperator).socketFactoryRegistry(registry).build();
+	}
 }

@@ -16,14 +16,14 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @EqualsAndHashCode
 public class ProxyConfiguration implements Serializable {
-  private static final long serialVersionUID = -1213026849353104356L;
-  private String host = StringUtils.EMPTY;
-  private Integer port = 0;
-  private Boolean useProxy = false;
-  private Authentication authentification = new Authentication();
-  
+	private static final long serialVersionUID = -1213026849353104356L;
+	private String host = StringUtils.EMPTY;
+	private Integer port = 0;
+	private Boolean useProxy = false;
+	private Authentication authentification = new Authentication();
+
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE) ;
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE);
 	}
 }

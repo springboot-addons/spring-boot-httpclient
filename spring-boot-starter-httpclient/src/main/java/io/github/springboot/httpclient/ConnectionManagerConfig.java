@@ -64,230 +64,232 @@ import lombok.extern.slf4j.Slf4j;
 @EnableScheduling
 public class ConnectionManagerConfig {
 
-    private static final String DEFAULT_JRE_TRUSTSTORE_FILE_JDK8 = System.getProperty("java.home")
-            + "/jre/lib/security/cacerts";
-    private static final String DEFAULT_JRE_TRUSTSTORE_FILE_JDK11 = System.getProperty("java.home")
-            + "/lib/security/cacerts";
+	private static final String DEFAULT_JRE_TRUSTSTORE_FILE_JDK8 = System.getProperty("java.home")
+			+ "/jre/lib/security/cacerts";
+	private static final String DEFAULT_JRE_TRUSTSTORE_FILE_JDK11 = System.getProperty("java.home")
+			+ "/lib/security/cacerts";
 
-    @Autowired
-    protected HttpClientConfigurationHelper configHelper;
-    
-    @Bean
-    public HostnameVerifier getHostnameVerifier() {
-        return new ConfigurableHostnameVerifier(configHelper);
-    }
+	@Autowired
+	protected HttpClientConfigurationHelper configHelper;
 
-    @Bean
-    public Registry<ConnectionSocketFactory> connectionSocketFactoryRegistry() {
+	@Bean
+	public HostnameVerifier getHostnameVerifier() {
+		return new ConfigurableHostnameVerifier(configHelper);
+	}
 
-        RegistryBuilder<ConnectionSocketFactory> registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register(HostUtils.HTTP, PlainConnectionSocketFactory.getSocketFactory())
-                .register(HostUtils.HTTPS, new SSLConnectionSocketFactory(getSslContext(), getHostnameVerifier()));
-        return registryBuilder.build();
-    }
+	@Bean
+	public Registry<ConnectionSocketFactory> connectionSocketFactoryRegistry() {
 
-    @Bean
-    @ConditionalOnMissingBean(HttpClientConnectionOperator.class)
-    public HttpClientConnectionOperator defaultHttpClientConnectionOperator(Registry<ConnectionSocketFactory> registry) {
-        return new DefaultHttpClientConnectionOperator(registry, null, null);
-    }
-    
-    @Bean
-    @ConditionalOnMissingBean(PoolingHttpClientConnectionManager.class)
-    public PoolingHttpClientConnectionManager connectionManager(HttpClientConnectionOperator operator) {
-        return new PoolingHttpClientConnectionManager(operator, null, -1, TimeUnit.MILLISECONDS);
-    }
-    
-    @Bean
-    public HttpClientConnectionManagerCustomizerSupport httpClientConnectionManagerCustomizerSupport(
-    		ObjectProvider<HttpClientConnectionManagerCustomizer> httpClientConnectionManagerCustomizers, 
-    		PoolingHttpClientConnectionManager cm) {
-    	return new HttpClientConnectionManagerCustomizerSupport(httpClientConnectionManagerCustomizers, cm) ;
-    }
-    
-    public static class HttpClientConnectionManagerCustomizerSupport {
-    	public HttpClientConnectionManagerCustomizerSupport(
-    			ObjectProvider<HttpClientConnectionManagerCustomizer> customizers,
-    			PoolingHttpClientConnectionManager cm) {
-    		customizers.orderedStream().forEach(c -> c.customize(cm));
-    	}
-    }
-    
-    @Bean
-    public HttpClientConnectionManagerCustomizer defaultHttpClientConnectionManagerCustomizerSupport() {
-    	return cm -> { 
-	    	final int maxConnection = configHelper.getGlobalConfiguration(ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
-	
-	        cm.setMaxTotal(maxConnection);
-	        cm.setDefaultMaxPerRoute(maxConnection);
-	
-	        for (final HostConfiguration h : configHelper.getAllConfigurations().getHosts().values()) {
-	            final HttpRoute httpRoute = getHttpRoute(h.getBaseUrl());
-	            if (httpRoute == null) {
-	                continue;
-	            }
-	
-	            final Integer maxRoute = configHelper.getConfiguration(h.getBaseUrl(),
-	                    ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
-	            cm.setMaxPerRoute(httpRoute, maxRoute);
-	
-	            final Integer bufferSize = configHelper.getConfiguration(h.getBaseUrl(),
-	                    ConfigurationConstants.BUFFER_SIZE);
-	            ConnectionConfig connectionConfig = ConnectionConfig.custom().setBufferSize(bufferSize).build();
-	            cm.setConnectionConfig(httpRoute.getTargetHost(), connectionConfig);
-	        }
-	
-	        final int lingerTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.LINGER_TIMEOUT);
-	        final int socketTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.SOCKET_TIMEOUT);
-	
-	        final SocketConfig defaultSocketConfig = SocketConfig.custom().setSoTimeout(socketTimeout)
-	                .setSoLinger(lingerTimeout).build();
-	        cm.setDefaultSocketConfig(defaultSocketConfig);
-    	};
-    }
+		RegistryBuilder<ConnectionSocketFactory> registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create()
+				.register(HostUtils.HTTP, PlainConnectionSocketFactory.getSocketFactory())
+				.register(HostUtils.HTTPS, new SSLConnectionSocketFactory(getSslContext(), getHostnameVerifier()));
+		return registryBuilder.build();
+	}
 
-    protected SSLContext getSslContext() {
-        SSLContext systemDefault = SSLContexts.createSystemDefault();
-        try {
-            final Object contextSpi = FieldUtils.readField(systemDefault, "contextSpi", true);
-            final X509TrustManager systemTrustManager = (X509TrustManager) FieldUtils.readField(contextSpi,
-                    "trustManager", true);
-            SSLContextBuilder builder = SSLContexts.custom();
-            // System.getProperty(HttpClientConstants.TRUSTSTORE);
-            String TRUSTSTORE = System.getProperty(HttpClientConstants.TRUSTSTORE, getDefaultTrustStorePath());
-            String TRUSTSTORE_TYPE = System.getProperty(HttpClientConstants.TRUSTSTORE_TYPE,
-                    configHelper.getGlobalConfiguration(ConfigurationConstants.TRUST_STORE_TYPE));
-            String TRUSTSTORE_PASSWORD = System.getProperty(HttpClientConstants.TRUSTSTORE_PASSWORD,
-                    configHelper.getGlobalConfiguration(ConfigurationConstants.TRUST_STORE_PASSWORD));
+	@Bean
+	@ConditionalOnMissingBean(HttpClientConnectionOperator.class)
+	public HttpClientConnectionOperator defaultHttpClientConnectionOperator(
+			Registry<ConnectionSocketFactory> registry) {
+		return new DefaultHttpClientConnectionOperator(registry, null, null);
+	}
 
-            KeyStore trustStoreKeystore = getStore(TRUSTSTORE, TRUSTSTORE_PASSWORD, TRUSTSTORE_TYPE);
+	@Bean
+	@ConditionalOnMissingBean(PoolingHttpClientConnectionManager.class)
+	public PoolingHttpClientConnectionManager connectionManager(HttpClientConnectionOperator operator) {
+		return new PoolingHttpClientConnectionManager(operator, null, -1, TimeUnit.MILLISECONDS);
+	}
 
-            if (trustStoreKeystore != null) {
-                builder.loadTrustMaterial(trustStoreKeystore,
-                        new ConfigurableTrustSslStrategy(systemTrustManager, configHelper));
-            }
+	@Bean
+	public HttpClientConnectionManagerCustomizerSupport httpClientConnectionManagerCustomizerSupport(
+			ObjectProvider<HttpClientConnectionManagerCustomizer> httpClientConnectionManagerCustomizers,
+			PoolingHttpClientConnectionManager cm) {
+		return new HttpClientConnectionManagerCustomizerSupport(httpClientConnectionManagerCustomizers, cm);
+	}
 
-            HttpClientConfiguration configs = configHelper.getAllConfigurations();
-            for (Entry<String, HostConfiguration> hostconfiguration : configs.getHosts().entrySet()) {
-                Authentication authentication = hostconfiguration.getValue().getAuthentication();
-                if (authentication != null) {
-                    boolean authTypeCert = authentication.getAuthType().equals(Authentication.AUTH_TYPE_CERT);
+	public static class HttpClientConnectionManagerCustomizerSupport {
+		public HttpClientConnectionManagerCustomizerSupport(
+				ObjectProvider<HttpClientConnectionManagerCustomizer> customizers,
+				PoolingHttpClientConnectionManager cm) {
+			customizers.orderedStream().forEach(c -> c.customize(cm));
+		}
+	}
 
-                    if (authTypeCert) {
-                        String keystore = StringUtils.isBlank(authentication.getAuthKeyStore())
-                                || authentication.getAuthKeyStore().equals(Authentication.SYSTEM_DEFAULT)
-                                        ? System.getProperty(HttpClientConstants.KEYSTORE)
-                                        : authentication.getAuthKeyStore();
-                        String keystorePassword = StringUtils.isNotBlank(authentication.getAuthKeyStorePassword())
-                                ? authentication.getAuthKeyStorePassword()
-                                : System.getProperty(HttpClientConstants.KEYSTORE_PASSWORD);
-                        String keystoreType = StringUtils.isNotBlank(authentication.getAuthKeyStoreType())
-                                ? authentication.getAuthKeyStoreType()
-                                : System.getProperty(HttpClientConstants.KEYSTORE_TYPE);
-                        KeyStore clientKeyStore = getStore(keystore, keystorePassword, keystoreType);
+	@Bean
+	public HttpClientConnectionManagerCustomizer defaultHttpClientConnectionManagerCustomizerSupport() {
+		return cm -> {
+			final int maxConnection = configHelper
+					.getGlobalConfiguration(ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
 
-                        builder.loadKeyMaterial(clientKeyStore, keystorePassword.toCharArray(),
-                                new ConfigurablePrivateKeyStrategy(configHelper));
+			cm.setMaxTotal(maxConnection);
+			cm.setDefaultMaxPerRoute(maxConnection);
 
-                    }
-                }
-            }
+			for (final HostConfiguration h : configHelper.getAllConfigurations().getHosts().values()) {
+				final HttpRoute httpRoute = getHttpRoute(h.getBaseUrl());
+				if (httpRoute == null) {
+					continue;
+				}
 
-            return builder.build();
-        } catch (KeyManagementException | IllegalAccessException | NoSuchAlgorithmException | KeyStoreException e) {
-            log.warn("Erreur to load trustStore or keyStore", e);
-            return systemDefault;
-        } catch (CertificateException e2) {
-            log.warn("Erreur to load Certificate", e2);
-            return systemDefault;
-        } catch (UnrecoverableKeyException e) {
-            log.warn("Erreur to load keyStore file, UnrecoverableKeyException", e);
-            return systemDefault;
-        }
-    }
+				final Integer maxRoute = configHelper.getConfiguration(h.getBaseUrl(),
+						ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
+				cm.setMaxPerRoute(httpRoute, maxRoute);
+
+				final Integer bufferSize = configHelper.getConfiguration(h.getBaseUrl(),
+						ConfigurationConstants.BUFFER_SIZE);
+				ConnectionConfig connectionConfig = ConnectionConfig.custom().setBufferSize(bufferSize).build();
+				cm.setConnectionConfig(httpRoute.getTargetHost(), connectionConfig);
+			}
+
+			final int lingerTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.LINGER_TIMEOUT);
+			final int socketTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.SOCKET_TIMEOUT);
+
+			final SocketConfig defaultSocketConfig = SocketConfig.custom().setSoTimeout(socketTimeout)
+					.setSoLinger(lingerTimeout).build();
+			cm.setDefaultSocketConfig(defaultSocketConfig);
+		};
+	}
+
+	protected SSLContext getSslContext() {
+		SSLContext systemDefault = SSLContexts.createSystemDefault();
+		try {
+			final Object contextSpi = FieldUtils.readField(systemDefault, "contextSpi", true);
+			final X509TrustManager systemTrustManager = (X509TrustManager) FieldUtils.readField(contextSpi,
+					"trustManager", true);
+			SSLContextBuilder builder = SSLContexts.custom();
+			// System.getProperty(HttpClientConstants.TRUSTSTORE);
+			String TRUSTSTORE = System.getProperty(HttpClientConstants.TRUSTSTORE, getDefaultTrustStorePath());
+			String TRUSTSTORE_TYPE = System.getProperty(HttpClientConstants.TRUSTSTORE_TYPE,
+					configHelper.getGlobalConfiguration(ConfigurationConstants.TRUST_STORE_TYPE));
+			String TRUSTSTORE_PASSWORD = System.getProperty(HttpClientConstants.TRUSTSTORE_PASSWORD,
+					configHelper.getGlobalConfiguration(ConfigurationConstants.TRUST_STORE_PASSWORD));
+
+			KeyStore trustStoreKeystore = getStore(TRUSTSTORE, TRUSTSTORE_PASSWORD, TRUSTSTORE_TYPE);
+
+			if (trustStoreKeystore != null) {
+				builder.loadTrustMaterial(trustStoreKeystore,
+						new ConfigurableTrustSslStrategy(systemTrustManager, configHelper));
+			}
+
+			HttpClientConfiguration configs = configHelper.getAllConfigurations();
+			for (Entry<String, HostConfiguration> hostconfiguration : configs.getHosts().entrySet()) {
+				Authentication authentication = hostconfiguration.getValue().getAuthentication();
+				if (authentication != null) {
+					boolean authTypeCert = authentication.getAuthType().equals(Authentication.AUTH_TYPE_CERT);
+
+					if (authTypeCert) {
+						String keystore = StringUtils.isBlank(authentication.getAuthKeyStore())
+								|| authentication.getAuthKeyStore().equals(Authentication.SYSTEM_DEFAULT)
+										? System.getProperty(HttpClientConstants.KEYSTORE)
+										: authentication.getAuthKeyStore();
+						String keystorePassword = StringUtils.isNotBlank(authentication.getAuthKeyStorePassword())
+								? authentication.getAuthKeyStorePassword()
+								: System.getProperty(HttpClientConstants.KEYSTORE_PASSWORD);
+						String keystoreType = StringUtils.isNotBlank(authentication.getAuthKeyStoreType())
+								? authentication.getAuthKeyStoreType()
+								: System.getProperty(HttpClientConstants.KEYSTORE_TYPE);
+						KeyStore clientKeyStore = getStore(keystore, keystorePassword, keystoreType);
+
+						builder.loadKeyMaterial(clientKeyStore, keystorePassword.toCharArray(),
+								new ConfigurablePrivateKeyStrategy(configHelper));
+
+					}
+				}
+			}
+
+			return builder.build();
+		} catch (KeyManagementException | IllegalAccessException | NoSuchAlgorithmException | KeyStoreException e) {
+			log.warn("Erreur to load trustStore or keyStore", e);
+			return systemDefault;
+		} catch (CertificateException e2) {
+			log.warn("Erreur to load Certificate", e2);
+			return systemDefault;
+		} catch (UnrecoverableKeyException e) {
+			log.warn("Erreur to load keyStore file, UnrecoverableKeyException", e);
+			return systemDefault;
+		}
+	}
 //    }
 
-    private String getDefaultTrustStorePath() {
-        String TRUSTSTORE = System.getProperty(HttpClientConstants.TRUSTSTORE);
-        if (TRUSTSTORE == null) {
-            TRUSTSTORE = DEFAULT_JRE_TRUSTSTORE_FILE_JDK8;
+	private String getDefaultTrustStorePath() {
+		String TRUSTSTORE = System.getProperty(HttpClientConstants.TRUSTSTORE);
+		if (TRUSTSTORE == null) {
+			TRUSTSTORE = DEFAULT_JRE_TRUSTSTORE_FILE_JDK8;
 
-            if (!Files.exists(Paths.get(TRUSTSTORE))) {
-                TRUSTSTORE = DEFAULT_JRE_TRUSTSTORE_FILE_JDK11;
-            }
-        }
-        return TRUSTSTORE;
-    }
+			if (!Files.exists(Paths.get(TRUSTSTORE))) {
+				TRUSTSTORE = DEFAULT_JRE_TRUSTSTORE_FILE_JDK11;
+			}
+		}
+		return TRUSTSTORE;
+	}
 
-    protected HttpRoute getHttpRoute(final String uri) {
+	protected HttpRoute getHttpRoute(final String uri) {
 
-        HttpHost httpHost = null;
-        try {
-            httpHost = HttpClientUtils.getHttpHost(uri);
-        } catch (URISyntaxException e) {
-            log.warn("Invalide hostname in base url, note that regexp are supported only in path", e);
-            return null;
-        }
+		HttpHost httpHost = null;
+		try {
+			httpHost = HttpClientUtils.getHttpHost(uri);
+		} catch (URISyntaxException e) {
+			log.warn("Invalide hostname in base url, note that regexp are supported only in path", e);
+			return null;
+		}
 
-        HttpRoute httpRoute = null;
-        ProxyConfiguration proxyConfig = configHelper.getProxyConfiguration(uri);
+		HttpRoute httpRoute = null;
+		ProxyConfiguration proxyConfig = configHelper.getProxyConfiguration(uri);
 
-        if (proxyConfig != null) {
-            final String proxyHostName = proxyConfig.getHost();
-            final int proxyPort = proxyConfig.getPort();
-            httpRoute = new HttpRoute(httpHost, null, new HttpHost(proxyHostName, proxyPort),
-                    httpHost.getPort() == HostUtils.HTTPS_PORT);
-        } else {
-            httpRoute = new HttpRoute(httpHost);
-        }
-        return httpRoute;
-    }
+		if (proxyConfig != null) {
+			final String proxyHostName = proxyConfig.getHost();
+			final int proxyPort = proxyConfig.getPort();
+			httpRoute = new HttpRoute(httpHost, null, new HttpHost(proxyHostName, proxyPort),
+					httpHost.getPort() == HostUtils.HTTPS_PORT);
+		} else {
+			httpRoute = new HttpRoute(httpHost);
+		}
+		return httpRoute;
+	}
 
-    @Bean("legacyTaskScheduler")
-    public TaskScheduler taskScheduler() {
-        return new ConcurrentTaskScheduler();
-    }
+	@Bean("legacyTaskScheduler")
+	public TaskScheduler taskScheduler() {
+		return new ConcurrentTaskScheduler();
+	}
 
-    @Bean("legacyIdleConnectionMonitor")
-    public Runnable idleConnectionMonitor(final PoolingHttpClientConnectionManager connectionManager) {
-        return new Runnable() {
-            @Override
-            @Scheduled(fixedDelay = 10000)
-            public void run() {
-                try {
-                    if (connectionManager != null) {
-                        log.trace("run IdleConnectionMonitor - Closing expired and idle connections...");
-                        connectionManager.closeExpiredConnections();
-                        connectionManager.closeIdleConnections(
-                                configHelper.getGlobalConfiguration(ConfigurationConstants.POOL_IDLE_TIMEOUT),
-                                TimeUnit.SECONDS);
-                    } else {
-                        log.trace("run IdleConnectionMonitor - Http Client Connection manager is not initialised");
-                    }
-                } catch (final Exception e) {
-                    log.error("run IdleConnectionMonitor - Exception occurred. msg={}, e={}", e.getMessage(), e);
-                }
-            }
+	@Bean("legacyIdleConnectionMonitor")
+	public Runnable idleConnectionMonitor(final PoolingHttpClientConnectionManager connectionManager) {
+		return new Runnable() {
+			@Override
+			@Scheduled(fixedDelay = 10000)
+			public void run() {
+				try {
+					if (connectionManager != null) {
+						log.trace("run IdleConnectionMonitor - Closing expired and idle connections...");
+						connectionManager.closeExpiredConnections();
+						connectionManager.closeIdleConnections(
+								configHelper.getGlobalConfiguration(ConfigurationConstants.POOL_IDLE_TIMEOUT),
+								TimeUnit.SECONDS);
+					} else {
+						log.trace("run IdleConnectionMonitor - Http Client Connection manager is not initialised");
+					}
+				} catch (final Exception e) {
+					log.error("run IdleConnectionMonitor - Exception occurred. msg={}, e={}", e.getMessage(), e);
+				}
+			}
 
-        };
-    }
+		};
+	}
 
-    public static KeyStore getStore(final String storeFileName, final String password, String storeType)
-            throws KeyStoreException, CertificateException, NoSuchAlgorithmException,
-            java.security.cert.CertificateException {
-        KeyStore store = null;
-        if (StringUtils.isNotBlank(storeFileName) && password != null) {
-            if (StringUtils.isBlank(storeType)) {
-                storeType = HttpClientConstants.KEYSTORE_DEFAULT_TYPE;
-            }
-            store = KeyStore.getInstance(storeType);
-            try (InputStream inputStream = new FileInputStream(storeFileName)) {
-                store.load(inputStream, password.toCharArray());
-            } catch (IOException e) {
-                log.info("Unable to load store={} of type={} with pass {}", storeFileName, storeType, password, e);
-            }
-        }
-        return store;
-    }
+	public static KeyStore getStore(final String storeFileName, final String password, String storeType)
+			throws KeyStoreException, CertificateException, NoSuchAlgorithmException,
+			java.security.cert.CertificateException {
+		KeyStore store = null;
+		if (StringUtils.isNotBlank(storeFileName) && password != null) {
+			if (StringUtils.isBlank(storeType)) {
+				storeType = HttpClientConstants.KEYSTORE_DEFAULT_TYPE;
+			}
+			store = KeyStore.getInstance(storeType);
+			try (InputStream inputStream = new FileInputStream(storeFileName)) {
+				store.load(inputStream, password.toCharArray());
+			} catch (IOException e) {
+				log.info("Unable to load store={} of type={} with pass {}", storeFileName, storeType, password, e);
+			}
+		}
+		return store;
+	}
 
 }

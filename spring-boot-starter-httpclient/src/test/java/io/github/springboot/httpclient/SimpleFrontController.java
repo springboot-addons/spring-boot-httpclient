@@ -2,8 +2,6 @@ package io.github.springboot.httpclient;
 
 import java.util.Base64;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,37 +21,36 @@ public class SimpleFrontController {
 	private String base64ClientCredentials = new String(Base64.getEncoder().encode("admin:admin".getBytes()));
 
 	@Autowired
-	private Executor httpClient ;
-	
+	private Executor httpClient;
+
 	@Autowired
-	private SimpleAsyncService service ;
-     
-    @GetMapping(path="/header", produces = "application/json")
-    public ResponseEntity getHeader() {
-    	log.debug("*** SimpleFrontController.getHeader() invoked");
+	private SimpleAsyncService service;
+
+	@GetMapping(path = "/header", produces = "application/json")
+	public ResponseEntity getHeader() {
+		log.debug("*** SimpleFrontController.getHeader() invoked");
 		String content;
 		try {
 			content = httpClient.execute(Request.Get("http://localhost:8282/httpclient/back/header")
-					.addHeader("Authorization", "Basic " + base64ClientCredentials))
-					.returnContent().asString();
+					.addHeader("Authorization", "Basic " + base64ClientCredentials)).returnContent().asString();
 
 			return ResponseEntity.ok(content);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
-    }
-    
-    @GetMapping(path="/async-header", produces = "application/json")
-    public ResponseEntity getAsyncHeader() {
-    	log.debug("*** SimpleFrontController.getAsyncHeader() invoked");
+	}
+
+	@GetMapping(path = "/async-header", produces = "application/json")
+	public ResponseEntity getAsyncHeader() {
+		log.debug("*** SimpleFrontController.getAsyncHeader() invoked");
 		try {
-			String content = service.doIt().get() ;
+			String content = service.doIt().get();
 			return ResponseEntity.ok(content);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
-    }
-    
+	}
+
 }

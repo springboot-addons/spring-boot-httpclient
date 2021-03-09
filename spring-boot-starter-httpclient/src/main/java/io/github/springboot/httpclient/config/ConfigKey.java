@@ -9,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ConfigKey {
 
-  private String uri;
-  private String method;
-  private final String key;
+	private String uri;
+	private String method;
+	private final String key;
 
 }

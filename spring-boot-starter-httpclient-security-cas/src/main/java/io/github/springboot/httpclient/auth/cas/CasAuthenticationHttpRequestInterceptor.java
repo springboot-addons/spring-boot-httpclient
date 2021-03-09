@@ -12,9 +12,7 @@ import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
 import io.github.springboot.httpclient.constants.ConfigurationConstants;
 import io.github.springboot.httpclient.constants.HttpClientConstants;
 import io.github.springboot.httpclient.utils.HttpClientUtils;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class CasAuthenticationHttpRequestInterceptor implements HttpRequestInterceptor {
 
 	private final HttpClientConfigurationHelper config;

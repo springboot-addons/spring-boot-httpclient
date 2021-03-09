@@ -19,14 +19,15 @@ public class CasAuthenticationAutoConfiguration {
 	@ConditionalOnClass(name = "org.jasig.cas.client.util.AssertionHolder")
 	@ConditionalOnProperty(name = "httpclient.core.auth.cas.enabled", havingValue = "true", matchIfMissing = true)
 	public CasAuthenticator casAuthenticator() {
-		return new CasAuthenticator() ;
+		return new CasAuthenticator();
 	}
-	
+
 	@Bean
 	@ConditionalOnWebApplication
 	@ConditionalOnClass(name = "org.jasig.cas.client.util.AssertionHolder")
 	@ConditionalOnProperty(name = "httpclient.core.auth.cas.enabled", havingValue = "true", matchIfMissing = true)
-	public HttpRequestInterceptor casAuthenticatorRequestInterceptor(HttpClientConfigurationHelper config, CasAuthenticator casAuthenticator) {
-		return new CasAuthenticationHttpRequestInterceptor(config, casAuthenticator) ;
+	public HttpRequestInterceptor casAuthenticatorRequestInterceptor(HttpClientConfigurationHelper config,
+			CasAuthenticator casAuthenticator) {
+		return new CasAuthenticationHttpRequestInterceptor(config, casAuthenticator);
 	}
 }

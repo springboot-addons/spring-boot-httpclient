@@ -14,9 +14,9 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan("io.github.springboot.httpclient")
 public class ApplicationTests {
 
-    @Test
-    public void testCas() throws Exception {
-    	// TBD
-    }
+	@Test
+	public void testCas() throws Exception {
+		// TBD
+	}
 
 }

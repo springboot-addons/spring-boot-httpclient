@@ -17,13 +17,12 @@ public class SimpleAsyncService {
 	private String base64ClientCredentials = new String(Base64.getEncoder().encode("admin:admin".getBytes()));
 
 	@Autowired
-	private Executor httpClient ;
+	private Executor httpClient;
 
 	@Async
 	public Future<String> doIt() throws IOException {
 		return new AsyncResult<String>(httpClient.execute(Request.Get("http://localhost:8282/httpclient/back/header")
-				.addHeader("Authorization", "Basic " + base64ClientCredentials))
-				.returnContent().asString());
-		
+				.addHeader("Authorization", "Basic " + base64ClientCredentials)).returnContent().asString());
+
 	}
 }

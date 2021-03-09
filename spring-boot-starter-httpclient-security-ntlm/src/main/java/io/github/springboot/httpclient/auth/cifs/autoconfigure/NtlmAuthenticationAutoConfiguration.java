@@ -14,6 +14,6 @@ public class NtlmAuthenticationAutoConfiguration {
 	@Bean
 	@ConditionalOnProperty(name = "httpclient.core.auth.ntlm.enabled", havingValue = "true", matchIfMissing = true)
 	public NamedAuthSchemeProvider jCifsNtlmSchemeFactory() {
-		return new NamedAuthSchemeProvider(AuthSchemes.NTLM, new JCIFSNTLMSchemeFactory()) ;
+		return new NamedAuthSchemeProvider(AuthSchemes.NTLM, new JCIFSNTLMSchemeFactory());
 	}
 }

@@ -1,4 +1,5 @@
 httpclient:
+    core.cookie-store.type: thread-local
     broken-circuit-action: 503
     connection:
       buffer-size: 4096

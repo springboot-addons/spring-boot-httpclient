@@ -8,21 +8,21 @@ import org.springframework.context.annotation.Configuration;
 import lombok.Data;
 
 @Configuration
-@ConfigurationProperties(prefix= "httpclient.headers")
+@ConfigurationProperties(prefix = "httpclient.headers")
 @Data
 public class HeadersPropagationConfig {
-    
-    private boolean enabledPropagation = false;
-	
+
+	private boolean enabledPropagation = false;
+
 	private Pattern downPattern = Pattern.compile("X[-_].*");
 	private Pattern upPattern = Pattern.compile("X[-_].*");
-	
+
 	public void setDown(String down) {
-		downPattern = Pattern.compile(down) ;
+		downPattern = Pattern.compile(down);
 	}
 
 	public void setUp(String up) {
-		upPattern = Pattern.compile(up) ;
+		upPattern = Pattern.compile(up);
 	}
 
 }

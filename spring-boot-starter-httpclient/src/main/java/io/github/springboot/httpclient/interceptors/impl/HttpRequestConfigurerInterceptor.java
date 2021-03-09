@@ -35,10 +35,11 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 			final String requestUri = HttpClientUtils.getUri(request, context).toString();
 			final RequestLine requestLine = request.getRequestLine();
 			final String requestMethod = requestLine.getMethod();
-			final Integer socketTimeout = config.getConfiguration(requestUri, requestMethod, ConfigurationConstants.SOCKET_TIMEOUT);
-			final Integer connectTimeout = config.getConfiguration(requestUri, requestMethod, ConfigurationConstants.CONNECTION_TIMEOUT);
-			final RequestConfig.Builder requestConfig = RequestConfig.custom()
-					.setSocketTimeout(socketTimeout)
+			final Integer socketTimeout = config.getConfiguration(requestUri, requestMethod,
+					ConfigurationConstants.SOCKET_TIMEOUT);
+			final Integer connectTimeout = config.getConfiguration(requestUri, requestMethod,
+					ConfigurationConstants.CONNECTION_TIMEOUT);
+			final RequestConfig.Builder requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout)
 					.setConnectTimeout(connectTimeout);
 			final String cookiePolicy = config.getConfiguration(requestUri, ConfigurationConstants.COOKIE_POLICY);
 
@@ -60,7 +61,8 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 			context.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig.build());
 
 			// Compression
-			final String compression = config.getConfiguration(requestUri, requestMethod, ConfigurationConstants.COMPRESSION);
+			final String compression = config.getConfiguration(requestUri, requestMethod,
+					ConfigurationConstants.COMPRESSION);
 			if (StringUtils.isNotBlank(compression) && request.getFirstHeader(HttpHeaders.ACCEPT_ENCODING) == null) {
 				log.debug("Using header '{}: {}' for {}", HttpHeaders.ACCEPT_ENCODING, compression, requestUri);
 				request.addHeader(HttpHeaders.ACCEPT_ENCODING, compression);

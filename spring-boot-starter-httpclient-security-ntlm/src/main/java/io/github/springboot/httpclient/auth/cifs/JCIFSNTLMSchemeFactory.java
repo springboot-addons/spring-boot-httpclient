@@ -7,8 +7,8 @@ import org.apache.http.protocol.HttpContext;
 
 public class JCIFSNTLMSchemeFactory implements AuthSchemeProvider {
 
-  @Override
-  public AuthScheme create(final HttpContext context) {
-    return new NTLMScheme(new JCIFSEngine());
-  }
+	@Override
+	public AuthScheme create(final HttpContext context) {
+		return new NTLMScheme(new JCIFSEngine());
+	}
 }

@@ -13,15 +13,15 @@ import io.github.springboot.httpclient.utils.HttpClientUtils;
 
 public class ForceToDefaultCharsetResponseHandler implements ResponseHandler<String> {
 
-  @Override
-  public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-    int status = response.getStatusLine().getStatusCode();
-    if (HttpClientUtils.isSuccess(status)) {
-        HttpEntity entity = response.getEntity();
-        return entity != null ? EntityUtils.toString(entity, Charset.defaultCharset()) : null;
-    } else {
-        throw new ClientProtocolException("Unexpected response status: " + status);
-    }
-  }
+	@Override
+	public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+		int status = response.getStatusLine().getStatusCode();
+		if (HttpClientUtils.isSuccess(status)) {
+			HttpEntity entity = response.getEntity();
+			return entity != null ? EntityUtils.toString(entity, Charset.defaultCharset()) : null;
+		} else {
+			throw new ClientProtocolException("Unexpected response status: " + status);
+		}
+	}
 
 }

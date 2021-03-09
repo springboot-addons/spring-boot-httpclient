@@ -15,8 +15,9 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**
- * Pour la propagation des headers via un bean en scope request sur des methodes déclarées @Async (annotation standard spring)
- * ref https://gitlab.com/snippets/175860
+ * Pour la propagation des headers via un bean en scope request sur des methodes
+ * déclarées @Async (annotation standard spring) ref
+ * https://gitlab.com/snippets/175860
  * 
  * @author sru
  *
@@ -25,7 +26,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 @EnableAsync
 @ConditionalOnMissingBean(name = "ContextAwareAsyncExecutorConfig")
 public class AsyncExecutorConfig extends AsyncConfigurerSupport {
-	
+
 	@Override
 	@Bean
 	public Executor getAsyncExecutor() {

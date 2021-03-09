@@ -16,7 +16,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
@@ -25,21 +24,15 @@ import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.web.context.annotation.RequestScope;
 
 import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
-import io.github.springboot.httpclient.config.model.Authentication;
 import io.github.springboot.httpclient.config.model.HostConfiguration;
 import io.github.springboot.httpclient.config.model.ProxyConfiguration;
 import io.github.springboot.httpclient.constants.ConfigurationConstants;
@@ -57,26 +50,11 @@ public class HttpClientInternalConfigProvider {
 	protected HttpClientConfigurationHelper config;
 
 	@Bean
-	// TODO Profil spring & CookieStoreProvider in own class
-	@ConditionalOnProperty(name = "junit.testcase", havingValue = "true")
-	public CookieStore threadLocalCookieStore() {
-		return new ThreadLocalCookieStore();
-	}
-
-	@Bean
-	@ConditionalOnWebApplication
-	@ConditionalOnProperty(name = "junit.testcase", havingValue = "false", matchIfMissing = true)
-	@RequestScope(proxyMode = ScopedProxyMode.INTERFACES)
-	public CookieStore requestCookieStore() {
-		return new BasicCookieStore();
-	}
-
-	@Bean
 	public Registry<AuthSchemeProvider> getAuthSchemeProviders(List<NamedAuthSchemeProvider> authSchemeProviders) {
-		final RegistryBuilder<AuthSchemeProvider> registryBuilder = RegistryBuilder.<AuthSchemeProvider>create() ;
+		final RegistryBuilder<AuthSchemeProvider> registryBuilder = RegistryBuilder.<AuthSchemeProvider>create();
 		authSchemeProviders.forEach(n -> {
-			registryBuilder.register(n.getName(), n.getProvider()) ;
-		}) ;
+			registryBuilder.register(n.getName(), n.getProvider());
+		});
 
 		return registryBuilder.build();
 	}

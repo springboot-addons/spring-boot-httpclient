@@ -18,17 +18,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SimpleBackController {
 	@Autowired
-	private HttpServletRequest request ;
-	
-    @GetMapping(path="/header", produces = "application/json")
-    public ResponseEntity getHeader() {
-    	log.debug("*** SimpleBackController.getHeader() invoked");
-    	if (!"srules".equals(request.getHeader("X-TEST-KEY"))) {
-    		
-    		return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-    	}
-        return ResponseEntity.ok()
-        		.header("X-TEST-RESPONSE", "yeah")
-        		.body("ack");
-    }
+	private HttpServletRequest request;
+
+	@GetMapping(path = "/header", produces = "application/json")
+	public ResponseEntity getHeader() {
+		log.debug("*** SimpleBackController.getHeader() invoked");
+		if (!"srules".equals(request.getHeader("X-TEST-KEY"))) {
+
+			return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+		}
+		return ResponseEntity.ok().header("X-TEST-RESPONSE", "yeah").body("ack");
+	}
 }

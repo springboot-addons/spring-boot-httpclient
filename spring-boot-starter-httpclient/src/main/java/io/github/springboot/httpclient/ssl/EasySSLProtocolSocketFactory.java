@@ -80,83 +80,83 @@ import org.apache.http.ssl.SSLContexts;
 
 public class EasySSLProtocolSocketFactory extends SSLConnectionSocketFactory {
 
-  /**
-   * Default hostname verifier.
-   */
-  private static final HostnameVerifier DEFAULT_HOSTNAME_VERIFIER = new DefaultHostnameVerifier();
+	/**
+	 * Default hostname verifier.
+	 */
+	private static final HostnameVerifier DEFAULT_HOSTNAME_VERIFIER = new DefaultHostnameVerifier();
 
-  /**
-   * The SSL Context.
-   */
-  private final SSLContext sslcontext;
+	/**
+	 * The SSL Context.
+	 */
+	private final SSLContext sslcontext;
 
-  /**
-   * Constructor for EasySSLProtocolSocketFactory.
-   *
-   * @param context          SSL context
-   * @param hostnameVerifier hostname verifier
-   */
-  public EasySSLProtocolSocketFactory(SSLContext context, HostnameVerifier hostnameVerifier) {
-    super(context, hostnameVerifier);
-    this.sslcontext = context;
-  }
+	/**
+	 * Constructor for EasySSLProtocolSocketFactory.
+	 *
+	 * @param context          SSL context
+	 * @param hostnameVerifier hostname verifier
+	 */
+	public EasySSLProtocolSocketFactory(SSLContext context, HostnameVerifier hostnameVerifier) {
+		super(context, hostnameVerifier);
+		this.sslcontext = context;
+	}
 
-  /**
-   * Create and configure SSL protocol socket factory using default hostname
-   * verifier. {@link EasySSLProtocolSocketFactory#DEFAULT_HOSTNAME_VERIFIER}
-   *
-   * @param trustManager trust manager
-   * @return socket factory for SSL protocol
-   * @throws GeneralSecurityException on security error
-   */
-  public static EasySSLProtocolSocketFactory build(TrustManager trustManager) throws GeneralSecurityException {
-    return build(trustManager, DEFAULT_HOSTNAME_VERIFIER);
-  }
+	/**
+	 * Create and configure SSL protocol socket factory using default hostname
+	 * verifier. {@link EasySSLProtocolSocketFactory#DEFAULT_HOSTNAME_VERIFIER}
+	 *
+	 * @param trustManager trust manager
+	 * @return socket factory for SSL protocol
+	 * @throws GeneralSecurityException on security error
+	 */
+	public static EasySSLProtocolSocketFactory build(TrustManager trustManager) throws GeneralSecurityException {
+		return build(trustManager, DEFAULT_HOSTNAME_VERIFIER);
+	}
 
-  /**
-   * Create and configure SSL protocol socket factory using trust manager and
-   * hostname verifier.
-   *
-   * @param trustManager     trust manager
-   * @param hostnameVerifier hostname verifier
-   * @return socket factory for SSL protocol
-   * @throws GeneralSecurityException on security error
-   */
-  public static EasySSLProtocolSocketFactory build(TrustManager trustManager, HostnameVerifier hostnameVerifier)
-      throws GeneralSecurityException {
-    final SSLContext sslContext = createSslContext(trustManager);
-    return new EasySSLProtocolSocketFactory(sslContext, hostnameVerifier);
-  }
+	/**
+	 * Create and configure SSL protocol socket factory using trust manager and
+	 * hostname verifier.
+	 *
+	 * @param trustManager     trust manager
+	 * @param hostnameVerifier hostname verifier
+	 * @return socket factory for SSL protocol
+	 * @throws GeneralSecurityException on security error
+	 */
+	public static EasySSLProtocolSocketFactory build(TrustManager trustManager, HostnameVerifier hostnameVerifier)
+			throws GeneralSecurityException {
+		final SSLContext sslContext = createSslContext(trustManager);
+		return new EasySSLProtocolSocketFactory(sslContext, hostnameVerifier);
+	}
 
-  /**
-   * Create SSL context and initialize it using specific trust manager.
-   *
-   * @param trustManager trust manager
-   * @return initialized SSL context
-   * @throws GeneralSecurityException on security error
-   */
-  public static SSLContext createSslContext(TrustManager trustManager) throws GeneralSecurityException {
-    final EasyX509TrustManager x509TrustManager = new EasyX509TrustManager(null, trustManager);
-    final SSLContext sslContext = SSLContexts.createDefault();
-    sslContext.init(null, new TrustManager[] { x509TrustManager }, null);
-    return sslContext;
-  }
+	/**
+	 * Create SSL context and initialize it using specific trust manager.
+	 *
+	 * @param trustManager trust manager
+	 * @return initialized SSL context
+	 * @throws GeneralSecurityException on security error
+	 */
+	public static SSLContext createSslContext(TrustManager trustManager) throws GeneralSecurityException {
+		final EasyX509TrustManager x509TrustManager = new EasyX509TrustManager(null, trustManager);
+		final SSLContext sslContext = SSLContexts.createDefault();
+		sslContext.init(null, new TrustManager[] { x509TrustManager }, null);
+		return sslContext;
+	}
 
-  /**
-   * @return SSL context
-   */
-  public SSLContext getContext() {
-    return sslcontext;
-  }
+	/**
+	 * @return SSL context
+	 */
+	public SSLContext getContext() {
+		return sslcontext;
+	}
 
-  @Override
-  public boolean equals(Object obj) {
-    return obj != null && obj.getClass().equals(EasySSLProtocolSocketFactory.class);
-  }
+	@Override
+	public boolean equals(Object obj) {
+		return obj != null && obj.getClass().equals(EasySSLProtocolSocketFactory.class);
+	}
 
-  @Override
-  public int hashCode() {
-    return EasySSLProtocolSocketFactory.class.hashCode();
-  }
+	@Override
+	public int hashCode() {
+		return EasySSLProtocolSocketFactory.class.hashCode();
+	}
 
 }

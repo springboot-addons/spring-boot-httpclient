@@ -47,36 +47,36 @@ import org.apache.http.protocol.HttpContext;
  */
 public class CookieProcessingTargetAuthenticationStrategy extends TargetAuthenticationStrategy {
 
-  public static final CookieProcessingTargetAuthenticationStrategy INSTANCE = new CookieProcessingTargetAuthenticationStrategy();
+	public static final CookieProcessingTargetAuthenticationStrategy INSTANCE = new CookieProcessingTargetAuthenticationStrategy();
 
-  ResponseProcessCookies responseProcessCookies = new ResponseProcessCookies();
-  RequestAddCookies requestAddCookies = new RequestAddCookies();
+	ResponseProcessCookies responseProcessCookies = new ResponseProcessCookies();
+	RequestAddCookies requestAddCookies = new RequestAddCookies();
 
-  @Override
-  public Map<String, Header> getChallenges(HttpHost authhost, HttpResponse response, HttpContext context)
-      throws MalformedChallengeException {
-    try {
-      // Get the request from the context
-      final HttpClientContext clientContext = HttpClientContext.adapt(context);
-      final HttpRequest request = clientContext.getRequest();
+	@Override
+	public Map<String, Header> getChallenges(HttpHost authhost, HttpResponse response, HttpContext context)
+			throws MalformedChallengeException {
+		try {
+			// Get the request from the context
+			final HttpClientContext clientContext = HttpClientContext.adapt(context);
+			final HttpRequest request = clientContext.getRequest();
 
-      // Save new cookies in the context
-      responseProcessCookies.process(response, context);
+			// Save new cookies in the context
+			responseProcessCookies.process(response, context);
 
-      // Remove existing cookies and set the new cookies in the request
-      request.removeHeaders("Cookie");
-      requestAddCookies.process(request, context);
-    } catch (final HttpException e) {
-      throw new RuntimeException(e); // Looking at the source of
-                                     // responseProcessCookies this never
-                                     // happens
-    } catch (final IOException e) {
-      throw new RuntimeException(e); // Looking at the source of
-                                     // responseProcessCookies this never
-                                     // happens
-    }
+			// Remove existing cookies and set the new cookies in the request
+			request.removeHeaders("Cookie");
+			requestAddCookies.process(request, context);
+		} catch (final HttpException e) {
+			throw new RuntimeException(e); // Looking at the source of
+											// responseProcessCookies this never
+											// happens
+		} catch (final IOException e) {
+			throw new RuntimeException(e); // Looking at the source of
+											// responseProcessCookies this never
+											// happens
+		}
 
-    return super.getChallenges(authhost, response, context);
-  }
+		return super.getChallenges(authhost, response, context);
+	}
 
 }

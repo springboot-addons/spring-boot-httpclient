@@ -19,18 +19,18 @@ import io.github.springboot.httpclient.internal.ChainableHttpRequestExecutor;
 @ConditionalOnProperty(name = "httpclient.core.resilience4j.enabled", havingValue = "true", matchIfMissing = true)
 public class HttpClientResilience4jAutoConfiguration {
 	protected static final String DEFAULT_CIRCUIT = "default";
-	
+
 	@Bean
 	@Order(Ordered.HIGHEST_PRECEDENCE)
 	public ChainableHttpRequestExecutor resilienceHttpRequestExecutor(HttpClientConfigurationHelper config,
 			CircuitBreakerRegistry cbRegistry, RateLimiterRegistry rlRegistry) {
 		return new ResilienceHttpRequestExecutor(config, cbRegistry, rlRegistry);
 	}
-	
-    @Bean
-    @Primary
-    public HttpClientConnectionOperator instrumentedHttpClientConnectionOperator(HttpClientConfigurationHelper config,
+
+	@Bean
+	@Primary
+	public HttpClientConnectionOperator instrumentedHttpClientConnectionOperator(HttpClientConfigurationHelper config,
 			CircuitBreakerRegistry cbRegistry, Registry<ConnectionSocketFactory> registry) {
-        return new Resilience4JHttpClientConnectionOperator(config, cbRegistry, registry);
-    }
+		return new Resilience4JHttpClientConnectionOperator(config, cbRegistry, registry);
+	}
 }

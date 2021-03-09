@@ -36,66 +36,65 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HttpClientProvider {
 
-  @Autowired(required = false)
-  private ObjectProvider<CookieStore> cookieStore;
+	@Autowired(required = false)
+	private ObjectProvider<CookieStore> cookieStoreProvider;
 
-  @Autowired
-  private ObjectProvider<ChainableHttpRequestExecutor> chainableHttpRequestExecutors ;
+	@Autowired
+	private ObjectProvider<ChainableHttpRequestExecutor> chainableHttpRequestExecutors;
 
-  @Autowired
-  private ObjectProvider<HttpRequestInterceptor> requestInterceptors ;
+	@Autowired
+	private ObjectProvider<HttpRequestInterceptor> requestInterceptors;
 
-  
-  @Autowired
-  private ObjectProvider<HttpResponseInterceptor> responseInterceptors ;
+	@Autowired
+	private ObjectProvider<HttpResponseInterceptor> responseInterceptors;
 
-  @Autowired
-  private HttpClientConfigurationHelper config;
+	@Autowired
+	private HttpClientConfigurationHelper config;
 
-  @Autowired
-  private Registry<AuthSchemeProvider> authSchemeRegistry;
+	@Autowired
+	private Registry<AuthSchemeProvider> authSchemeRegistry;
 
-  @Autowired
-  private RequestConfig defaultRequestConfig;
+	@Autowired
+	private RequestConfig defaultRequestConfig;
 
-  @Autowired
-  private CredentialsProvider credentialsProvider;
+	@Autowired
+	private CredentialsProvider credentialsProvider;
 
-  @Autowired
-  private HttpClientConnectionManager connectionManager;
+	@Autowired
+	private HttpClientConnectionManager connectionManager;
 
-  @Bean
-  public Executor httpClientExecutor(HttpClient httpClient) {
-    return Executor.newInstance(httpClient);
-  }
+	@Bean
+	public Executor httpClientExecutor(HttpClient httpClient) {
+		return Executor.newInstance(httpClient);
+	}
 
-  @Bean
-  // TODO CloseableHttpClientCustomizer for metrics InstrumentedHttpRequestExecutor
-  public CloseableHttpClient httpClient() {
-    // Create HttpClient
-    final HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-    clientBuilder.setRequestExecutor(new HttpRequestExecutorChain(chainableHttpRequestExecutors));
-    clientBuilder.setConnectionManager(connectionManager);
-    clientBuilder.setDefaultAuthSchemeRegistry(authSchemeRegistry);
-    clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-    clientBuilder.setDefaultRequestConfig(defaultRequestConfig);
-    clientBuilder.setTargetAuthenticationStrategy(CookieProcessingTargetAuthenticationStrategy.INSTANCE);
+	@Bean
+	public CloseableHttpClient httpClient() {
+		final HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+		clientBuilder.setRequestExecutor(new HttpRequestExecutorChain(chainableHttpRequestExecutors));
+		clientBuilder.setConnectionManager(connectionManager);
+		clientBuilder.setDefaultAuthSchemeRegistry(authSchemeRegistry);
+		clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+		clientBuilder.setDefaultRequestConfig(defaultRequestConfig);
+		clientBuilder.setTargetAuthenticationStrategy(CookieProcessingTargetAuthenticationStrategy.INSTANCE);
 
-    clientBuilder.setConnectionReuseStrategy(DefaultConnectionReuseStrategy.INSTANCE);
-    clientBuilder.setKeepAliveStrategy(DefaultConnectionKeepAliveStrategy.INSTANCE);
+		clientBuilder.setConnectionReuseStrategy(DefaultConnectionReuseStrategy.INSTANCE);
+		clientBuilder.setKeepAliveStrategy(DefaultConnectionKeepAliveStrategy.INSTANCE);
 
-    final String userAgent = config.getGlobalConfiguration(ConfigurationConstants.USER_AGENT);
-    clientBuilder.setUserAgent(userAgent);
+		final String userAgent = config.getGlobalConfiguration(ConfigurationConstants.USER_AGENT);
+		clientBuilder.setUserAgent(userAgent);
 
-    requestInterceptors.forEach(clientBuilder::addInterceptorLast);
-    responseInterceptors.forEach(clientBuilder::addInterceptorLast);
+		requestInterceptors.forEach(clientBuilder::addInterceptorLast);
+		responseInterceptors.forEach(clientBuilder::addInterceptorLast);
 
-    if (config.isCookieManagementDisabled() || cookieStore.getIfAvailable() == null) {
-      clientBuilder.disableCookieManagement();
-    } else {
-      clientBuilder.setDefaultCookieStore(cookieStore.getIfAvailable());
-    }
+		CookieStore cookieStore = cookieStoreProvider.getIfAvailable();
+		if (config.isCookieManagementDisabled() || cookieStore == null) {
+			clientBuilder.disableCookieManagement();
+		} else {
+			log.info("Using cookie store {}", cookieStore);
+			clientBuilder.setDefaultCookieStore(cookieStore);
+		}
 
-    return clientBuilder.build();
-  }
+		return clientBuilder.build();
+	}
 }
