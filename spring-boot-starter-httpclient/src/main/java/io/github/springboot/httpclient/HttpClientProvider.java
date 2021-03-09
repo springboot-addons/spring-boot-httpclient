@@ -1,7 +1,5 @@
 package io.github.springboot.httpclient;
 
-import javax.inject.Provider;
-
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.auth.AuthSchemeProvider;
@@ -39,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HttpClientProvider {
 
   @Autowired(required = false)
-  private Provider<CookieStore> cookieStore;
+  private ObjectProvider<CookieStore> cookieStore;
 
   @Autowired
   private ObjectProvider<ChainableHttpRequestExecutor> chainableHttpRequestExecutors ;
@@ -92,10 +90,10 @@ public class HttpClientProvider {
     requestInterceptors.forEach(clientBuilder::addInterceptorLast);
     responseInterceptors.forEach(clientBuilder::addInterceptorLast);
 
-    if (config.isCookieManagementDisabled() || cookieStore.get() == null) {
+    if (config.isCookieManagementDisabled() || cookieStore.getIfAvailable() == null) {
       clientBuilder.disableCookieManagement();
     } else {
-      clientBuilder.setDefaultCookieStore(cookieStore.get());
+      clientBuilder.setDefaultCookieStore(cookieStore.getIfAvailable());
     }
 
     return clientBuilder.build();
