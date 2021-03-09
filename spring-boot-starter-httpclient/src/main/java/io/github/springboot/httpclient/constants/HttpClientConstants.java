@@ -93,4 +93,8 @@ public interface HttpClientConstants {
 	int HTTP_KO = 500;
 
 	String MIME_APPLICATION_OCTET_STREAM = "application/octet-stream";
+	
+	int DEFAULT_SOCKET_TIMEOUT = 30000 ;
+	int DEFAULT_CONNECTION_TIMEOUT = 3000 ;
+	int DEFAULT_MAX_CONNECTION_PER_HOST = 20 ;
 }

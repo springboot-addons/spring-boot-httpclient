@@ -117,11 +117,15 @@ public class ConnectionManagerConfig {
 	@Bean
 	public HttpClientConnectionManagerCustomizer defaultHttpClientConnectionManagerCustomizerSupport() {
 		return cm -> {
-			final int maxConnection = configHelper
+			Integer maxConnection = configHelper
 					.getGlobalConfiguration(ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
 
-			cm.setMaxTotal(maxConnection);
+			if (maxConnection == null) {
+				maxConnection = HttpClientConstants.DEFAULT_MAX_CONNECTION_PER_HOST ;
+			}
 			cm.setDefaultMaxPerRoute(maxConnection);
+			int maxTotal = maxConnection * Math.max(10, configHelper.getAllConfigurations().getHosts().size()) ; 
+			cm.setMaxTotal(maxTotal);
 
 			for (final HostConfiguration h : configHelper.getAllConfigurations().getHosts().values()) {
 				final HttpRoute httpRoute = getHttpRoute(h.getBaseUrl());
@@ -129,21 +133,22 @@ public class ConnectionManagerConfig {
 					continue;
 				}
 
-				final Integer maxRoute = configHelper.getConfiguration(h.getBaseUrl(),
-						ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
+				final Integer maxRoute = configHelper.getConfiguration(h.getBaseUrl(), ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
 				cm.setMaxPerRoute(httpRoute, maxRoute);
 
-				final Integer bufferSize = configHelper.getConfiguration(h.getBaseUrl(),
-						ConfigurationConstants.BUFFER_SIZE);
+				final Integer bufferSize = configHelper.getConfiguration(h.getBaseUrl(), ConfigurationConstants.BUFFER_SIZE);
 				ConnectionConfig connectionConfig = ConnectionConfig.custom().setBufferSize(bufferSize).build();
 				cm.setConnectionConfig(httpRoute.getTargetHost(), connectionConfig);
 			}
 
-			final int lingerTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.LINGER_TIMEOUT);
-			final int socketTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.SOCKET_TIMEOUT);
+			final Integer lingerTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.LINGER_TIMEOUT);
+			final Integer socketTimeout = configHelper.getGlobalConfiguration(ConfigurationConstants.SOCKET_TIMEOUT);
 
-			final SocketConfig defaultSocketConfig = SocketConfig.custom().setSoTimeout(socketTimeout)
-					.setSoLinger(lingerTimeout).build();
+			final SocketConfig defaultSocketConfig = SocketConfig.custom()
+					.setSoTimeout(socketTimeout != null ? socketTimeout : HttpClientConstants.DEFAULT_SOCKET_TIMEOUT)
+					.setSoLinger(lingerTimeout != null ? lingerTimeout : -1)
+					.build();
+
 			cm.setDefaultSocketConfig(defaultSocketConfig);
 		};
 	}

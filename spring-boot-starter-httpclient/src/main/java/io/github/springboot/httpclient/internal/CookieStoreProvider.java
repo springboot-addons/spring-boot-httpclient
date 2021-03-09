@@ -17,9 +17,15 @@ public class CookieStoreProvider {
 	}
 
 	@Bean
-	@ConditionalOnProperty(name = "httpclient.core.cookie-store.type", havingValue = "request", matchIfMissing = true)
+	@ConditionalOnProperty(name = "httpclient.core.cookie-store.type", havingValue = "request", matchIfMissing = false)
 	@RequestScope(proxyMode = ScopedProxyMode.INTERFACES)
 	public CookieStore requestCookieStore() {
+		return new BasicCookieStore();
+	}
+
+	@Bean
+	@ConditionalOnProperty(name = "httpclient.core.cookie-store.type", havingValue = "shared", matchIfMissing = true)
+	public CookieStore sharedCookieStore() {
 		return new BasicCookieStore();
 	}
 }

@@ -27,7 +27,7 @@ public class SimpleFrontController {
 	private SimpleAsyncService service;
 
 	@GetMapping(path = "/header", produces = "application/json")
-	public ResponseEntity getHeader() {
+	public ResponseEntity<?> getHeader() {
 		log.debug("*** SimpleFrontController.getHeader() invoked");
 		String content;
 		try {
@@ -42,7 +42,7 @@ public class SimpleFrontController {
 	}
 
 	@GetMapping(path = "/async-header", produces = "application/json")
-	public ResponseEntity getAsyncHeader() {
+	public ResponseEntity<?> getAsyncHeader() {
 		log.debug("*** SimpleFrontController.getAsyncHeader() invoked");
 		try {
 			String content = service.doIt().get();

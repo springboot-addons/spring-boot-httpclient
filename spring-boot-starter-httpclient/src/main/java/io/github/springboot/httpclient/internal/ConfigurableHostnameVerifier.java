@@ -44,11 +44,10 @@ public class ConfigurableHostnameVerifier implements HostnameVerifier {
 			log.info("Search into SSL domains for {} gives {}", uri, trust);
 		}
 
-		if (trust != null) {
-			return trust;
-		} else {
+		if (!trust) {
 			log.warn("HostNameVerifier for {} gives {} ; using {} HostNameVerifier", hostname, trust, DEFAULT);
-			return DEFAULT.verify(hostname, session);
+			trust = DEFAULT.verify(hostname, session);
 		}
+		return trust;
 	}
 }

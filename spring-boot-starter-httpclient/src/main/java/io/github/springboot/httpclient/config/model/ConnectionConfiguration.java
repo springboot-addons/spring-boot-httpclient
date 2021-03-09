@@ -23,7 +23,7 @@ public class ConnectionConfiguration {
 	private Integer socketTimeout;
 	private Integer connectTimeout;
 	private Integer bufferSize = 4096;
-	private String userAgent = "HttpClient 4";
+	private String userAgent = "httpclient";
 	private String compression;
 	private String requestHeader;
 	private String cookiePolicy = "default";

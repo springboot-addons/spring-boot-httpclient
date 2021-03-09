@@ -12,7 +12,7 @@ httpclient:
 #      trust-store-file: /opt/java/openjdk/lib/security/cacerts
 #      trust-store-password: changeit
 #      trust-store-type: JKS
-      user-agent: sb-httpclient
+      user-agent: httpclient
     headers:
       down: X-TEST-.*
       enabled-propagation: true

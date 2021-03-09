@@ -21,7 +21,7 @@ public class SimpleBackController {
 	private HttpServletRequest request;
 
 	@GetMapping(path = "/header", produces = "application/json")
-	public ResponseEntity getHeader() {
+	public ResponseEntity<?> getHeader() {
 		log.debug("*** SimpleBackController.getHeader() invoked");
 		if (!"srules".equals(request.getHeader("X-TEST-KEY"))) {
 

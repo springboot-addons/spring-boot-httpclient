@@ -22,12 +22,10 @@ import lombok.Setter;
 public class HttpClientConfiguration {
 
 	private static final String DEFAULT_JMX_DOMAIN = "monitoring";
-	private static final String DEFAULT_JMX_APPLICATION = "httpclient";
 	private String jmxDomain = DEFAULT_JMX_DOMAIN;
-	private String jmxApplication = DEFAULT_JMX_APPLICATION;
 	private Integer poolTimeout = 30000;
 	private Long poolIdleTimeout = 300000l;
-	private Integer lingerTimeout = -1;
+	private Integer lingerTimeout ;
 	private Boolean resolveDns = false;
 	private String metricNameStrategy;
 	private String brokenCircuitAction;

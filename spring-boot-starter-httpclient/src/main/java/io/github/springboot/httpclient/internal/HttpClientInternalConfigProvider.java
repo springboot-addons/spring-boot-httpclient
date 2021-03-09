@@ -140,12 +140,16 @@ public class HttpClientInternalConfigProvider {
 	@Bean
 	public RequestConfig getDefaultRequestConfig() {
 		final Integer poolTimeout = config.getGlobalConfiguration(ConfigurationConstants.POOL_TIMEOUT);
-		final int socketTimeout = config.getGlobalConfiguration(ConfigurationConstants.SOCKET_TIMEOUT);
-		final int connectTimeout = config.getGlobalConfiguration(ConfigurationConstants.CONNECTION_TIMEOUT);
+		final Integer socketTimeout = config.getGlobalConfiguration(ConfigurationConstants.SOCKET_TIMEOUT);
+		final Integer connectTimeout = config.getGlobalConfiguration(ConfigurationConstants.CONNECTION_TIMEOUT);
 		final String cookiePolicy = config.getGlobalConfiguration(ConfigurationConstants.COOKIE_POLICY);
 
-		final Builder builder = RequestConfig.custom().setConnectionRequestTimeout(poolTimeout)
-				.setConnectTimeout(connectTimeout).setSocketTimeout(socketTimeout);
+		final Builder builder = RequestConfig.custom()
+				.setConnectionRequestTimeout(poolTimeout)
+				.setSocketTimeout(socketTimeout != null ? socketTimeout : HttpClientConstants.DEFAULT_SOCKET_TIMEOUT)
+				.setConnectTimeout(connectTimeout != null ? connectTimeout : HttpClientConstants.DEFAULT_CONNECTION_TIMEOUT)
+				;
+
 		if (!config.isCookieManagementDisabled()) {
 			builder.setCookieSpec(StringUtils.isNotBlank(cookiePolicy) ? cookiePolicy : CookieSpecs.DEFAULT);
 		}

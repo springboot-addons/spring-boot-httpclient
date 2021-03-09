@@ -17,6 +17,7 @@ import org.apache.http.protocol.HttpContext;
 import io.github.springboot.httpclient.config.HttpClientConfigurationHelper;
 import io.github.springboot.httpclient.config.model.ProxyConfiguration;
 import io.github.springboot.httpclient.constants.ConfigurationConstants;
+import io.github.springboot.httpclient.constants.HttpClientConstants;
 import io.github.springboot.httpclient.utils.HttpClientUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,8 +40,11 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 					ConfigurationConstants.SOCKET_TIMEOUT);
 			final Integer connectTimeout = config.getConfiguration(requestUri, requestMethod,
 					ConfigurationConstants.CONNECTION_TIMEOUT);
-			final RequestConfig.Builder requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout)
-					.setConnectTimeout(connectTimeout);
+			
+			final RequestConfig.Builder requestConfig = RequestConfig.custom()
+					.setSocketTimeout(socketTimeout != null ? socketTimeout : HttpClientConstants.DEFAULT_SOCKET_TIMEOUT)
+					.setConnectTimeout(connectTimeout != null ? connectTimeout : HttpClientConstants.DEFAULT_CONNECTION_TIMEOUT);
+
 			final String cookiePolicy = config.getConfiguration(requestUri, ConfigurationConstants.COOKIE_POLICY);
 
 			final String cookieSpec = getCookieSpec(cookiePolicy);
