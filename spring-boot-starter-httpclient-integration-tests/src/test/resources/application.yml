@@ -96,10 +96,25 @@ httpclient:
     retry-wait-duration: 100
 app:
   name: '@project.name@'
-
+endpoints:
+  health:
+    enabled: true
+    sensitive: false
+  jmx:
+    domain: '@project.name@'
+    unique-names: true
+info:
+  app:
+    description: '@project.description@'
+    name: '@project.name@'
+    version: '@project.version@'
 logging:
   level:
     io.github.springboot.httpclient.core: INFO
+
+management:
+  security:
+    enabled: false
 
 resilience4j:
   circuitbreaker:
@@ -125,6 +140,11 @@ resilience4j:
         timeoutDuration: 5s
         limitRefreshPeriod: 10s
         registerHealthIndicator: true
+
+server:
+  port: 8282
+  servlet:
+    context-path: /httpclient
 
 spring:
   application:

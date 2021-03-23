@@ -109,40 +109,6 @@ logging:
   level:
     io.github.springboot.httpclient.core: INFO
 
-management:
-  security:
-    enabled: false
-
-resilience4j:
-  circuitbreaker:
-    instances:
-      default:
-        eventConsumerBufferSize: 10
-        failureRateThreshold: 100
-        registerHealthIndicator: true
-        ringBufferSizeInClosedState: 2
-        ringBufferSizeInHalfOpenState: 3
-        wait-duration-in-open-state: 3000
-      httpbin-org:
-        eventConsumerBufferSize: 10
-        failureRateThreshold: 100
-        registerHealthIndicator: true
-        ringBufferSizeInClosedState: 5
-        ringBufferSizeInHalfOpenState: 3
-        wait-duration-in-open-state: 5000
-  ratelimiter:
-    instances:
-      httpbin-org:
-        limitForPeriod: 10
-        timeoutDuration: 5s
-        limitRefreshPeriod: 10s
-        registerHealthIndicator: true
-
-server:
-  port: 8282
-  servlet:
-    context-path: /httpclient
-
 spring:
   application:
     name: '@project.name@'
