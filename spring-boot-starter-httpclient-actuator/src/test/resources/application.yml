@@ -9,32 +9,12 @@ httpclient:
       max-active: 20
       socket-timeout: 10000
       trust-ssl: false
-#      trust-store-file: /opt/java/openjdk/lib/security/cacerts
-#      trust-store-password: changeit
-#      trust-store-type: JKS
       user-agent: sb-httpclient
     headers:
       down: X-TEST-.*
       enabled-propagation: true
       up: X-TEST-.*
     hosts:
-      apiinseefr:
-        base-url: https://api.insee.fr
-        broken-circuit-action: 503
-        connection:
-          compression: gzip,deflate
-          limiter: 2.0
-          # 3 sec of waiting in case of 429 despite the rate limiting
-          delay-refore-retrying: 3.5
-          max-active: 10
-          proxy:
-            use-proxy: false
-          socket-timeout: 3000
-          trust-ssl: true
-          trust-ssl-domains: api.insee.fr,insee.fr
-        methods:
-          POST:
-            socket-timeout: 5000
       google:
         base-url: https://www.google.fr
         broken-circuit-action: exception
@@ -58,6 +38,23 @@ httpclient:
               socket-timeout: 5000
         proxy:
           use-proxy: false
+      apiinseefr:
+        base-url: https://api.insee.fr
+        broken-circuit-action: 503
+        connection:
+          compression: gzip,deflate
+          limiter: 2.0
+          # 3 sec of waiting in case of 429 despite the rate limiting
+          delay-refore-retrying: 3.5
+          max-active: 10
+          proxy:
+            use-proxy: false
+          socket-timeout: 3000
+          trust-ssl: true
+          trust-ssl-domains: api.insee.fr,insee.fr
+        methods:
+          POST:
+            socket-timeout: 5000
       yahoo:
         base-url: https://fr.news.yahoo.com
         broken-circuit-action: 503
