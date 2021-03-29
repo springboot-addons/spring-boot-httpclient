@@ -32,7 +32,7 @@ public class CasAuthenticationHttpRequestInterceptor implements HttpRequestInter
 	 */
 	@Override
 	public void process(final HttpRequest request, final HttpContext httpcontext) throws HttpException, IOException {
-		final String requestUri = HttpClientUtils.getUri(request, null).toString();
+		final String requestUri = HttpClientUtils.getUri(request, httpcontext).toString();
 		final RequestLine requestLine = request.getRequestLine();
 		final String requestMethod = requestLine.getMethod();
 
