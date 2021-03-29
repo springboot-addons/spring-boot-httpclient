@@ -26,7 +26,7 @@
         <module>spring-boot-starter-httpclient-resilience4j</module>
         <module>spring-boot-starter-httpclient-security-cas</module>
         <module>spring-boot-starter-httpclient-security-ntlm</module>
-
+        <module>spring-boot-starter-httpclient-all</module>
         <module>spring-boot-starter-httpclient-integration-tests</module>
     </modules>
 
