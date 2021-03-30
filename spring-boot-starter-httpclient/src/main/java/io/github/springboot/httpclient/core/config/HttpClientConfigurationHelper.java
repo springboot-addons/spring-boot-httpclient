@@ -189,7 +189,7 @@ public class HttpClientConfigurationHelper {
 
         if (useProxyForHost(uri)) {
             pc = getConfiguration(uri, ConfigurationConstants.PROXY_CONFIGURATION);
-            if (StringUtils.isBlank(pc.getHost())) {
+            if (pc == null || StringUtils.isBlank(pc.getHost())) {
                 pc = getGlobalConfiguration(ConfigurationConstants.PROXY_CONFIGURATION);
             }
         }
