@@ -68,8 +68,8 @@ public class HttpClientInternalConfigProvider {
 			final String baseUri = h.getBaseUrl();
 
 			// Set credential par host
-			final Boolean authRequired = config.isTrue(baseUri, ConfigurationConstants.AUTHENTICATION_REQUIRED);
-			if (authRequired) {
+			//final Boolean authRequired = config.isTrue(baseUri, ConfigurationConstants.AUTHENTICATION_REQUIRED);
+			if (h.getAuthentication().isRequired()) {
 				final String httpUser = config.getConfiguration(baseUri, ConfigurationConstants.AUTHENTICATION_USER);
 				final String httpPassword = config.getConfiguration(baseUri,
 						ConfigurationConstants.AUTHENTICATION_PASSWORD);
