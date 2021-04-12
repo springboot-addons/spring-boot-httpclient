@@ -42,6 +42,15 @@ public class ApplicationTests {
 	}
 
 	@Test
+	public void testBasicAuth() throws Exception {
+		final HttpClient httpClient = context.getBean(HttpClient.class);
+		final HttpGet httpGet = new HttpGet(
+				"https://httpbin.org/basic-auth/testusername/testpassword");
+		final HttpResponse response = httpClient.execute(httpGet);
+		Assert.assertTrue(response.getStatusLine().getStatusCode() == 200);
+	}
+	
+	@Test
 	public void testHttpsClient() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
 		final HttpGet httpGet = new HttpGet("https://httpbin.org/headers");

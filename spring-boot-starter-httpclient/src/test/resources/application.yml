@@ -58,6 +58,10 @@ httpclient:
               socket-timeout: 5000
         proxy:
           use-proxy: false
+        authentication:
+          auth-type: BASIC
+          user: testusername
+          password: testpassword
       yahoo:
         base-url: https://fr.news.yahoo.com
         broken-circuit-action: 503
