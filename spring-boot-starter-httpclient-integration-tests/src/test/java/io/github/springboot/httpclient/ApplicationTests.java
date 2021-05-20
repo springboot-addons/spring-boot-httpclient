@@ -7,23 +7,20 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * http client auto configuration tests
  *
  * @author linux_china
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
 @ComponentScan("io.github.springboot.httpclient.core")
@@ -55,7 +52,7 @@ public class ApplicationTests {
 		final HttpGet httpGet = new HttpGet("https://httpbin.org/delay/4");
 		try {
 			httpClient.execute(httpGet);
-			Assert.fail("Timeout should have occured");
+			Assertions.fail("Timeout should have occured");
 		} catch (final Exception e) {
 		}
 	}
@@ -67,7 +64,7 @@ public class ApplicationTests {
 		try {
 			httpClient.execute(httpPost);
 		} catch (final Exception e) {
-			Assert.fail("Timeout not should have occured");
+			Assertions.fail("Timeout not should have occured");
 		}
 	}
 
@@ -75,7 +72,7 @@ public class ApplicationTests {
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
 		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
-		Assert.assertTrue(content.contains("httpclient"));
+		Assertions.assertTrue(content.contains("httpclient"));
 	}
 
 	@Test
@@ -84,7 +81,7 @@ public class ApplicationTests {
 		final HttpPost req = new HttpPost("https://api.insee.fr/token");
 		final HttpResponse response = httpClient.execute(req);
 		System.out.println(response.getStatusLine());
-		Assert.assertTrue(response.getStatusLine().getStatusCode() == 400);
+		Assertions.assertTrue(response.getStatusLine().getStatusCode() == 400);
 	}
 
 }

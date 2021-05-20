@@ -10,15 +10,14 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.ActiveProfiles;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
@@ -27,8 +26,8 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
  *
  * @author linux_china
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
+@ActiveProfiles("test")
 @ComponentScan("io.github.springboot.httpclient.core")
 public class ApplicationTests {
 
@@ -57,7 +56,7 @@ public class ApplicationTests {
 		try {
 			httpClient.execute(httpPost);
 		} catch (final Exception e) {
-			Assert.fail("Timeout not should have occured");
+			Assertions.fail("Timeout not should have occured");
 		}
 	}
 
@@ -65,7 +64,7 @@ public class ApplicationTests {
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
 		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
-		Assert.assertTrue(content.contains("httpclient"));
+		Assertions.assertTrue(content.contains("httpclient"));
 	}
 
 	@Test
@@ -78,8 +77,8 @@ public class ApplicationTests {
 			try {
 				final HttpResponse response = httpClient.execute(httpGet);
 				System.out.println(response.getStatusLine());
-				Assert.assertTrue(response.getStatusLine().getReasonPhrase().contains("Broken circuit"));
-				Assert.assertTrue(response.getStatusLine().getStatusCode() == 503);
+				Assertions.assertTrue(response.getStatusLine().getReasonPhrase().contains("Broken circuit"));
+				Assertions.assertTrue(response.getStatusLine().getStatusCode() == 503);
 				hasBeenBreaked = true;
 				Thread.sleep(3100);
 			} catch (final Exception e) {
@@ -90,8 +89,8 @@ public class ApplicationTests {
 				System.out.println("Error : " + e.getMessage());
 			}
 		}
-		Assert.assertTrue(hasBeenBreaked);
-		Assert.assertTrue(hasRecovered);
+		Assertions.assertTrue(hasBeenBreaked);
+		Assertions.assertTrue(hasRecovered);
 	}
 
 	@Test
@@ -100,12 +99,12 @@ public class ApplicationTests {
 		final HttpGet httpGet = new HttpGet("https://httpbin.org/status/503");
 		for (int i = 0; i < 5; i++) {
 			final HttpResponse response = httpClient.execute(httpGet);
-			Assert.assertTrue(response.getStatusLine().getStatusCode() == 503);
+			Assertions.assertTrue(response.getStatusLine().getStatusCode() == 503);
 		}
 		final HttpResponse response = httpClient.execute(httpGet);
 		System.out.println(response.getStatusLine());
-		Assert.assertTrue(response.getStatusLine().getReasonPhrase().contains("Broken circuit"));
-		Assert.assertTrue(response.getStatusLine().getStatusCode() == 503);
+		Assertions.assertTrue(response.getStatusLine().getReasonPhrase().contains("Broken circuit"));
+		Assertions.assertTrue(response.getStatusLine().getStatusCode() == 503);
 		circuitBreakerRegistry.find("httpbin-org").get().reset();
 	}
 }

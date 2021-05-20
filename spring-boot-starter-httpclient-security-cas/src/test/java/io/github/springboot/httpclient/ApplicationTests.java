@@ -2,7 +2,7 @@ package io.github.springboot.httpclient;
 
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +32,6 @@ public class ApplicationTests {
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
 		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
-		Assert.assertTrue(content.contains("httpclient"));
+		Assertions.assertTrue(content.contains("httpclient"));
 	}
 }

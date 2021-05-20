@@ -9,15 +9,14 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.ActiveProfiles;
 
 import io.github.springboot.httpclient.actuator.HttpClientEndpoint;
 
@@ -26,8 +25,8 @@ import io.github.springboot.httpclient.actuator.HttpClientEndpoint;
  *
  * @author linux_china
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
+@ActiveProfiles("test")
 @ComponentScan("io.github.springboot.httpclient.core")
 public class ApplicationTestsActuator {
 
@@ -41,8 +40,8 @@ public class ApplicationTestsActuator {
 		final HttpResponse response = httpClient.execute(httpGet);
 		EntityUtils.toString(response.getEntity());
 		HttpClientEndpoint stats = getStats();
-		Assert.assertNotNull(stats);
-		Assert.assertNotNull(stats.getMetrics());
+		Assertions.assertNotNull(stats);
+		Assertions.assertNotNull(stats.getMetrics());
 	}
 
 	@Test
@@ -52,7 +51,7 @@ public class ApplicationTestsActuator {
 		try {
 			httpClient.execute(httpPost);
 		} catch (final Exception e) {
-			Assert.fail("Timeout not should have occured");
+			Assertions.fail("Timeout not should have occured");
 		}
 	}
 
@@ -60,7 +59,7 @@ public class ApplicationTestsActuator {
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
 		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
-		Assert.assertTrue(content.contains("httpclient"));
+		Assertions.assertTrue(content.contains("httpclient"));
 	}
 
 	private HttpClientEndpoint getStats() {
