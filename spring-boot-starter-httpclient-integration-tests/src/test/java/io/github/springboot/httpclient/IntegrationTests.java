@@ -39,6 +39,14 @@ public class IntegrationTests {
 	}
 
 	@Test
+	public void integrationTestsFrontMultiAsync() throws Exception {
+		this.mockMvc
+				.perform(get("/front/multiasync-header").header("Authorization", "Basic " + base64ClientCredentials)
+						.header("X-TEST-KEY", "srules"))
+				.andExpect(status().isOk()).andExpect(header().stringValues("X-TEST-RESPONSE", "yeah", "again"));
+	}
+
+	@Test
 	public void integrationTestsZback() throws Exception {
 		this.mockMvc.perform(get("/back/header").header("Authorization", "Basic " + base64ClientCredentials))
 				.andExpect(status().is(400)).andExpect(header().doesNotExist("X_TEST_RESPONSE"));

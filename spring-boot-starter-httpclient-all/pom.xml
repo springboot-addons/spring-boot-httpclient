@@ -35,5 +35,10 @@
             <artifactId>spring-boot-starter-httpclient-security-ntlm</artifactId>
 			<version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.springboot-addons</groupId>
+            <artifactId>spring-boot-starter-httpclient-web</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

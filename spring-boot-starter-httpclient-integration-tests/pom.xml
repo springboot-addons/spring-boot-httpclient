@@ -21,5 +21,18 @@
 	        <artifactId>spring-boot-starter-httpclient-actuator</artifactId>
 	        <version>${project.version}</version>
 		</dependency>
-    </dependencies>
+		<dependency>
+			<groupId>io.github.springboot-addons</groupId>
+			<artifactId>spring-boot-starter-httpclient-web</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
 </project>

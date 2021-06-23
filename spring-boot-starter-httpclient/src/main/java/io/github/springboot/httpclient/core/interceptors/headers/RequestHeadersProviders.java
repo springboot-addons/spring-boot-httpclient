@@ -3,12 +3,12 @@ package io.github.springboot.httpclient.core.interceptors.headers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
@@ -22,7 +22,7 @@ import org.springframework.web.context.WebApplicationContext;
 @Configuration
 public class RequestHeadersProviders {
 
-	public static interface RequestHeadersStorage {
+	public interface RequestHeadersStorage {
 		void add(Header h);
 
 		void add(String key, String value);
@@ -35,8 +35,8 @@ public class RequestHeadersProviders {
 	}
 
 	public static class ThreadLocalRequestHeaderStorage implements RequestHeadersStorage {
-		private static ThreadLocal<RequestHeadersStorage> storages = ThreadLocal
-				.withInitial(() -> new DefaultRequestHeadersStorage());
+		private static final ThreadLocal<RequestHeadersStorage> storages = ThreadLocal
+				.withInitial(DefaultRequestHeadersStorage::new);
 
 		@Override
 		public void add(Header h) {
@@ -65,7 +65,7 @@ public class RequestHeadersProviders {
 	}
 
 	public static class DefaultRequestHeadersStorage implements RequestHeadersStorage {
-		private Map<String, Set<String>> internal = new HashMap<String, Set<String>>();
+		private final Map<String, Set<String>> internal = new ConcurrentHashMap<>();
 
 		@Override
 		public void add(Header h) {
@@ -74,14 +74,8 @@ public class RequestHeadersProviders {
 
 		@Override
 		public void add(String key, String value) {
-			Set<String> list = internal.get(key);
-			if (list == null) {
-				list = new HashSet<String>();
-				internal.put(key, list);
-			} else {
-
-			}
-			list.add(value);
+			Set<String> values = internal.computeIfAbsent(key, k -> new ConcurrentSkipListSet<>());
+			values.add(value);
 		}
 
 		@Override
@@ -91,7 +85,7 @@ public class RequestHeadersProviders {
 
 		@Override
 		public List<Header> getHeaderList() {
-			List<Header> headers = new ArrayList<Header>();
+			List<Header> headers = new ArrayList<>();
 			for (Entry<String, Set<String>> entry : internal.entrySet()) {
 				for (String value : entry.getValue()) {
 					headers.add(new BasicHeader(entry.getKey(), value));

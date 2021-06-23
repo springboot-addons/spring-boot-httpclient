@@ -25,4 +25,11 @@ public class SimpleAsyncService {
 				.addHeader("Authorization", "Basic " + base64ClientCredentials)).returnContent().asString());
 
 	}
+
+	@Async
+	public Future<String> doItAgain() throws IOException {
+		return new AsyncResult<String>(httpClient.execute(Request.Get("http://localhost:8282/httpclient/back/headeragain")
+				.addHeader("Authorization", "Basic " + base64ClientCredentials)).returnContent().asString());
+	}
+
 }
