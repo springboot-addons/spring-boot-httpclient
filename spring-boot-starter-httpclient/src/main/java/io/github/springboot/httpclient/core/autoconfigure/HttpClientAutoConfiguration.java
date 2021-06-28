@@ -67,34 +67,39 @@ public class HttpClientAutoConfiguration {
 	public Executor httpClientExecutor(HttpClient httpClient) {
 		return Executor.newInstance(httpClient);
 	}
+	
+	@Bean
+  public HttpClientBuilder httpClientBuilder() {
+    final HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+    clientBuilder.setRequestExecutor(new HttpRequestExecutorChain(chainableHttpRequestExecutors));
+    clientBuilder.setConnectionManager(connectionManager);
+    clientBuilder.setDefaultAuthSchemeRegistry(authSchemeRegistry);
+    clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+    clientBuilder.setDefaultRequestConfig(defaultRequestConfig);
+    clientBuilder.setTargetAuthenticationStrategy(CookieProcessingTargetAuthenticationStrategy.INSTANCE);
+
+    clientBuilder.setConnectionReuseStrategy(DefaultConnectionReuseStrategy.INSTANCE);
+    clientBuilder.setKeepAliveStrategy(DefaultConnectionKeepAliveStrategy.INSTANCE);
+
+    final String userAgent = config.getGlobalConfiguration(ConfigurationConstants.USER_AGENT);
+    clientBuilder.setUserAgent(userAgent);
+
+    requestInterceptors.forEach(clientBuilder::addInterceptorLast);
+    responseInterceptors.forEach(clientBuilder::addInterceptorLast);
+
+    CookieStore cookieStore = cookieStoreProvider.getIfAvailable();
+    if (config.isCookieManagementDisabled() || cookieStore == null) {
+      clientBuilder.disableCookieManagement();
+    } else {
+      log.info("Using cookie store {}", cookieStore);
+      clientBuilder.setDefaultCookieStore(cookieStore);
+    }
+
+    return clientBuilder;
+  }
 
 	@Bean
 	public CloseableHttpClient httpClient() {
-		final HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-		clientBuilder.setRequestExecutor(new HttpRequestExecutorChain(chainableHttpRequestExecutors));
-		clientBuilder.setConnectionManager(connectionManager);
-		clientBuilder.setDefaultAuthSchemeRegistry(authSchemeRegistry);
-		clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-		clientBuilder.setDefaultRequestConfig(defaultRequestConfig);
-		clientBuilder.setTargetAuthenticationStrategy(CookieProcessingTargetAuthenticationStrategy.INSTANCE);
-
-		clientBuilder.setConnectionReuseStrategy(DefaultConnectionReuseStrategy.INSTANCE);
-		clientBuilder.setKeepAliveStrategy(DefaultConnectionKeepAliveStrategy.INSTANCE);
-
-		final String userAgent = config.getGlobalConfiguration(ConfigurationConstants.USER_AGENT);
-		clientBuilder.setUserAgent(userAgent);
-
-		requestInterceptors.forEach(clientBuilder::addInterceptorLast);
-		responseInterceptors.forEach(clientBuilder::addInterceptorLast);
-
-		CookieStore cookieStore = cookieStoreProvider.getIfAvailable();
-		if (config.isCookieManagementDisabled() || cookieStore == null) {
-			clientBuilder.disableCookieManagement();
-		} else {
-			log.info("Using cookie store {}", cookieStore);
-			clientBuilder.setDefaultCookieStore(cookieStore);
-		}
-
-		return clientBuilder.build();
+		return httpClientBuilder().build();
 	}
 }
