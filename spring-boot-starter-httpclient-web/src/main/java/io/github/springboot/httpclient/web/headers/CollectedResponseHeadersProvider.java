@@ -26,7 +26,7 @@ public class CollectedResponseHeadersProvider implements ResponseHeaderProvider 
     public List<String> getHeaderNames() {
         RequestHeadersProviders.RequestHeadersStorage s = upHeadersProvider.getIfAvailable();
         if (s != null) {
-            return s.getHeaderList().stream().map(Header::getName).filter(name -> config.getUpPattern().matcher(name).matches()).collect(Collectors.toList());
+            return s.getHeaderList().stream().map(Header::getName).filter(name -> config.getUpPattern().matcher(name).matches()).distinct().collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
