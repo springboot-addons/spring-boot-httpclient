@@ -134,7 +134,9 @@ public class ConnectionManagerConfig {
 				}
 
 				final Integer maxRoute = configHelper.getConfiguration(h.getBaseUrl(), ConfigurationConstants.MAX_ACTIVE_CONNECTIONS);
-				cm.setMaxPerRoute(httpRoute, maxRoute);
+				if (maxRoute != null) {
+					cm.setMaxPerRoute(httpRoute, maxRoute);
+				}
 
 				final Integer bufferSize = configHelper.getConfiguration(h.getBaseUrl(), ConfigurationConstants.BUFFER_SIZE);
 				ConnectionConfig connectionConfig = ConnectionConfig.custom().setBufferSize(bufferSize).build();
