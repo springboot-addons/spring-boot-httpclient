@@ -1,6 +1,7 @@
 package io.github.springboot.httpclient;
 
 import java.util.Base64;
+import java.util.concurrent.Future;
 
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
@@ -47,6 +48,19 @@ public class SimpleFrontController {
 		try {
 			String content = service.doIt().get();
 			return ResponseEntity.ok(content);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
+
+	@GetMapping(path = "/multiasync-header", produces = "application/json")
+	public ResponseEntity<?> getMultiAsyncHeader() {
+		log.debug("*** SimpleFrontController.getMultiAsyncHeader() invoked");
+		try {
+			Future<String> s1 = service.doIt();
+			Future<String> s2 = service.doItAgain();
+			return ResponseEntity.ok(s1.get() + " " + s2.get());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.badRequest().body(e.getMessage());

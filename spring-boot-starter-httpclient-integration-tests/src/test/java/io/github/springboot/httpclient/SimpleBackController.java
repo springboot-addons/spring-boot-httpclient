@@ -29,4 +29,14 @@ public class SimpleBackController {
 		}
 		return ResponseEntity.ok().header("X-TEST-RESPONSE", "yeah").body("ack");
 	}
+
+	@GetMapping(path = "/headeragain", produces = "application/json")
+	public ResponseEntity<?> getHeaderAgain() {
+		log.debug("*** SimpleBackController.getHeaderAgain() invoked");
+		if (!"srules".equals(request.getHeader("X-TEST-KEY"))) {
+
+			return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+		}
+		return ResponseEntity.ok().header("X-TEST-RESPONSE", "again").body("ack");
+	}
 }
