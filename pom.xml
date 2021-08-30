@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>io.github.springboot-addons</groupId>
 	<artifactId>spring-boot-starter-httpclient-parent</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<packaging>pom</packaging>
 	<name>spring-boot-starter-httpclient-parent</name>
 	<description>Spring Boot AutoConfiguration for Apache HttpClient</description>
@@ -61,7 +61,7 @@
 		<connection>scm:git:git://github.com/springboot-addons/spring-boot-httpclient.git</connection>
 		<developerConnection>scm:git:git@github.com:springboot-addons/spring-boot-httpclient.git</developerConnection>
 		<url>https://github.com/springboot-addons/spring-boot-httpclient</url>
-		<tag>HEAD</tag>
+		<tag>spring-boot-starter-httpclient-parent-1.0.1</tag>
 	</scm>
 	
 	<properties>
