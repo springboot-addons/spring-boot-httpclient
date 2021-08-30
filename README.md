@@ -13,28 +13,6 @@ Configuration support for HttpClient through SpringBoot yaml / properties
 - Support for resilience4j circuit breaker / ratelimiter
 - Support for cas and ntlm auth
 - Support for headers propagation (bidirectional)
-- Support for proxy configuration
-- https trust strategy by configuration
-- many more
-
-Sample configuration : 
-
-
-# spring-boot-httpclient
-Spring Boot AutoConfiguration starters for Apache HttpClient
-
-*SpringBoot 2.4.x +
-Java 1.8 +*
-
-***Documentation In progress***
-
-Configuration support for HttpClient through SpringBoot yaml / properties
-- Support configuration at url / method level for timeouts
-- Http connnection pool size configurable at host level
-- Support for actuator / dropmetrics
-- Support for resilience4j circuit breaker / ratelimiter
-- Support for cas and ntlm auth
-- Support for headers propagation (bidirectional)
 - many more
 
 Sample configuration : 
