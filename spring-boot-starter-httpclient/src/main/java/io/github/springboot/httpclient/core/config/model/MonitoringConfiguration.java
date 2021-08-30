@@ -16,7 +16,6 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class MonitoringConfiguration implements Serializable {
 	private static final long serialVersionUID = -3620972131902953639L;
-	private Boolean disableRequestTracing = false;
 	private Boolean logPostMethods = false;
 
 	@Override

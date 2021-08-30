@@ -27,7 +27,6 @@ public class ConnectionConfiguration {
 	private String compression;
 	private String requestHeader;
 	private String cookiePolicy = "default";
-	// private RateLimiter limiter;
 	private Double delayBeforeRetrying = DEFAULT_DELAY;
 	private List<String> removeHeaders = new ArrayList<String>();
 	private Boolean trustSsl = false;

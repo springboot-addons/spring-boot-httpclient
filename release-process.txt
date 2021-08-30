@@ -1,0 +1,13 @@
+From https://dzone.com/articles/publish-your-artifacts-to-maven-central
+
+Deltas : 
+* Signing : 
+	gpg --list-keys 
+	gpg --keyserver keys.openpgp.org --send-keys ID
+
+* OSSRH repo (on distributionManagement and nexus-staging-maven-plugin)
+  https://oss.sonatype.org/ -> https://s01.oss.sonatype.org/
+
+ref : https://central.sonatype.org/publish/release/
+
+Releases in : https://repo1.maven.org/maven2/io/github/springboot-addons/

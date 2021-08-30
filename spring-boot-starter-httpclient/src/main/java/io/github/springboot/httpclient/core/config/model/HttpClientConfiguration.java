@@ -26,7 +26,6 @@ public class HttpClientConfiguration {
 	private Integer poolTimeout = 30000;
 	private Long poolIdleTimeout = 300000l;
 	private Integer lingerTimeout ;
-	private Boolean resolveDns = false;
 	private String metricNameStrategy;
 	private String brokenCircuitAction;
 	private Integer retryAttempts;

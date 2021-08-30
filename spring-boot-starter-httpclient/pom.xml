@@ -14,9 +14,9 @@
 	<description>Spring Boot starter HttpClient</description>
 
 	<properties>
-		<resilience4j.version>1.6.1</resilience4j.version>
 		<commons-io.version>2.6</commons-io.version>
-		<commons-beanutils.version>1.9.3</commons-beanutils.version>
+		<commons-beanutils.version>1.9.4</commons-beanutils.version>
+		<cglib.version>3.3.0</cglib.version>
 	</properties>
 
 	<dependencies>
@@ -82,7 +82,7 @@
 		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
-			<version>3.3.0</version>
+			<version>${cglib.version}</version>
 		</dependency>
 
 		<dependency>

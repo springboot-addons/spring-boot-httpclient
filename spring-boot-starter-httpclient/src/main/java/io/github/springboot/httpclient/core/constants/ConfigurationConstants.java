@@ -5,9 +5,7 @@ public interface ConfigurationConstants {
 	String POOL_TIMEOUT = "poolTimeout";
 	String POOL_IDLE_TIMEOUT = "poolIdleTimeout";
 	String LINGER_TIMEOUT = "lingerTimeout";
-	String RESOLVE_DNS = "resolveDns";
 	String HTTP_PREFIX = "http";
-	String HOSTS_LIST = "hostsList";
 	String TRUST_ALL_HOSTS = "trustSsl";
 	String METRIC_NANE_STRATEGY = "metricNameStrategy";
 
@@ -29,10 +27,8 @@ public interface ConfigurationConstants {
 	String TRUST_STORE_TYPE = "connection.trustStoreType";
 	String TRUST_STORE_PASSWORD = "connection.trustStorePassword";
 
-	String THROTTLING_POLICY = "connection.limiter";
 	String DELAY_BEFORE_RETRY = "connection.delayBeforeRetrying";
 
-	String DISABLE_REQUEST_TRACING = "monitoring.disableRequestTracing";
 	String LOG_POST_METHODS = "monitoring.logPostMethods";
 
 	String PROXY_HOST = "proxy.host";
