@@ -68,7 +68,9 @@
 	
 	<properties>
 		<java.version>1.8</java.version>
+		<version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
 	</properties>
+	
 	<modules>
 		<module>spring-boot-starter-httpclient</module>
 		<module>spring-boot-starter-httpclient-actuator</module>
