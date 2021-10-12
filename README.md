@@ -15,6 +15,49 @@ Configuration support for HttpClient through SpringBoot yaml / properties
 - Support for headers propagation (bidirectional)
 - many more
 
+Dependencies : https://mvnrepository.com/artifact/io.github.springboot-addons
+
+Httpclient configuration support 
+
+	<dependency>
+		<groupId>io.github.springboot-addons</groupId>
+		<artifactId>spring-boot-starter-httpclient</artifactId>
+		<version>1.0.1</version>
+	</dependency>
+
+Httpclient actuator support 
+
+	<dependency>
+		<groupId>io.github.springboot-addons</groupId>
+		<artifactId>spring-boot-starter-actuator</artifactId>
+		<version>1.0.1</version>
+	</dependency>
+
+
+Httpclient resilience4j support 
+
+	<dependency>
+		<groupId>io.github.springboot-addons</groupId>
+		<artifactId>spring-boot-starter-resilience4j</artifactId>
+		<version>1.0.1</version>
+	</dependency>
+
+Httpclient cas support 
+
+	<dependency>
+		<groupId>io.github.springboot-addons</groupId>
+		<artifactId>spring-boot-starter-security-cas</artifactId>
+		<version>1.0.1</version>
+	</dependency>
+
+Httpclient all in one support 
+
+	<dependency>
+		<groupId>io.github.springboot-addons</groupId>
+		<artifactId>spring-boot-starter-all</artifactId>
+		<version>1.0.1</version>
+	</dependency>
+
 Sample configuration : 
 
     httpclient:
