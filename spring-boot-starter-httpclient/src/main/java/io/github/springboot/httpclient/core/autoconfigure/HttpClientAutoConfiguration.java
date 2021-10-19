@@ -10,6 +10,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.config.Registry;
 import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.impl.DefaultConnectionReuseStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
@@ -56,6 +57,9 @@ public class HttpClientAutoConfiguration {
 
 	@Autowired
 	private RequestConfig defaultRequestConfig;
+	
+	@Autowired
+	private HttpRoutePlanner routePlanner;
 
 	@Autowired
 	private CredentialsProvider credentialsProvider;
@@ -94,6 +98,8 @@ public class HttpClientAutoConfiguration {
       log.info("Using cookie store {}", cookieStore);
       clientBuilder.setDefaultCookieStore(cookieStore);
     }
+    
+    clientBuilder.setRoutePlanner(routePlanner) ;
 
     return clientBuilder;
   }

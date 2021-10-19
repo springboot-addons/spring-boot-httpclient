@@ -52,7 +52,7 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 				requestConfig.setCookieSpec(cookieSpec);
 			}
 
-			// Proxy
+			// Proxy : a priori remplacé par HttpRoutePlanner, cependant cela devrait continuer a fonctionner
 			ProxyConfiguration proxyConfiguration = config.getProxyConfiguration(requestUri);
 			if (proxyConfiguration != null) {
 				final String httpProxyHost = proxyConfiguration.getHost();
@@ -60,8 +60,8 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 				log.debug("Using proxy {}:{} for {}", httpProxyHost, httpProxyPort, requestUri);
 				final HttpHost proxyHost = new HttpHost(httpProxyHost, httpProxyPort);
 				requestConfig.setProxy(proxyHost);
-
 			}
+			
 			context.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig.build());
 
 			// Compression

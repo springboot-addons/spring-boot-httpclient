@@ -62,6 +62,20 @@ httpclient:
           auth-type: BASIC
           user: testusername
           password: testpassword
+      gouv-proxy:
+        base-url: https://www.impots.gouv.fr
+        broken-circuit-action: 503
+        connection:
+          compression: gzip,deflate
+          max-active: 10
+          socket-timeout: 3000
+          trust-ssl: true
+        methods:
+          POST:
+            connection:
+              socket-timeout: 5000
+        proxy:
+          use-proxy: true
       yahoo:
         base-url: https://fr.news.yahoo.com
         broken-circuit-action: 503
@@ -87,13 +101,13 @@ httpclient:
     pool-idle-timeout: 300000
     pool-timeout: 30000
     proxy:
-      authentification:
-        auth-type: basic
-        domain: ''
-        password: xxx
-        user: proxyuser
-      host: ''
-      port: ''
+#      authentification:
+#        auth-type: basic
+#        domain: ''
+#        password: xxx
+#        user: proxyuser
+      host: 'localhost'
+      port: '8085'
       use-proxy: false
     resolve-dns: false
     retry-attempts: 2

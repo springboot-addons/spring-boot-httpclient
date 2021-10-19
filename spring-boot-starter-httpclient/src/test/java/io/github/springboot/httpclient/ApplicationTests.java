@@ -1,11 +1,16 @@
 package io.github.springboot.httpclient;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +20,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
 
+import io.github.springboot.httpclient.core.config.HttpClientConfigurationHelper;
+import io.github.springboot.httpclient.core.config.model.ProxyConfiguration;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -93,6 +100,17 @@ public class ApplicationTests {
 		final HttpResponse response = httpClient.execute(req);
 		log.info("Response statusLine is : '{}'", response.getStatusLine());
 		assertTrue(response.getStatusLine().getStatusCode() == 400);
+	}
+	
+	@Test
+	public void testProxy() throws Exception {
+		String uri = "https://www.impots.gouv.fr/portail/";
+		final HttpClientConfigurationHelper configHelper = context.getBean(HttpClientConfigurationHelper.class);
+		assertTrue(configHelper.useProxyForHost(uri));
+		ProxyConfiguration proxyConfiguration = configHelper.getProxyConfiguration(uri);
+		assertNotNull(proxyConfiguration);
+		assertEquals(proxyConfiguration.getPort(), 8085);
+		assertEquals(proxyConfiguration.getHost(), "localhost");
 	}
 
 }

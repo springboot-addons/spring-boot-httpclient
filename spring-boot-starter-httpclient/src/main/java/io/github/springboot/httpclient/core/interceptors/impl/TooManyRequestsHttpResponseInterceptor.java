@@ -22,9 +22,7 @@ public class TooManyRequestsHttpResponseInterceptor implements HttpResponseInter
 	private HttpClientConfigurationHelper config;
 
 	/**
-	 * @param config
 	 */
-
 	public TooManyRequestsHttpResponseInterceptor(int defaultDelay) {
 	}
 

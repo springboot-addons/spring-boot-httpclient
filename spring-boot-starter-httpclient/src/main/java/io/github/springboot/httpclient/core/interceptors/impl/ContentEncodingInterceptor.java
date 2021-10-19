@@ -17,7 +17,6 @@ import io.github.springboot.httpclient.core.interceptors.HttpClientInterceptor;
 public class ContentEncodingInterceptor implements HttpClientInterceptor {
 
 	/**
-	 * @param config
 	 */
 	public ContentEncodingInterceptor() {
 	}
