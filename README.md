@@ -75,13 +75,13 @@ Sample configuration :
           user-agent: httpclient
           delay-before-retrying: 0.5   	# retry delay (seconds) in case of http 429 reponse status (TOO_MANY_REQUEST)
         headers:
-	  enable-propagation: true
+          enable-propagation: true
           down: X-TEST-.*
           up: X-TEST-.*
-	  remove: TEST_H1, TEST-H2
-	  add:
-	    TEST_ADD1: Value 1
-	    TEST_ADD2: Value 2
+          remove: TEST_H1, TEST-H2
+          add:
+            TEST_ADD1: Value 1
+            TEST_ADD2: Value 2
         hosts:
           google:
             base-url: https://www.google.fr
