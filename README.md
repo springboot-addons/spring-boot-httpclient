@@ -22,7 +22,7 @@ Httpclient configuration support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.3</version>
 	</dependency>
 
 Httpclient actuator support 
@@ -30,7 +30,7 @@ Httpclient actuator support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-actuator</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.3</version>
 	</dependency>
 
 
@@ -39,7 +39,7 @@ Httpclient resilience4j support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-resilience4j</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.3</version>
 	</dependency>
 
 Httpclient cas support 
@@ -47,7 +47,7 @@ Httpclient cas support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-security-cas</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.3</version>
 	</dependency>
 
 Httpclient all in one support 
@@ -55,7 +55,7 @@ Httpclient all in one support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-all</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.3</version>
 	</dependency>
 
 Sample configuration : 
@@ -75,8 +75,13 @@ Sample configuration :
           user-agent: httpclient
           delay-before-retrying: 0.5   	# retry delay (seconds) in case of http 429 reponse status (TOO_MANY_REQUEST)
         headers:
+	  enable-propagation: true
           down: X-TEST-.*
           up: X-TEST-.*
+	  remove: TEST_H1, TEST-H2
+	  add:
+	    TEST_ADD1: Value 1
+	    TEST_ADD2: Value 2
         hosts:
           google:
             base-url: https://www.google.fr
