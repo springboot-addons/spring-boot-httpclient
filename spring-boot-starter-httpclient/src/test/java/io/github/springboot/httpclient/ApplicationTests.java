@@ -10,8 +10,8 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.util.EntityUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -92,6 +92,19 @@ public class ApplicationTests {
 		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
 		assertTrue(content.contains("httpclient"));
 	}
+	
+	@Test
+	public void testHeaderAddRemove() throws Exception {
+		final Executor executor = context.getBean(Executor.class);
+		Request request = Request.Get("https://httpbin.org/headers")
+				.addHeader("X-Test-To-Remove", "SRU")
+				.addHeader("X-Test-H2", "VAL2");
+		final String content = executor.execute(request).returnContent().asString();
+		Assertions.assertFalse(content.contains("X-Test-To-Remove"));
+		Assertions.assertTrue(content.contains("X-Test-H2"));
+		Assertions.assertTrue(content.contains("X-Test-Header-From-Conf"));
+	}
+	
 
 	@Test
 	public void testCustomTlsDomainValidation() throws Exception {

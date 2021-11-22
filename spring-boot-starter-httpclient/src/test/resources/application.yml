@@ -58,6 +58,12 @@ httpclient:
               socket-timeout: 5000
         proxy:
           use-proxy: false
+        headers:
+          enabled-propagation: false
+          remove: X-Test-To-Remove, X-Test-Remove
+          add:
+            X-Test-H3: TEST_VAL1
+            X-Test-Header-From-Conf: TEST_VAL1
         authentication:
           auth-type: BASIC
           user: testusername

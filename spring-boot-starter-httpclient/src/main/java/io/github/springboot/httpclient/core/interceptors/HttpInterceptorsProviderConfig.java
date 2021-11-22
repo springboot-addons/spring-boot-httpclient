@@ -9,7 +9,6 @@ import org.springframework.core.annotation.Order;
 import io.github.springboot.httpclient.core.config.HttpClientConfigurationHelper;
 import io.github.springboot.httpclient.core.config.model.ConnectionConfiguration;
 import io.github.springboot.httpclient.core.interceptors.headers.HeadersPropagationInterceptor;
-import io.github.springboot.httpclient.core.interceptors.impl.HeaderRemoverInterceptor;
 import io.github.springboot.httpclient.core.interceptors.impl.HttpRequestConfigurerInterceptor;
 import io.github.springboot.httpclient.core.interceptors.impl.LoggingHttpRequestInterceptor;
 import io.github.springboot.httpclient.core.interceptors.impl.TooManyRequestsHttpResponseInterceptor;
@@ -21,13 +20,6 @@ public class HttpInterceptorsProviderConfig {
 	@Order(Ordered.HIGHEST_PRECEDENCE)
 	public HttpRequestConfigurerInterceptor httpRequestConfigurerInterceptor(HttpClientConfigurationHelper config) {
 		return new HttpRequestConfigurerInterceptor(config);
-	}
-
-	@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE + 100)
-	@ConditionalOnProperty(prefix = "httpclient.core.interceptors.header-remover", name = "enabled", havingValue = "true", matchIfMissing = true)
-	public HeaderRemoverInterceptor headerRemoverInterceptor(HttpClientConfigurationHelper config) {
-		return new HeaderRemoverInterceptor(config);
 	}
 
 	@Bean

@@ -30,7 +30,7 @@ public class HostConfiguration {
 	private Map<String, MethodConfiguration> methods = new HashMap<String, MethodConfiguration>();
 	private ConnectionConfiguration connection = new ConnectionConfiguration();
 	private MonitoringConfiguration monitoring = new MonitoringConfiguration();
-	private HeadersPropagation headersProparation = new HeadersPropagation();
+	private HeadersPropagation headers;
 
 	private ProxyConfiguration proxy = null;
 	private String brokenCircuitAction;

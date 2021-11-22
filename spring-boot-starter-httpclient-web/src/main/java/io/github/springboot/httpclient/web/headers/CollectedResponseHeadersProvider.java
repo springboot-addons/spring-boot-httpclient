@@ -10,7 +10,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import io.github.springboot.httpclient.core.interceptors.headers.HeadersPropagationConfig;
+import io.github.springboot.httpclient.core.config.model.HeadersPropagation;
 import io.github.springboot.httpclient.core.interceptors.headers.RequestHeadersProviders;
 
 public class CollectedResponseHeadersProvider implements ResponseHeaderProvider {
@@ -20,7 +20,7 @@ public class CollectedResponseHeadersProvider implements ResponseHeaderProvider 
     private ObjectProvider<RequestHeadersProviders.RequestHeadersStorage> upHeadersProvider;
 
     @Autowired
-    private HeadersPropagationConfig config;
+    private HeadersPropagation config;
 
     @Override
     public List<String> getHeaderNames() {

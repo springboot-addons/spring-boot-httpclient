@@ -34,7 +34,7 @@ public class HttpClientConfiguration {
 	private ConnectionConfiguration connection = new ConnectionConfiguration();
 	private MonitoringConfiguration monitoring = new MonitoringConfiguration();
 	private ProxyConfiguration proxy = new ProxyConfiguration();
-	private HeadersPropagation headersProparation = new HeadersPropagation();
+	private HeadersPropagation headers = new HeadersPropagation();
 
 	private Map<String, HostConfiguration> hosts = new HashMap<String, HostConfiguration>();
 

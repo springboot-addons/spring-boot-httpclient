@@ -6,7 +6,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import io.github.springboot.httpclient.core.interceptors.headers.HeadersPropagationConfig;
+import io.github.springboot.httpclient.core.config.model.HeadersPropagation;
 import io.github.springboot.httpclient.core.interceptors.headers.RequestHeadersProviders;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ForwardedRequestHeadersCollector implements RequestHeaderCollector {
 
     @Autowired
-    private HeadersPropagationConfig config;
+    private HeadersPropagation config;
 
     @Autowired
     @Qualifier("downHeaders")

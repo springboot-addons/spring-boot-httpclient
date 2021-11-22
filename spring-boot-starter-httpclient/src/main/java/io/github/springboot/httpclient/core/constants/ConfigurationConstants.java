@@ -8,6 +8,7 @@ public interface ConfigurationConstants {
 	String HTTP_PREFIX = "http";
 	String TRUST_ALL_HOSTS = "trustSsl";
 	String METRIC_NANE_STRATEGY = "metricNameStrategy";
+	String HEADERS_MANAGEMENT = "headers";
 
 	String MAX_ACTIVE_CONNECTIONS = "connection.maxActive";
 	String SOCKET_TIMEOUT = "connection.socketTimeout";
@@ -15,9 +16,7 @@ public interface ConfigurationConstants {
 	String BUFFER_SIZE = "connection.bufferSize";
 	String USER_AGENT = "connection.userAgent";
 	String COMPRESSION = "connection.compression";
-	String REQUEST_HEADER = "connection.requestHeader";
 	String COOKIE_POLICY = "connection.cookiePolicy";
-	String REMOVE_HEADERS = "connection.removeHeaders";
 	String TRUST_SSL = "connection.trustSsl";
 	String TRUST_SSL_CLIENT = "connection.trustSslClient";
 	String TRUST_SSL_CLIENT_ALIAS = "connection.trustSslClientAlias";
