@@ -1,8 +1,8 @@
 # spring-boot-httpclient
 Spring Boot AutoConfiguration starters for Apache HttpClient
 
-*SpringBoot 2.4.x +
-Java 1.8 +*
+*SpringBoot 2.6.x +
+Java 11 +*
 
 ***Documentation In progress***
 
