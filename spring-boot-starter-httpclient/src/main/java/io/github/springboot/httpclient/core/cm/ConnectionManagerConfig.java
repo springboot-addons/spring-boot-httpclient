@@ -17,10 +17,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.Registry;
@@ -158,9 +159,7 @@ public class ConnectionManagerConfig {
 	protected SSLContext getSslContext() {
 		SSLContext systemDefault = SSLContexts.createSystemDefault();
 		try {
-			final Object contextSpi = FieldUtils.readField(systemDefault, "contextSpi", true);
-			final X509TrustManager systemTrustManager = (X509TrustManager) FieldUtils.readField(contextSpi,
-					"trustManager", true);
+			final X509TrustManager systemTrustManager = getDefaultX509TrustManager();
 			SSLContextBuilder builder = SSLContexts.custom();
 			// System.getProperty(HttpClientConstants.TRUSTSTORE);
 			String TRUSTSTORE = System.getProperty(HttpClientConstants.TRUSTSTORE, getDefaultTrustStorePath());
@@ -203,7 +202,7 @@ public class ConnectionManagerConfig {
 			}
 
 			return builder.build();
-		} catch (KeyManagementException | IllegalAccessException | NoSuchAlgorithmException | KeyStoreException e) {
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
 			log.warn("Erreur to load trustStore or keyStore", e);
 			return systemDefault;
 		} catch (CertificateException e2) {
@@ -214,8 +213,24 @@ public class ConnectionManagerConfig {
 			return systemDefault;
 		}
 	}
-//    }
 
+    /**
+     * Loads the system default {@link X509TrustManager}.
+     */
+    public static X509TrustManager getDefaultX509TrustManager()
+            throws NoSuchAlgorithmException, KeyStoreException {
+        TrustManagerFactory tmf = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init((KeyStore) null);
+
+        for (TrustManager tm : tmf.getTrustManagers()) {
+            if (tm instanceof X509TrustManager) {
+                return (X509TrustManager) tm;
+            }
+        }
+        throw new IllegalStateException("X509TrustManager is not found");
+    }
+	
 	private String getDefaultTrustStorePath() {
 		String TRUSTSTORE = System.getProperty(HttpClientConstants.TRUSTSTORE);
 		if (TRUSTSTORE == null) {
