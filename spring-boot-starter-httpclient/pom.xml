@@ -14,7 +14,7 @@
 	<description>Spring Boot starter HttpClient</description>
 
 	<properties>
-		<commons-io.version>2.6</commons-io.version>
+		<commons-io.version>2.11.0</commons-io.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
 		<cglib.version>3.3.0</cglib.version>
 	</properties>
