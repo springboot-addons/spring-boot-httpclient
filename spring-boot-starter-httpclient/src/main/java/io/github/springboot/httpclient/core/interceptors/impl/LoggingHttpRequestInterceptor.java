@@ -114,8 +114,10 @@ public class LoggingHttpRequestInterceptor implements HttpClientInterceptor {
 			final long end = System.currentTimeMillis();
 			final HttpClientContext httpClientContext = HttpClientContext.adapt(httpcontext);
 			final long time = end - (Long) httpClientContext.getAttribute(BEGIN_TIME);
-			log.info("<<< HttpContext : {}", ToStringBuilder.reflectionToString(httpcontext));
-			log.info("<<< Invocation of {} took {} ms, responseCode={}",
+			if (log.isDebugEnabled()) {
+				log.debug("<<< HttpContext : {}", ToStringBuilder.reflectionToString(httpcontext));
+			}
+			log.info("Invocation of {} took {} ms, responseCode={}",
 					httpClientContext.getAttribute(HttpClientConstants.URL_CONTEXT), time,
 					httpresponse.getStatusLine().getStatusCode());
 			final String globalCookiePolicy = config.getGlobalConfiguration(ConfigurationConstants.COOKIE_POLICY);

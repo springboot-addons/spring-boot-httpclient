@@ -53,17 +53,17 @@ public class HttpRequestExecutorChain extends HttpRequestExecutor {
 		if (!currentExecutors.isEmpty()) {
 			ChainableHttpRequestExecutor next = currentExecutors.pop();
 			try {
-				log.info("before {} doExecute()", next.getClass());
+				log.debug("before {} doExecute()", next.getClass());
 				return next.doExecute(request, conn, context, this);
 			} finally {
-				log.info("after {} doExecute()", next.getClass());
+				log.debug("after {} doExecute()", next.getClass());
 			}
 		} else {
-			log.info("before {} execute()", HttpRequestExecutor.class);
+			log.debug("before {} execute()", HttpRequestExecutor.class);
 			try {
 				return super.execute(request, conn, context);
 			} finally {
-				log.info("after {} execute()", HttpRequestExecutor.class);
+				log.debug("after {} execute()", HttpRequestExecutor.class);
 			}
 		}
 	}

@@ -41,11 +41,11 @@ public class ConfigurableHostnameVerifier implements HostnameVerifier {
 				trust = hostConfiguration.getConnection().getTrustSsl();
 			}
 
-			log.info("Search into SSL domains for {} gives {}", uri, trust);
+			log.debug("Search into SSL domains for {} gives {}", uri, trust);
 		}
 
 		if (!trust) {
-			log.warn("HostNameVerifier for {} gives {} ; using {} HostNameVerifier", hostname, trust, DEFAULT);
+			log.debug("HostNameVerifier for {} gives {} ; using {} HostNameVerifier", hostname, trust, DEFAULT);
 			trust = DEFAULT.verify(hostname, session);
 		}
 		return trust;
