@@ -22,7 +22,7 @@ Httpclient configuration support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.7</version>
 	</dependency>
 
 Httpclient actuator support 
@@ -30,7 +30,7 @@ Httpclient actuator support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-actuator</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.7</version>
 	</dependency>
 
 
@@ -39,7 +39,7 @@ Httpclient resilience4j support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-resilience4j</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.7</version>
 	</dependency>
 
 Httpclient cas support 
@@ -47,7 +47,7 @@ Httpclient cas support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-security-cas</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.7</version>
 	</dependency>
 
 Httpclient all in one support 
@@ -55,7 +55,7 @@ Httpclient all in one support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-all</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.7</version>
 	</dependency>
 
 Sample configuration : 
