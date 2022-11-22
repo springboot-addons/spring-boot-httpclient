@@ -41,13 +41,13 @@ public class ChainableInstrumentedHttpRequestExecutor implements ChainableHttpRe
 
 		final Timer.Context timerContext = timer(request).time();
 		try {
-			log.info("before ChainableInstrumentedHttpRequestExecutor.doExecute");
+			log.debug("before ChainableInstrumentedHttpRequestExecutor.doExecute");
 			return chain.doExecute(request, conn, context);
 		} catch (HttpException | IOException e) {
 			meter(e).mark();
 			throw e;
 		} finally {
-			log.info("after ChainableInstrumentedHttpRequestExecutor.doExecute");
+			log.debug("after ChainableInstrumentedHttpRequestExecutor.doExecute");
 			timerContext.stop();
 		}
 	}
