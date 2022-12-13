@@ -75,7 +75,7 @@ Sample configuration :
           user-agent: httpclient
           delay-before-retrying: 0.5   	# retry delay (seconds) in case of http 429 reponse status (TOO_MANY_REQUEST)
         headers:
-          enable-propagation: true
+          enabled-propagation: true
           down: X-TEST-.*
           up: X-TEST-.*
           remove: TEST_H1, TEST-H2
