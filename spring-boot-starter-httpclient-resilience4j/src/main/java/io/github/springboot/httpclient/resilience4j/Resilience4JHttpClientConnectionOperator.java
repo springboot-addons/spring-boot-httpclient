@@ -42,8 +42,9 @@ public class Resilience4JHttpClientConnectionOperator extends DefaultHttpClientC
 			final long start = System.nanoTime();
 			try {
 				super.connect(conn, host, localAddress, connectTimeout, socketConfig, context);
-				final long durationInNanos = System.nanoTime() - start;
-				circuitBreaker.onSuccess(durationInNanos, TimeUnit.NANOSECONDS);
+				circuitBreaker.releasePermission();
+//				final long durationInNanos = System.nanoTime() - start;
+				//circuitBreaker.onSuccess(durationInNanos, TimeUnit.NANOSECONDS);
 			} catch (final Throwable throwable) {
 				final long durationInNanos = System.nanoTime() - start;
 				circuitBreaker.onError(durationInNanos, TimeUnit.NANOSECONDS, throwable);

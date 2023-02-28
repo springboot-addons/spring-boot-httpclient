@@ -28,7 +28,7 @@ import io.github.springboot.httpclient.actuator.HttpClientEndpoint;
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
 @ComponentScan("io.github.springboot.httpclient.core")
-public class ApplicationTests {
+public class HttpClient4ActuatorTests {
 
 	@Autowired
 	ApplicationContext context;
@@ -36,7 +36,7 @@ public class ApplicationTests {
 	@Test
 	public void testHttpsClientWithStats() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.org/headers");
+		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
 		final HttpResponse response = httpClient.execute(httpGet);
 		EntityUtils.toString(response.getEntity());
 		HttpClientEndpoint stats = getStats();
@@ -47,7 +47,7 @@ public class ApplicationTests {
 	@Test
 	public void testHttpClientPostSoTimeout() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpPost httpPost = new HttpPost("https://httpbin.org/delay/4");
+		final HttpPost httpPost = new HttpPost("https://httpbin.agglo-larochelle.fr/delay/4");
 		try {
 			httpClient.execute(httpPost);
 		} catch (final Exception e) {
@@ -58,7 +58,7 @@ public class ApplicationTests {
 	@Test
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
+		final String content = executor.execute(Request.Get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
 		Assertions.assertTrue(content.contains("httpclient"));
 	}
 

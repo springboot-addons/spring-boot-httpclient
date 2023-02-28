@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.http.HttpClientConnection;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
@@ -23,16 +24,18 @@ import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.Retry.Context;
+import io.github.resilience4j.retry.RetryConfig;
 import io.github.springboot.httpclient.core.config.HttpClientConfigurationHelper;
 import io.github.springboot.httpclient.core.constants.ConfigurationConstants;
 import io.github.springboot.httpclient.core.internal.ChainableHttpRequestExecutor;
 import io.github.springboot.httpclient.core.internal.HttpRequestExecutorChain;
 import io.github.springboot.httpclient.core.utils.HttpClientUtils;
-import io.github.resilience4j.retry.RetryConfig;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * ResilienceHttpRequestExecutor
  */
+@Slf4j
 public class ResilienceHttpRequestExecutor implements ChainableHttpRequestExecutor {
 
 	private final CircuitBreakerRegistry cbRegistry;
@@ -59,6 +62,7 @@ public class ResilienceHttpRequestExecutor implements ChainableHttpRequestExecut
 				HttpClientResilience4jAutoConfiguration.DEFAULT_CIRCUIT);
 
 		final CircuitBreaker circuitBreaker = cbRegistry.circuitBreaker(circuitName);
+		log.debug("Before circuit breakers {} state {}, metrics {}", circuitBreaker.getName(), circuitBreaker.getState(), ToStringBuilder.reflectionToString(circuitBreaker.getMetrics())) ;
 
 		if (circuitBreaker.tryAcquirePermission()) {
 			final long start = System.nanoTime();
@@ -77,7 +81,8 @@ public class ResilienceHttpRequestExecutor implements ChainableHttpRequestExecut
 					final long durationInNanos = System.nanoTime() - start;
 					if (isError(statusLine)) {
 						circuitBreaker.onError(durationInNanos, TimeUnit.NANOSECONDS,
-								new Error("Http Status Error " + statusLine));
+								new IOException("Http Status Error " + statusLine));
+						log.debug("After http 5xx circuit breakers state {}, metrics {}", circuitBreaker.getState(), ToStringBuilder.reflectionToString(circuitBreaker.getMetrics())) ;
 					} else {
 						circuitBreaker.onSuccess(durationInNanos, TimeUnit.NANOSECONDS);
 					}
@@ -89,6 +94,7 @@ public class ResilienceHttpRequestExecutor implements ChainableHttpRequestExecut
 				} catch (final Throwable throwable) {
 					final long durationInNanos = System.nanoTime() - start;
 					circuitBreaker.onError(durationInNanos, TimeUnit.NANOSECONDS, throwable);
+					log.debug("Aftern exception circuit breakers state {}, metrics {}", circuitBreaker.getState(), ToStringBuilder.reflectionToString(circuitBreaker.getMetrics())) ;
 					retryContext.onRuntimeError(new RuntimeException(throwable));
 				}
 			}

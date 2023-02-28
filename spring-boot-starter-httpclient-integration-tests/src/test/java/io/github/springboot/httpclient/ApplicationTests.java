@@ -41,7 +41,7 @@ public class ApplicationTests {
 	@Test
 	public void testHttpsClient() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.org/headers");
+		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
 		final HttpResponse response = httpClient.execute(httpGet);
 		EntityUtils.toString(response.getEntity());
 	}
@@ -49,7 +49,7 @@ public class ApplicationTests {
 	@Test
 	public void testHttpClientSoTimeout() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.org/delay/4");
+		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/delay/4");
 		try {
 			httpClient.execute(httpGet);
 			Assertions.fail("Timeout should have occured");
@@ -60,7 +60,7 @@ public class ApplicationTests {
 	@Test
 	public void testHttpClientPostSoTimeout() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpPost httpPost = new HttpPost("https://httpbin.org/delay/4");
+		final HttpPost httpPost = new HttpPost("https://httpbin.agglo-larochelle.fr/delay/4");
 		try {
 			httpClient.execute(httpPost);
 		} catch (final Exception e) {
@@ -71,7 +71,7 @@ public class ApplicationTests {
 	@Test
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
+		final String content = executor.execute(Request.Get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
 		Assertions.assertTrue(content.contains("httpclient"));
 	}
 

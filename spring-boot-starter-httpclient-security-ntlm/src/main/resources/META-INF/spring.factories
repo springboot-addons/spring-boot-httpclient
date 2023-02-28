@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
- io.github.springboot.httpclient.auth.cifs.autoconfigure.NtlmAuthenticationAutoConfiguration

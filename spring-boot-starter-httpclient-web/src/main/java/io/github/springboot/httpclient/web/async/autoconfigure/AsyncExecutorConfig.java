@@ -10,7 +10,7 @@ import org.springframework.boot.task.TaskExecutorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -28,7 +28,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 @Configuration
 @EnableAsync
 @ConditionalOnWebApplication
-public class AsyncExecutorConfig extends AsyncConfigurerSupport {
+public class AsyncExecutorConfig implements AsyncConfigurer {
 
 	@Autowired
 	private TaskExecutorBuilder builder;

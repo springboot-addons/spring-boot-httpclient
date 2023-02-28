@@ -1,3 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  io.github.springboot.httpclient.web.async.autoconfigure.AsyncExecutorConfig, \
-  io.github.springboot.httpclient.web.headers.autoconfigure.HeadersConfiguration

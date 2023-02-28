@@ -41,7 +41,7 @@ public class ApplicationTestsResilience4j {
 	public void testRateLimiter() throws Exception {
 		long begin = System.currentTimeMillis() ;
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.org/headers");
+		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
 		for (int i = 0; i < 15; i++) {
 			final HttpResponse response = httpClient.execute(httpGet);
 			if (response != null && response.getEntity() != null) {
@@ -56,7 +56,7 @@ public class ApplicationTestsResilience4j {
 	@Test
 	public void testHttpClientPostSoTimeout() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpPost httpPost = new HttpPost("https://httpbin.org/delay/4");
+		final HttpPost httpPost = new HttpPost("https://httpbin.agglo-larochelle.fr/delay/4");
 		try {
 			httpClient.execute(httpPost);
 		} catch (final Exception e) {
@@ -67,7 +67,7 @@ public class ApplicationTestsResilience4j {
 	@Test
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
+		final String content = executor.execute(Request.Get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
 		Assertions.assertTrue(content.contains("httpclient"));
 	}
 
@@ -100,7 +100,7 @@ public class ApplicationTestsResilience4j {
 	@Test
 	public void testCircuitBreakerHttp503() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.org/status/503");
+		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/status/503");
 		for (int i = 0; i < 5; i++) {
 			final HttpResponse response = httpClient.execute(httpGet);
 			Assertions.assertTrue(response.getStatusLine().getStatusCode() == 503);

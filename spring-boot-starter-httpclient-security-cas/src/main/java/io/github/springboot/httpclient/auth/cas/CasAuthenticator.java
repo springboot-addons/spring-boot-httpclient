@@ -16,9 +16,6 @@ import org.jasig.cas.client.validation.Assertion;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.cas.authentication.CasAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import io.github.springboot.httpclient.core.constants.HttpClientConstants;
 import io.github.springboot.httpclient.core.utils.HostUtils;
@@ -36,13 +33,6 @@ public class CasAuthenticator {
 
 	public void authCas(HttpRequest request, String authenticationEndPoint) throws Exception {
 		Assertion assertion = AssertionHolder.getAssertion();
-		if (assertion == null) {
-			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-			if (authentication != null) {
-				CasAuthenticationToken token = (CasAuthenticationToken) authentication;
-				assertion = token.getAssertion();
-			}
-		}
 		if (assertion == null) {
 			throw new IllegalStateException("No cas assertion found for CAS proxy ticket authentification");
 		}

@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.client.RestTemplate;
 
 import io.github.springboot.httpclient.core.config.HttpClientConfigurationHelper;
 import io.github.springboot.httpclient.core.config.model.ProxyConfiguration;
@@ -27,11 +28,10 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * http client auto configuration tests
  *
- * @author linux_china
+ * @author sru
  */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
-@ComponentScan("io.github.springboot.httpclient.core")
 @Slf4j
 public class ApplicationTests {
 
@@ -51,7 +51,7 @@ public class ApplicationTests {
 	public void testBasicAuth() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
 		final HttpGet httpGet = new HttpGet(
-				"https://httpbin.org/basic-auth/testusername/testpassword");
+				"https://httpbin.agglo-larochelle.fr/basic-auth/testusername/testpassword");
 		final HttpResponse response = httpClient.execute(httpGet);
 		assertTrue(response.getStatusLine().getStatusCode() == 200);
 	}
@@ -59,7 +59,7 @@ public class ApplicationTests {
 	@Test
 	public void testHttpsClient() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.org/headers");
+		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
 		final HttpResponse response = httpClient.execute(httpGet);
 		EntityUtils.toString(response.getEntity());
 	}
@@ -67,7 +67,7 @@ public class ApplicationTests {
 	@Test
 	public void testHttpClientSoTimeout() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.org/delay/4");
+		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/delay/4");
 		try {
 			httpClient.execute(httpGet);
 			fail("Timeout should have occured");
@@ -78,25 +78,25 @@ public class ApplicationTests {
 	@Test
 	public void testHttpClientPostSoTimeout() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpPost httpPost = new HttpPost("https://httpbin.org/delay/4");
+		final HttpPost httpPost = new HttpPost("https://httpbin.agglo-larochelle.fr/delay/4");
 		try {
 			httpClient.execute(httpPost);
 		} catch (final Exception e) {
 			fail("Timeout not should have occured");
 		}
 	}
-
+	
 	@Test
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
+		final String content = executor.execute(Request.Get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
 		assertTrue(content.contains("httpclient"));
 	}
 	
 	@Test
 	public void testHeaderAddRemove() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		Request request = Request.Get("https://httpbin.org/headers")
+		Request request = Request.Get("https://httpbin.agglo-larochelle.fr/headers")
 				.addHeader("X-Test-To-Remove", "SRU")
 				.addHeader("X-Test-H2", "VAL2");
 		final String content = executor.execute(request).returnContent().asString();

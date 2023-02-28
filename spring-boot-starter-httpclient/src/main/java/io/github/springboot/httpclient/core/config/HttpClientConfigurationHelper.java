@@ -7,8 +7,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -22,6 +20,7 @@ import io.github.springboot.httpclient.core.config.model.MethodConfiguration;
 import io.github.springboot.httpclient.core.config.model.ProxyConfiguration;
 import io.github.springboot.httpclient.core.constants.ConfigurationConstants;
 import io.github.springboot.httpclient.core.utils.HttpClientUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 @Component

@@ -31,7 +31,7 @@ public class ApplicationTests {
 	@Test
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final String content = executor.execute(Request.Get("https://httpbin.org/headers")).returnContent().asString();
+		final String content = executor.execute(Request.Get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
 		Assertions.assertTrue(content.contains("httpclient"));
 	}
 }

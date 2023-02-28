@@ -5,11 +5,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+import io.github.springboot.httpclient.core.backport.HttpComponents4BackportClientHttpRequestFactory;
+
 @Configuration
-@ConditionalOnProperty(name = "httpclient.core.autoconfigure-rest-template", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "httpclient.core.rest-template-httpclient4.enabled", havingValue = "true", matchIfMissing = false)
 @ConditionalOnClass(RestTemplate.class)
 public class RestTemplateConfig {
 
@@ -18,12 +19,12 @@ public class RestTemplateConfig {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate(clientHttpRequestFactory());
+        return new RestTemplate(httpclient4RequestFactory());
     }
 
     @Bean
-    public HttpComponentsClientHttpRequestFactory clientHttpRequestFactory() {
-        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+    public HttpComponents4BackportClientHttpRequestFactory httpclient4RequestFactory() {
+    	HttpComponents4BackportClientHttpRequestFactory clientHttpRequestFactory = new HttpComponents4BackportClientHttpRequestFactory();
         clientHttpRequestFactory.setHttpClient(httpClient);
         return clientHttpRequestFactory;
     }
