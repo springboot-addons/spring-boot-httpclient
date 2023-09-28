@@ -2,7 +2,6 @@ package io.github.springboot.httpclient5.core.interceptors;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Base64;
 
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.EntityDetails;

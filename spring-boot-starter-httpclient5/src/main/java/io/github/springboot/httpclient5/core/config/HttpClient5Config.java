@@ -18,6 +18,7 @@ import io.github.springboot.httpclient5.core.config.model.Http1ConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.RequestConfigProperties;
 import io.github.springboot.httpclient5.core.utils.PatternUtils;
 import jakarta.annotation.PostConstruct;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -50,6 +51,10 @@ public class HttpClient5Config {
 	@NestedConfigurationProperty
 	private JmxConfig jmx = new JmxConfig() ;
 	
+	@Getter(value = AccessLevel.NONE)
+	@Setter(value = AccessLevel.NONE)
+	private ConcurrentLruCache<Pair<String, String>, RequestConfigProperties> requestConfigPropertiesCache = new ConcurrentLruCache<>(10240, this::getRequestConfigProperties) ; 
+
 	@Override
 	@SneakyThrows
 	public String toString() {
@@ -65,8 +70,6 @@ public class HttpClient5Config {
 		return getRequestConfigProperties(method, uri).build() ;
 	}
 	
-	private ConcurrentLruCache<Pair<String, String>, RequestConfigProperties> requestConfigPropertiesCache = new ConcurrentLruCache<>(10240, this::getRequestConfigProperties) ; 
-			
 	@SneakyThrows
 	public RequestConfigProperties getRequestConfigProperties(String method, String uri) {
 		return requestConfigPropertiesCache.get(Pair.of(method, uri)) ;

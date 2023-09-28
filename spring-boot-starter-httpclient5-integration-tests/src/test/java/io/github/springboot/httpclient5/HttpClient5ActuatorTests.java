@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import io.github.springboot.httpclient5.actuator.HttpClientEndpoint;
@@ -26,7 +26,7 @@ import io.github.springboot.httpclient5.actuator.HttpClientEndpoint;
  */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
-@ComponentScan("io.github.springboot.httpclient5.core")
+@DirtiesContext
 public class HttpClient5ActuatorTests {
 	private static final String HTTPBIN_HOST = "https://httpbin.agglo-larochelle.fr";
 	

@@ -77,11 +77,11 @@ public class ResilienceExecChainHandler implements ExecChainHandler {
 					}
 
 					final ClassicHttpResponse response = chain.proceed(request, scope);
-					final int stqtusCode = response.getCode();
+					final int statusCode = response.getCode();
 					final long durationInNanos = System.nanoTime() - start;
-					if (isError(stqtusCode)) {
+					if (isError(statusCode)) {
 						circuitBreaker.onError(durationInNanos, TimeUnit.NANOSECONDS,
-								new IOException("Http Status Error " + stqtusCode));
+								new IOException("Http Status Error " + statusCode));
 						log.debug("After http 5xx circuit breakers state {}, metrics {}", circuitBreaker.getState(), ToStringBuilder.reflectionToString(circuitBreaker.getMetrics())) ;
 					} else {
 						circuitBreaker.onSuccess(durationInNanos, TimeUnit.NANOSECONDS);
@@ -94,7 +94,7 @@ public class ResilienceExecChainHandler implements ExecChainHandler {
 				} catch (final Throwable throwable) {
 					final long durationInNanos = System.nanoTime() - start;
 					circuitBreaker.onError(durationInNanos, TimeUnit.NANOSECONDS, throwable);
-					log.debug("Aftern exception circuit breakers state {}, metrics {}", circuitBreaker.getState(), ToStringBuilder.reflectionToString(circuitBreaker.getMetrics())) ;
+					log.debug("After exception circuit breakers state {}, metrics {}", circuitBreaker.getState(), ToStringBuilder.reflectionToString(circuitBreaker.getMetrics())) ;
 					retryContext.onRuntimeError(new RuntimeException(throwable));
 				}
 			}

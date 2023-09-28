@@ -12,12 +12,15 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -29,7 +32,8 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
  */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
-@ComponentScan("io.github.springboot.httpclient5.core")
+@TestMethodOrder(OrderAnnotation.class)
+@DirtiesContext
 public class HttpClient5Resilience4jTests {
 
 	@Autowired
@@ -39,6 +43,7 @@ public class HttpClient5Resilience4jTests {
 	CircuitBreakerRegistry circuitBreakerRegistry;
 
 	@Test
+    @Order(4)
 	public void testRateLimiter() throws Exception {
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
 		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
@@ -56,6 +61,7 @@ public class HttpClient5Resilience4jTests {
 	}
 
 	@Test
+    @Order(1)
 	public void testHttpClientPostSoTimeout() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
 		final HttpPost httpPost = new HttpPost("https://httpbin.agglo-larochelle.fr/delay/4");
@@ -69,6 +75,7 @@ public class HttpClient5Resilience4jTests {
 	}
 
 	@Test
+    @Order(2)
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
 		final String content = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
@@ -77,6 +84,7 @@ public class HttpClient5Resilience4jTests {
 	}
 
 	@Test
+    @Order(5)
 	public void testCircuitBreakerException() throws Exception {
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
 		final HttpGet httpGet = new HttpGet("https://test.unknown-azerty.com");
@@ -104,6 +112,7 @@ public class HttpClient5Resilience4jTests {
 	}
 
 	@Test
+    @Order(3)
 	public void testCircuitBreakerHttp503() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
 		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/status/503");
@@ -111,9 +120,8 @@ public class HttpClient5Resilience4jTests {
 			final HttpResponse response = httpClient.execute(httpGet);
 			Assertions.assertTrue(response.getCode() == 503);
 		}
-		HttpResponse response;
 		try {
-			response = httpClient.execute(httpGet);
+			HttpResponse response = httpClient.execute(httpGet);
 			Assertions.fail("Circuit breaker should have been used") ;
 		} catch (IOException e) {
 			Assertions.assertTrue(e.getMessage().contains("Broken circuit"));
