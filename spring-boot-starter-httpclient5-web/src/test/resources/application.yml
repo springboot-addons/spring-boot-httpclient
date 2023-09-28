@@ -1,0 +1,50 @@
+logging:
+  level:
+    io.github.springboot.httpclient5.core: DEBUG
+
+spring:
+  application:
+    name: tu-springboot-httpclient5
+  httpclient5:
+    jmx.domain: ${spring.application.name}
+    http1:
+      buffer-size: 4096
+      waitForContinueTimeout: PT32S
+    pool:
+      max-conn-total: 128
+      max-connper-route: 5
+      dns-resolver: system
+      conn-pool-policy: LIFO
+      connection-time-to-live: PT120S
+      pool-concurrency-policy: STRICT
+      # see properties from org.apache.hc.core5.http.io.SocketConfig
+      socket-config:
+        so-timeout: PT60S
+      host-config:
+        '[https://httpbin.agglo-larochelle.fr]': 10 
+        '[https://testhost:4443]': 20 
+    # See properties from org.apache.hc.client5.http.config.RequestConfig
+    request-config:
+      '[default]':
+        connection-keep-alive: PT30S
+        connect-timeout: 1000
+        response-timeout: 2000
+        headers-propagation:
+          enabled: true
+          up: X-TEST-.*
+          down: X-TEST-.*
+          add:
+            '[X-TU]': "SRU ADDED HEADER"
+      '[GET https://httpbin.agglo-larochelle.fr/.*]':
+        response-timeout: 3000
+      '[POST https://httpbin.agglo-larochelle.fr/.*]':
+        response-timeout: 5000
+      '[.* https://testhost:4443/.*]':
+        proxy: https://localhost:3128
+      '[.* https://testhost/.*]':
+        response-timeout: 1000
+      '[POST https://testhost/.*]':
+        connect-timeout: 2000
+      '[POST https://testhost/subpath/.*]':
+        response-timeout: 3000
+        
