@@ -1,8 +1,8 @@
 # spring-boot-httpclient
-Spring Boot AutoConfiguration starters for Apache HttpClient
+Spring Boot AutoConfiguration starters for Apache HttpClient 5.x
 
-*SpringBoot 2.6.x +
-Java 11 +*
+*SpringBoot 3.0.x +
+Java 17 +*
 
 ***Documentation In progress***
 
@@ -11,7 +11,6 @@ Configuration support for HttpClient through SpringBoot yaml / properties
 - Http connnection pool size configurable at host level
 - Support for actuator / dropmetrics
 - Support for resilience4j circuit breaker / ratelimiter
-- Support for cas and ntlm auth
 - Support for headers propagation (bidirectional)
 - many more
 
@@ -21,16 +20,16 @@ Httpclient configuration support
 
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
-		<artifactId>spring-boot-starter-httpclient</artifactId>
-		<version>1.0.7</version>
+		<artifactId>spring-boot-starter-httpclient5</artifactId>
+		<version>1.0.0</version>
 	</dependency>
 
 Httpclient actuator support 
 
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
-		<artifactId>spring-boot-starter-actuator</artifactId>
-		<version>1.0.7</version>
+		<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
+		<version>1.0.0</version>
 	</dependency>
 
 
@@ -38,118 +37,98 @@ Httpclient resilience4j support
 
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
-		<artifactId>spring-boot-starter-resilience4j</artifactId>
-		<version>1.0.7</version>
+		<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
+		<version>1.0.0</version>
 	</dependency>
 
-Httpclient cas support 
 
-	<dependency>
-		<groupId>io.github.springboot-addons</groupId>
-		<artifactId>spring-boot-starter-security-cas</artifactId>
-		<version>1.0.7</version>
-	</dependency>
 
 Httpclient all in one support 
 
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
-		<artifactId>spring-boot-starter-all</artifactId>
-		<version>1.0.7</version>
+		<artifactId>spring-boot-starter-httpclient5-all</artifactId>
+		<version>1.0.0</version>
 	</dependency>
 
 Sample configuration : 
 
-    httpclient:
-        broken-circuit-action: 503     # defaut resilience4j circuit breaker action (in case of resilience4j use)
-        core:
-	      cookie-store.type: thread-local  # cookie store : thread-local, request or shared
-        connection:
-          buffer-size: 4096
-          compression: gzip,deflate
-          connect-timeout: 2000
-          cookie-policy: standard     	# global httpclient cookie policy
-          max-active: 20
-          socket-timeout: 10000
-          trust-ssl: false    			# trust all certs by default
-          user-agent: httpclient
-          delay-before-retrying: 0.5   	# retry delay (seconds) in case of http 429 reponse status (TOO_MANY_REQUEST)
-        headers:
-          enabled-propagation: true
-          down: X-TEST-.*
-          up: X-TEST-.*
-          remove: TEST_H1, TEST-H2
-          add:
-            TEST_ADD1: Value 1
-            TEST_ADD2: Value 2
-        hosts:
-          google:
-            base-url: https://www.google.fr
-            broken-circuit-action: exception
-            connection:
-              compression: gzip,deflate
-              max-active: 30
-              socket-timeout: 5000
-              trust-ssl: true
-              trust-ssl-domains: www.google.fr,www.google.com
-          httpbin-org:
-            base-url: https://httpbin.org
-            broken-circuit-action: 503
-            connection:
-              compression: gzip,deflate
-              max-active: 10
-              socket-timeout: 3000
-              trust-ssl: true
-            methods:
-              POST:
-                connection:
-                  socket-timeout: 5000
-            proxy:
-              use-proxy: false
-        jmx-domain: test-app         # domain for dropmetrics jmxexporter
-        linger-timeout: -1
-        monitoring:
-          log-post-methods: false    # logs post method sent content 
-        pool-idle-timeout: 300000
-        pool-timeout: 30000
-        proxy:
-          authentification:
-            auth-type: basic
-            domain: ''
-            password: xxx
-            user: proxyuser
-          host: ''
-          port: ''
-          use-proxy: false
-        retry-attempts: 2         # resilience4j retry config 
-        retry-wait-duration: 100  # resilience4j retry config
-        web:
-	      headers-propagation:
-		    enabled: true
-	      headers-filter:
-		    enabled: true
-	
+	spring:
+	  httpclient5:
+		jmx.domain: ${spring.application.name}
+		# see properties from org.apache.hc.core5.http.config.Http1Config
+		http1:
+		  buffer-size: 4096
+		  waitForContinueTimeout: PT32S
+		# see properties org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
+		pool:
+		  max-conn-total: 128
+		  max-connper-route: 5
+		  dns-resolver: system
+		  conn-pool-policy: LIFO
+		  connection-time-to-live: PT120S
+		  pool-concurrency-policy: STRICT
+		  # see properties from org.apache.hc.core5.http.io.SocketConfig
+		  socket-config:
+			so-timeout: PT60S
+		  host-config:
+			'[https://httpbin.agglo-larochelle.fr]': 10 
+			'[https://testhost:4443]': 20 
+		# See properties from org.apache.hc.client5.http.config.RequestConfig + addons headers-propagation, error-management
+		request-config:
+		  '[default]':
+			connection-keep-alive: PT30S
+			connect-timeout: 1000
+			response-timeout: 2000
+			headers-propagation:
+			  enabled: true
+			  up: X-TEST-.*
+			  down: X-TEST-.*
+			  add:
+				'[X-TU]': "SRU ADDED HEADER"
+			error-management:
+			  circuit-name: default
+			  broken-circuit-action: 503
+		  '[GET https://httpbin.agglo-larochelle.fr/.*]':
+			response-timeout: 3000
+			error-management.circuit-name: httpbin-org
+		  '[GET https://httpbin.agglo-larochelle.fr/basic-auth/.*]':
+			credentials: admin:pwd
+			#credentials: BASIC(admin:pwd)
+		  '[GET https://httpbin.agglo-larochelle.fr/hidden-basic-auth/.*]':
+			credentials: PREEMPTIVE(admin:pwd)			
+		  '[POST https://httpbin.agglo-larochelle.fr/.*]':
+			response-timeout: 5000
+			error-management.circuit-name: httpbin-org
+		  '[.* https://testhost:4443/.*]':
+			proxy: https://localhost:3128
+		  '[.* https://testhost/.*]':
+			response-timeout: 1000
+		  '[POST https://testhost/.*]':
+			connect-timeout: 2000
+		  '[POST https://testhost/subpath/.*]':
+			response-timeout: 3000
+
 	resilience4j:
 	  circuitbreaker:
 		instances:
 		  default:
+			minimumNumberOfCalls: 2
 			eventConsumerBufferSize: 10
 			failureRateThreshold: 100
 			registerHealthIndicator: true
-			ringBufferSizeInClosedState: 2
-			ringBufferSizeInHalfOpenState: 3
-			wait-duration-in-open-state: 3000
+			wait-duration-in-open-state: 1000ms
 		  httpbin-org:
+			minimumNumberOfCalls: 3
+			slidingWindowSize: 5
 			eventConsumerBufferSize: 10
 			failureRateThreshold: 100
 			registerHealthIndicator: true
-			ringBufferSizeInClosedState: 5
-			ringBufferSizeInHalfOpenState: 3
-			wait-duration-in-open-state: 5000
+			wait-duration-in-open-state: 1000ms
 	  ratelimiter:
 		instances:
 		  httpbin-org:
-			limitForPeriod: 10
-			timeoutDuration: 5s
-			limitRefreshPeriod: 10s
+			limitForPeriod: 1
+			timeoutDuration: 1s
+			limitRefreshPeriod: 1000ms
 			registerHealthIndicator: true
