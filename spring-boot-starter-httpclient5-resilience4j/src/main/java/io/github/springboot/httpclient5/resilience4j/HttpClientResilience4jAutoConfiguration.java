@@ -12,7 +12,7 @@ import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
 
 @Configuration
-@ConditionalOnProperty(name = "httpclient.core.resilience4j.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "spring.httpclient5.core.resilience4j.enabled", havingValue = "true", matchIfMissing = true)
 public class HttpClientResilience4jAutoConfiguration {
 	protected static final String DEFAULT_CIRCUIT = "default";
 

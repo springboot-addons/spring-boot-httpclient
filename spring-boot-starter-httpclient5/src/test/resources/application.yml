@@ -1,3 +1,5 @@
+app.httpbin-host : httpbin.agglo-larochelle.fr
+
 logging:
   level:
     io.github.springboot.httpclient5.core: DEBUG
@@ -6,6 +8,7 @@ spring:
   application:
     name: tu-springboot-httpclient5
   httpclient5:
+    user-agent: HttpClient5/SRU
     jmx.domain: ${spring.application.name}
     http1:
       buffer-size: 4096
@@ -21,7 +24,7 @@ spring:
       socket-config:
         so-timeout: PT60S
       host-config:
-        '[https://httpbin.agglo-larochelle.fr]': 10 
+        '[https://${app.httpbin-host}]': 10 
         '[https://testhost:4443]': 20 
     # See properties from org.apache.hc.client5.http.config.RequestConfig
     request-config:
@@ -29,14 +32,14 @@ spring:
         connection-keep-alive: PT30S
         connect-timeout: 1000
         response-timeout: 2000
-      '[GET https://httpbin.agglo-larochelle.fr/.*]':
+      '[GET https://${app.httpbin-host}/.*]':
         response-timeout: 3000
-      '[GET https://httpbin.agglo-larochelle.fr/basic-auth/.*]':
+      '[GET https://${app.httpbin-host}/basic-auth/.*]':
         credentials: admin:pwd
         #credentials: BASIC(admin:pwd)
-      '[GET https://httpbin.agglo-larochelle.fr/hidden-basic-auth/.*]':
+      '[GET https://${app.httpbin-host}/hidden-basic-auth/.*]':
         credentials: PREEMPTIVE(admin:pwd)
-      '[POST https://httpbin.agglo-larochelle.fr/.*]':
+      '[POST https://${app.httpbin-host}/.*]':
         response-timeout: 5000
       '[.* https://testhost:4443/.*]':
         proxy: https://localhost:3128

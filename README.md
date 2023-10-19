@@ -21,7 +21,7 @@ Httpclient configuration support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1</version>
 	</dependency>
 
 Httpclient actuator support 
@@ -29,7 +29,7 @@ Httpclient actuator support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1</version>
 	</dependency>
 
 
@@ -38,7 +38,7 @@ Httpclient resilience4j support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1</version>
 	</dependency>
 
 
@@ -48,13 +48,14 @@ Httpclient all in one support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-all</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1</version>
 	</dependency>
 
 Sample configuration : 
 
 	spring:
 	  httpclient5:
+	    user-agent: HttpClient5
 		jmx.domain: ${spring.application.name}
 		# see properties from org.apache.hc.core5.http.config.Http1Config
 		http1:

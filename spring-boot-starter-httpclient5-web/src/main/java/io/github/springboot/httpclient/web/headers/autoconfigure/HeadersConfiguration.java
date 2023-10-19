@@ -13,13 +13,13 @@ import io.github.springboot.httpclient.web.headers.HeadersPropagationInterceptor
 public class HeadersConfiguration {
 
     @Bean
-    @ConditionalOnProperty(prefix = "httpclient.web.headers-filter", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "spring.httpclient5.web.headers-filter", name = "enabled", havingValue = "true", matchIfMissing = true)
     public HeadersFilter headersFilter() {
         return new HeadersFilter();
     }
 
     @Configuration
-    @ConditionalOnProperty(prefix = "httpclient.web.headers-propagation", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "spring.httpclient5.web.headers-propagation", name = "enabled", havingValue = "true", matchIfMissing = true)
     public static class HeadersPropagationConfiguration {
 
         @Bean

@@ -1,1 +1,1 @@
-provides: spring-boot-starter-httpclient-resilience4j
+provides: spring-boot-starter-httpclient5-resilience4j

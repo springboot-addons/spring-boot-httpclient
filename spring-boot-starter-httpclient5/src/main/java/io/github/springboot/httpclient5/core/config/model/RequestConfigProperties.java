@@ -1,6 +1,7 @@
 package io.github.springboot.httpclient5.core.config.model;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -46,6 +47,10 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 	@NestedConfigurationProperty
 	private SimplePredefinedCredentialsProvider credentials ;
 	
+	@Getter @Setter
+	@NestedConfigurationProperty
+	private Map<String, String> customRequestContext = new HashMap<>() ;
+
 	public RequestConfigProperties(RequestConfigProperties origin) {
 		if (origin != null) {
 			this.builder = RequestConfig.copy(origin.build());

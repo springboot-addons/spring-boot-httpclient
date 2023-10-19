@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.github.springboot.httpclient5.core.config.HttpClient5Config;
+
 @Configuration
 public class HttpClientConfigurer {
 
@@ -33,6 +35,8 @@ public class HttpClientConfigurer {
 	@Autowired
 	private ObjectProvider<CredentialsStore> credentialsStoreProvider ;
 
+	@Autowired
+	private HttpClient5Config config ;
 	
 	@Bean
 	public Executor httpClientExecutor(CloseableHttpClient httpClient) {
@@ -42,6 +46,7 @@ public class HttpClientConfigurer {
 	@Bean
 	public CloseableHttpClient closeableHttpClient(PoolingHttpClientConnectionManager cm) {
 		HttpClientBuilder builder = HttpClientBuilder.create() ;
+		builder.setUserAgent(config.getUserAgent()) ;
 		builder.setConnectionManager(cm) ;
 	    requestInterceptors.forEach(builder::addRequestInterceptorLast);
 	    responseInterceptors.forEach(builder::addResponseInterceptorLast);

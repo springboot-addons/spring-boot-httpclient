@@ -5,9 +5,11 @@ import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.ConcurrentLruCache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +56,12 @@ public class HttpClient5Config {
 	@Getter(value = AccessLevel.NONE)
 	@Setter(value = AccessLevel.NONE)
 	private ConcurrentLruCache<Pair<String, String>, RequestConfigProperties> requestConfigPropertiesCache = new ConcurrentLruCache<>(10240, this::getRequestConfigProperties) ; 
-
+	
+	private String userAgent ;
+	
+	@Autowired
+	ConfigurableEnvironment env;
+	
 	@Override
 	@SneakyThrows
 	public String toString() {
@@ -63,6 +70,14 @@ public class HttpClient5Config {
 	
 	@PostConstruct
 	public void init() {
+		// Expansion des clés dans les map requestConfig et hostConfig du pool
+		Map<String, RequestConfigProperties> erc = new HashMap<String, RequestConfigProperties>();
+		requestConfig.forEach((k, v) -> erc.put(env.resolvePlaceholders(k), v));
+		requestConfig = erc ;
+		
+		Map<String, Integer> ehc = new HashMap<String, Integer>();
+		pool.getHostConfig().forEach((k, v) -> ehc.put(env.resolvePlaceholders(k), v));
+		pool.setHostConfig(ehc) ;
 	}
 	
 	@SneakyThrows

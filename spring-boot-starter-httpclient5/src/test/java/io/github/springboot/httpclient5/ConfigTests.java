@@ -1,6 +1,7 @@
 package io.github.springboot.httpclient5;
 
 import org.apache.hc.client5.http.HttpRoute;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.util.Timeout;
@@ -29,6 +30,12 @@ public class ConfigTests {
 
 	@Autowired
 	PoolingHttpClientConnectionManager cm;
+	
+	@Test
+	public void testRequestConfigKeyExpension() throws Exception {
+		Assertions.assertTrue(config.getRequestConfig().containsKey("GET https://httpbin.agglo-larochelle.fr/.*")) ;
+		Assertions.assertTrue(config.getPool().getHostConfig().containsKey("https://httpbin.agglo-larochelle.fr")) ;
+	}
 	
 	@Test
 	public void testPropertiesBinding() throws Exception {
