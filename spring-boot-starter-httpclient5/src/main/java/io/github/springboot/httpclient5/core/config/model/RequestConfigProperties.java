@@ -46,6 +46,11 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 	@Getter @Setter
 	@NestedConfigurationProperty
 	private SimplePredefinedCredentialsProvider credentials ;
+
+	@Getter @Setter
+	@NestedConfigurationProperty
+	private RetryConfig retryConfig = new RetryConfig();
+
 	
 	@Getter @Setter
 	@NestedConfigurationProperty
@@ -57,6 +62,7 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 			this.errorManagement = origin.getErrorManagement() ;
 			this.headersPropagation = origin.getHeadersPropagation() ;
 			this.credentials = origin.getCredentials();
+			this.retryConfig = origin.getRetryConfig();
 		}
 		else {
 			this.builder = RequestConfig.copy(RequestConfig.DEFAULT);

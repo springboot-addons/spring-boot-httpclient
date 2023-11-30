@@ -30,6 +30,6 @@ public class FluentTests {
 		final HttpResponse response = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/headers")).returnResponse();
 		Assertions.assertEquals(200, response.getCode()) ;
 	}
-		
+	
 	
 }

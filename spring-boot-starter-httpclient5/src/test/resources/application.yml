@@ -32,6 +32,9 @@ spring:
         connection-keep-alive: PT30S
         connect-timeout: 1000
         response-timeout: 2000
+        retry-config: 
+          max-retries: 2
+          retry-interval: PT3S
       '[GET https://${app.httpbin-host}/.*]':
         response-timeout: 3000
       '[GET https://${app.httpbin-host}/basic-auth/.*]':

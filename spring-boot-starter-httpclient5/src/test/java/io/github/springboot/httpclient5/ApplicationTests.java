@@ -1,5 +1,5 @@
 package io.github.springboot.httpclient5;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -80,5 +80,12 @@ public class ApplicationTests {
 		final Executor executor = context.getBean(Executor.class);
 		final String content = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
 		assertTrue(content.contains("User-Agent"));
+	}
+	
+	@Test
+	public void testRetry() throws Exception {
+		final Executor executor = context.getBean(Executor.class);
+		final int code = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/status/503")).returnResponse().getCode();
+		assertEquals(503, code);
 	}
 }

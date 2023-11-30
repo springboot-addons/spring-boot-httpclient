@@ -21,7 +21,7 @@ Httpclient configuration support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.2</version>
 	</dependency>
 
 Httpclient actuator support 
@@ -29,7 +29,7 @@ Httpclient actuator support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.2</version>
 	</dependency>
 
 
@@ -38,7 +38,7 @@ Httpclient resilience4j support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.2</version>
 	</dependency>
 
 
@@ -48,7 +48,7 @@ Httpclient all in one support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-all</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.2</version>
 	</dependency>
 
 Sample configuration : 
@@ -90,6 +90,9 @@ Sample configuration :
 			error-management:
 			  circuit-name: default
 			  broken-circuit-action: 503
+			retry-config: 
+			  max-retries: 2
+			  retry-interval: PT3S
 		  '[GET https://httpbin.agglo-larochelle.fr/.*]':
 			response-timeout: 3000
 			error-management.circuit-name: httpbin-org
