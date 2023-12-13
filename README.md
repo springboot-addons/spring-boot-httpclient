@@ -53,9 +53,9 @@ Httpclient all in one support
 
 Sample configuration : 
 
-	spring:
-	  httpclient5:
-	    user-agent: HttpClient5
+	    spring:
+	      httpclient5:
+	        user-agent: HttpClient5
 		jmx.domain: ${spring.application.name}
 		# see properties from org.apache.hc.core5.http.config.Http1Config
 		http1:
