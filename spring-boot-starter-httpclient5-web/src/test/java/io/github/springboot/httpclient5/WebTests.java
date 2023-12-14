@@ -34,7 +34,7 @@ public class WebTests {
 		HeadersPropagationProperties headersPropagationProperties = config.getRequestConfigProperties("GET", "https://httpbin.agglo-larochelle.fr/headers").getHeadersPropagation() ;
 		Assertions.assertNotNull(headersPropagationProperties) ;
 		Assertions.assertTrue(headersPropagationProperties.getEnabled()) ;		
-		Assertions.assertEquals("X-TEST-.*", headersPropagationProperties.getUp()) ;
+		Assertions.assertEquals("X-TEST-.*", headersPropagationProperties.getUp().get(0)) ;
 	}
 	
 	@Test
