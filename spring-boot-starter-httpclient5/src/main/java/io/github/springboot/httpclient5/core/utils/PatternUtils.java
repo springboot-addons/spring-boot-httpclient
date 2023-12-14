@@ -1,4 +1,5 @@
 package io.github.springboot.httpclient5.core.utils;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -12,4 +13,16 @@ public class PatternUtils {
 	public boolean matches(String toTest, String pattern) {
 		return cache.computeIfAbsent(pattern, p -> Pattern.compile(p)).matcher(toTest).matches();
 	}
+
+	public boolean matchesOne(String toTest, List<String> patterns) {
+		boolean match = false ;
+		for (String p : patterns) {
+			match = matches(toTest, p) ;
+			if (match) {
+				break;
+			}
+		}
+		return match ;
+	}
+
 }

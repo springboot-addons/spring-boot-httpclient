@@ -100,7 +100,7 @@ public class HttpClient5Config {
 			.sorted(this::byMatcherPrecision)
 			.map(hc -> hc.getValue())
 			.reduce(initial, (current, toApply) -> { 
-				log.trace("Applying request config for {}", key);
+				log.debug("Applying request config for {}", key);
 				return current.apply(toApply);	
 			}) ;
 			 

@@ -26,10 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 public class HeadersFilter implements Filter {
 
     @Autowired
-    private ObjectProvider<RequestHeaderCollector> requestHeaderCollectors;
+    private List<RequestHeaderCollector> requestHeaderCollectors;
 
     @Autowired
-    private ObjectProvider<ResponseHeaderProvider> responseHeaderProviders;
+    private List<ResponseHeaderProvider> responseHeaderProviders;
 
     @Autowired
     private ObjectProvider<RequestHeadersProviders.RequestHeadersStorage> headersStorages;
@@ -46,7 +46,7 @@ public class HeadersFilter implements Filter {
             String uri = httpRequest.getRequestURL().toString();
             
             Enumeration<String> headerNames = httpRequest.getHeaderNames();
-            List<RequestHeaderCollector> currentRequestHeaderCollectors = requestHeaderCollectors.stream().toList() ;
+            List<RequestHeaderCollector> currentRequestHeaderCollectors = requestHeaderCollectors ;
             while (headerNames.hasMoreElements()) {
                 String headerName = headerNames.nextElement();
                 currentRequestHeaderCollectors.stream().filter(c -> c.supports(method, uri, headerName)).forEach(c -> c.handle(headerName, httpRequest.getHeaders(headerName)));
@@ -56,7 +56,7 @@ public class HeadersFilter implements Filter {
             ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(httpResponse);
             chain.doFilter(request, responseWrapper);
 
-            responseHeaderProviders.stream().forEach(p -> p.getHeaderNames(method, uri).forEach(n -> p.getHeaderValues(n).forEach(v -> responseWrapper.addHeader(n, v))));
+            responseHeaderProviders.forEach(p -> p.getHeaderNames(method, uri).forEach(n -> p.getHeaderValues(n).forEach(v -> responseWrapper.addHeader(n, v))));
 
             responseWrapper.copyBodyToResponse();
         } else {

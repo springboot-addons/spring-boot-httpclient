@@ -15,7 +15,7 @@ spring:
       waitForContinueTimeout: PT32S
     pool:
       max-conn-total: 128
-      max-connper-route: 5
+      max-connper-route: 30
       dns-resolver: system
       conn-pool-policy: LIFO
       connection-time-to-live: PT120S
@@ -35,8 +35,18 @@ spring:
         retry-config: 
           max-retries: 2
           retry-interval: PT3S
+        interceptors:
+          '[myinter]': false
+        custom-request-context:           
+          '[propA]': "abc"
       '[GET https://${app.httpbin-host}/.*]':
         response-timeout: 3000
+        interceptors:
+          '[myinter]': true
+          '[tu-interceptor]': true
+        custom-request-context:           
+          '[propA]': "surcharge"
+          '[propB]': "newOne"
       '[GET https://${app.httpbin-host}/basic-auth/.*]':
         credentials: admin:pwd
         #credentials: BASIC(admin:pwd)

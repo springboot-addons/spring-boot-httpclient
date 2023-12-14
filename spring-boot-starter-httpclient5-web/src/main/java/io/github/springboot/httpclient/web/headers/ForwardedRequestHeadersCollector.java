@@ -26,7 +26,7 @@ public class ForwardedRequestHeadersCollector implements RequestHeaderCollector 
 
     @Override
     public boolean supports(String method, String uri, String headerName) {
-    	return PatternUtils.matches(headerName, config.getRequestConfigProperties(method, uri).getHeadersPropagation().getDown()) ;
+    	return PatternUtils.matchesOne(headerName, config.getRequestConfigProperties(method, uri).getHeadersPropagation().getDown()) ;
     }
 
     @Override

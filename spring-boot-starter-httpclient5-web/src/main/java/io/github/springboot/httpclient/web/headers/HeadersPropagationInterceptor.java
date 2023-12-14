@@ -45,7 +45,7 @@ public class HeadersPropagationInterceptor implements HttpRequestInterceptor, Ht
 		if (config.getEnabled() != null && config.getEnabled() && requestHeadersStorage != null) {
 			try {
 				for (Header h : response.getHeaders()) {
-					if (PatternUtils.matches(h.getName(), config.getUp())) {
+					if (PatternUtils.matchesOne(h.getName(), config.getUp())) {
 						log.debug("*** Storing header {} from subsequent call", h);
 						requestHeadersStorage.add(h.getName(), h.getValue());
 					}
@@ -63,7 +63,7 @@ public class HeadersPropagationInterceptor implements HttpRequestInterceptor, Ht
 		if (config.getEnabled() != null && config.getEnabled() && downHeadersProvider != null) {
 			try {
 				downHeadersProvider.ifAvailable(requestHeadersStorage -> requestHeadersStorage.getHeaderList().stream()
-						.filter(h -> PatternUtils.matches(h.getName(), config.getDown()))
+						.filter(h -> PatternUtils.matchesOne(h.getName(), config.getDown()))
 						.forEach(h -> {
 							if (log.isDebugEnabled()) {
 								log.debug("*** Using header {} from storage for subsequent call to {}", h,

@@ -28,7 +28,7 @@ public class CollectedResponseHeadersProvider implements ResponseHeaderProvider 
         RequestHeadersProviders.RequestHeadersStorage s = upHeadersProvider.getIfAvailable();
         HeadersPropagationProperties headerConfig = config.getRequestConfigProperties(method, uri).getHeadersPropagation() ;
         if (s != null) {
-            return s.getHeaderList().stream().map(Header::getName).filter(name -> PatternUtils.matches(name, headerConfig.getUp())).distinct().collect(Collectors.toList());
+            return s.getHeaderList().stream().map(Header::getName).filter(name -> PatternUtils.matchesOne(name, headerConfig.getUp())).distinct().collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

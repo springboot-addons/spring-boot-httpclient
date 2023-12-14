@@ -6,15 +6,25 @@ import java.util.Map;
 
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class HeadersPropagationProperties {
 	private Boolean enabled;
-	private String down;
-	private String up;
+	private List<String> down;
+	private List<String> up;
+
 	@NestedConfigurationProperty
+	@Builder.Default
 	private Map<String, String> add = new HashMap<>();
+	
 	@NestedConfigurationProperty
+	@Builder.Default
 	private List<String> remove = new ArrayList<>();
 }

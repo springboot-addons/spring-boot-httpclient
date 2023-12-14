@@ -9,6 +9,7 @@ import org.apache.hc.client5.http.fluent.Request;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -87,5 +88,22 @@ public class ApplicationTests {
 		final Executor executor = context.getBean(Executor.class);
 		final int code = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/status/503")).returnResponse().getCode();
 		assertEquals(503, code);
+	}
+	
+	@Test
+	public void testInterceptorActivation() throws Exception {
+		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
+		final HttpPost req = new HttpPost("https://httpbin.agglo-larochelle.fr/headers");
+		CloseableHttpResponse response = httpClient.execute(req);
+		EntityUtils.toString(response.getEntity());
+		
+		Assertions.assertFalse(TestInterceptor.wasActivated);
+
+		final HttpGet req2 = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
+		response = httpClient.execute(req2);
+		EntityUtils.toString(response.getEntity());
+		
+		Assertions.assertTrue(TestInterceptor.wasActivated);
+
 	}
 }

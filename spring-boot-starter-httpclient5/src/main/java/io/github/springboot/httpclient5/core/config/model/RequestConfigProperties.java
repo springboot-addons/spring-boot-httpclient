@@ -42,6 +42,10 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 	@Getter @Setter
 	@NestedConfigurationProperty
 	private HeadersPropagationProperties headersPropagation = new HeadersPropagationProperties();
+
+	@Getter @Setter
+	@NestedConfigurationProperty
+	private Map<String, Boolean> interceptors = new HashMap<String, Boolean>();
 	
 	@Getter @Setter
 	@NestedConfigurationProperty
@@ -51,7 +55,6 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 	@NestedConfigurationProperty
 	private RetryConfig retryConfig = new RetryConfig();
 
-	
 	@Getter @Setter
 	@NestedConfigurationProperty
 	private Map<String, String> customRequestContext = new HashMap<>() ;
@@ -59,10 +62,17 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 	public RequestConfigProperties(RequestConfigProperties origin) {
 		if (origin != null) {
 			this.builder = RequestConfig.copy(origin.build());
-			this.errorManagement = origin.getErrorManagement() ;
-			this.headersPropagation = origin.getHeadersPropagation() ;
-			this.credentials = origin.getCredentials();
-			this.retryConfig = origin.getRetryConfig();
+			
+			this.errorManagement = origin.getErrorManagement().toBuilder().build() ;
+			this.headersPropagation = origin.getHeadersPropagation().toBuilder().build() ;
+			this.retryConfig = origin.getRetryConfig().toBuilder().build();
+			
+			this.customRequestContext = new HashMap(origin.getCustomRequestContext());
+			this.interceptors = new HashMap(origin.getInterceptors());
+
+			if (origin.getCredentials() != null) {
+				this.credentials = origin.getCredentials().toBuilder().build() ;
+			}
 		}
 		else {
 			this.builder = RequestConfig.copy(RequestConfig.DEFAULT);
@@ -76,7 +86,7 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 	
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this.get(), ToStringStyle.JSON_STYLE);
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE);
 	}
 
 	@SneakyThrows
@@ -89,11 +99,23 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 				.filter(e -> e.getValue() != null)
 				.forEach(e -> {
 					log.debug("Applying request config : {} -> {}", e.getKey(), e.getValue());
-					try {
-						// TODO : opt String concat (pas possible de faire un PropertyUtils.setProperty car setter respecte pas la norme (return type != void)
-						MethodUtils.invokeMethod(this, "set" + WordUtils.capitalize(e.getKey()), e.getValue()) ;
-					} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-						log.error("Error applying {}", e.getKey(), ex);
+					if (e.getValue() instanceof Map) {
+						Map mapValue = (Map) e.getValue() ;
+						try {
+							// TODO : opt String concat (pas possible de faire un PropertyUtils.setProperty car setter respecte pas la norme (return type != void)
+							Map m = (Map) MethodUtils.invokeMethod(this, "get" + WordUtils.capitalize(e.getKey())) ;
+							m.putAll(mapValue) ;
+						} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+							log.error("Error applying {}", e.getKey(), ex);
+						}
+					}
+					else {
+						try {
+							// TODO : opt String concat (pas possible de faire un PropertyUtils.setProperty car setter respecte pas la norme (return type != void)
+							MethodUtils.invokeMethod(this, "set" + WordUtils.capitalize(e.getKey()), e.getValue()) ;
+						} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+							log.error("Error applying {}", e.getKey(), ex);
+						}
 					}
 				});
 		

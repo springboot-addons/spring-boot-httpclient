@@ -9,9 +9,15 @@ import org.apache.hc.client5.http.auth.CredentialsProvider;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.core5.http.protocol.HttpContext;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class SimplePredefinedCredentialsProvider implements CredentialsProvider {
 	
 	private static final String PREEMPTIVE_PREFIX = "PREEMPTIVE(";

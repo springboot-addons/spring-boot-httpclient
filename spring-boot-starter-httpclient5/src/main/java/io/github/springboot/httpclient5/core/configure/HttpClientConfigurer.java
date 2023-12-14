@@ -61,8 +61,8 @@ public class HttpClientConfigurer {
 		HttpClientBuilder builder = HttpClientBuilder.create() ;
 		builder.setUserAgent(config.getUserAgent()) ;
 		builder.setConnectionManager(cm) ;
-	    requestInterceptors.forEach(builder::addRequestInterceptorLast);
-	    responseInterceptors.forEach(builder::addResponseInterceptorLast);
+	    requestInterceptors.orderedStream().forEach(builder::addRequestInterceptorLast);
+	    responseInterceptors.orderedStream().forEach(builder::addResponseInterceptorLast);
 	    execChainHandlerProvider.orderedStream().forEach(e -> builder.addExecInterceptorFirst(e.getClass().getName(), e));
 	    
 		if (cookieStoreProvider.getIfAvailable() == null) {
