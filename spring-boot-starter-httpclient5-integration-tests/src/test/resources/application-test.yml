@@ -36,8 +36,10 @@ spring:
         response-timeout: 2000
         headers-propagation:
           enabled: true
-          up: X-TEST-.*
-          down: X-TEST-.*
+          up: 
+           - X-TEST-.*
+          down: 
+           - X-TEST-.*
           add:
             '[X-TU]': "SRU ADDED HEADER"
         error-management:

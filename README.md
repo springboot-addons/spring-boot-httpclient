@@ -21,7 +21,7 @@ Httpclient configuration support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5</artifactId>
-		<version>1.0.3</version>
+		<version>1.0.4</version>
 	</dependency>
 
 Httpclient actuator support 
@@ -29,7 +29,7 @@ Httpclient actuator support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
-		<version>1.0.3</version>
+		<version>1.0.4</version>
 	</dependency>
 
 
@@ -38,7 +38,7 @@ Httpclient resilience4j support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-		<version>1.0.3</version>
+		<version>1.0.4</version>
 	</dependency>
 
 
@@ -48,91 +48,110 @@ Httpclient all in one support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-all</artifactId>
-		<version>1.0.3</version>
+		<version>1.0.4</version>
+		<type>pom</type>
 	</dependency>
 
-Sample configuration : 
+Minimum recommended configuration : 
 
-	    spring:
-	      httpclient5:
-	        user-agent: HttpClient5
-		jmx.domain: ${spring.application.name}
-		# see properties from org.apache.hc.core5.http.config.Http1Config
-		http1:
-		  buffer-size: 4096
-		  waitForContinueTimeout: PT32S
-		# see properties org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
-		pool:
-		  max-conn-total: 128
-		  max-connper-route: 5
-		  dns-resolver: system
-		  conn-pool-policy: LIFO
-		  connection-time-to-live: PT120S
-		  pool-concurrency-policy: STRICT
-		  # see properties from org.apache.hc.core5.http.io.SocketConfig
-		  socket-config:
-			so-timeout: PT60S
-		  host-config:
-			'[https://httpbin.agglo-larochelle.fr]': 10 
-			'[https://testhost:4443]': 20 
-		# See properties from org.apache.hc.client5.http.config.RequestConfig + addons headers-propagation, error-management
-		request-config:
-		  '[default]':
-			connection-keep-alive: PT30S
-			connect-timeout: 1000
-			response-timeout: 2000
-			headers-propagation:
-			  enabled: true
-			  up: X-TEST-.*
-			  down: X-TEST-.*
-			  add:
-				'[X-TU]': "SRU ADDED HEADER"
-			error-management:
-			  circuit-name: default
-			  broken-circuit-action: 503
-			retry-config: 
-			  max-retries: 2
-			  retry-interval: PT3S
-		  '[GET https://httpbin.agglo-larochelle.fr/.*]':
-			response-timeout: 3000
-			error-management.circuit-name: httpbin-org
-		  '[GET https://httpbin.agglo-larochelle.fr/basic-auth/.*]':
-			credentials: admin:pwd
-			#credentials: BASIC(admin:pwd)
-		  '[GET https://httpbin.agglo-larochelle.fr/hidden-basic-auth/.*]':
-			credentials: PREEMPTIVE(admin:pwd)			
-		  '[POST https://httpbin.agglo-larochelle.fr/.*]':
-			response-timeout: 5000
-			error-management.circuit-name: httpbin-org
-		  '[.* https://testhost:4443/.*]':
-			proxy: https://localhost:3128
-		  '[.* https://testhost/.*]':
-			response-timeout: 1000
-		  '[POST https://testhost/.*]':
-			connect-timeout: 2000
-		  '[POST https://testhost/subpath/.*]':
-			response-timeout: 3000
+	spring:
+	  httpclient5:
+	    pool:
+	      max-connper-route: 50
+	      pool-concurrency-policy: LAX
+	    request-config:
+	      '[default]':
+	        connect-timeout: 1000
+	        response-timeout: 3000
+
+Full sample configuration : 
+
+	spring:
+	  httpclient5:
+	    user-agent: HttpClient5
+	    jmx.domain: ${spring.application.name}
+	    # see properties from org.apache.hc.core5.http.config.Http1Config
+	    http1:
+	      buffer-size: 4096
+	      waitForContinueTimeout: PT32S
+	    # see properties org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
+	    pool:
+	      max-conn-total: 128
+	      max-connper-route: 5
+	      dns-resolver: system
+	      conn-pool-policy: LIFO
+	      connection-time-to-live: PT120S
+	      pool-concurrency-policy: STRICT
+	      # see properties from org.apache.hc.core5.http.io.SocketConfig
+	      socket-config:
+	        so-timeout: PT60S
+	      host-config:
+	        '[https://httpbin.agglo-larochelle.fr]': 10 
+	        '[https://testhost:4443]': 20 
+	    # See properties from org.apache.hc.client5.http.config.RequestConfig + addons headers-propagation, error-management
+	    request-config:
+	      '[default]':
+	        connection-keep-alive: PT30S
+	        connect-timeout: 1000
+	        response-timeout: 2000
+	        headers-propagation:
+	         enabled: true
+	         up: 
+	           - X-TEST-.*
+	         down: 
+	           - X-TEST-.*
+	         add:
+	           '[X-TU]': "SRU ADDED HEADER"
+	        error-management:
+	          circuit-name: default
+	          broken-circuit-action: 503
+	        retry-config: 
+	          max-retries: 2
+	          retry-interval: PT3S
+	        interceptors:
+	          '[myinterceptor]': false
+	        custom-request-context:           
+	          '[propA]': "abc"
+	      '[GET https://httpbin.agglo-larochelle.fr/.*]':
+	        response-timeout: 3000
+	        error-management.circuit-name: httpbin-org
+	      '[GET https://httpbin.agglo-larochelle.fr/basic-auth/.*]':
+	        credentials: admin:pwd
+	        #credentials: BASIC(admin:pwd)
+	      '[GET https://httpbin.agglo-larochelle.fr/hidden-basic-auth/.*]':
+	        credentials: PREEMPTIVE(admin:pwd)	        
+	      '[POST https://httpbin.agglo-larochelle.fr/.*]':
+	        response-timeout: 5000
+	        error-management.circuit-name: httpbin-org
+	      '[.* https://testhost:4443/.*]':
+	        proxy: https://localhost:3128
+	      '[.* https://testhost/.*]':
+	        response-timeout: 1000
+	      '[POST https://testhost/.*]':
+	        connect-timeout: 2000
+	      '[POST https://testhost/subpath/.*]':
+	        response-timeout: 3000
 
 	resilience4j:
 	  circuitbreaker:
-		instances:
-		  default:
-			minimumNumberOfCalls: 2
-			eventConsumerBufferSize: 10
-			failureRateThreshold: 100
-			registerHealthIndicator: true
-			wait-duration-in-open-state: 1000ms
-		  httpbin-org:
-			minimumNumberOfCalls: 3
-			slidingWindowSize: 5
-			eventConsumerBufferSize: 10
-			failureRateThreshold: 100
-			registerHealthIndicator: true
-			wait-duration-in-open-state: 1000ms
+	    instances:
+	      default:
+	        minimumNumberOfCalls: 2
+	        eventConsumerBufferSize: 10
+	        failureRateThreshold: 100
+	        registerHealthIndicator: true
+	        wait-duration-in-open-state: 1000ms
+	      httpbin-org:
+	        minimumNumberOfCalls: 3
+	        slidingWindowSize: 5
+	        eventConsumerBufferSize: 10
+	        failureRateThreshold: 100
+	        registerHealthIndicator: true
+	        wait-duration-in-open-state: 1000ms
 	  ratelimiter:
-		instances:
-		  httpbin-org:
-			limitForPeriod: 1
-			timeoutDuration: 1s
-			limitRefreshPeriod: 1000ms
-			registerHealthIndicator: true
+	    instances:
+	      httpbin-org:
+	        limitForPeriod: 1
+	        timeoutDuration: 1s
+	        limitRefreshPeriod: 1000ms
+	        registerHealthIndicator: true
