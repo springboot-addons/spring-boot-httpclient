@@ -10,7 +10,6 @@ import org.apache.hc.core5.util.TimeValue;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.github.springboot.httpclient5.core.config.HttpClient5Config;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;

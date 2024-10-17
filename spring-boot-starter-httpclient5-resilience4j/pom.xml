@@ -10,7 +10,7 @@
     <artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
 
 	<properties>
-		<resilience4j.version>2.0.2</resilience4j.version>
+		<resilience4j.version>2.2.0</resilience4j.version>
 	</properties>
 
     <dependencies>
