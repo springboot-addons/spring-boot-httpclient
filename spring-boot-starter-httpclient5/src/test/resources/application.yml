@@ -54,7 +54,7 @@ spring:
       '[GET https://${app.httpbin-host}/hidden-basic-auth/.*]':
         credentials: PREEMPTIVE(admin:pwd)
       '[POST https://${app.httpbin-host}/.*]':
-        response-timeout: 5000
+        response-timeout: 10000
       '[.* https://testhost:4443/.*]':
         proxy: https://localhost:3128
       '[.* https://testhost/.*]':

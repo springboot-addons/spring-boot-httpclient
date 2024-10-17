@@ -38,7 +38,7 @@ spring:
       '[GET https://httpbin.org/.*]':
         response-timeout: 3000
       '[POST https://httpbin.org/.*]':
-        response-timeout: 5000
+        response-timeout: 10000
       '[.* https://testhost:4443/.*]':
         proxy: https://localhost:3128
       '[.* https://testhost/.*]':

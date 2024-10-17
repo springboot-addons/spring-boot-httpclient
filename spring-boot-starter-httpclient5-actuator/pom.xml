@@ -9,6 +9,10 @@
 	
     <artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
 
+	<properties>
+		<dropwizard-metrics.version>4.2.28</dropwizard-metrics.version>
+	</properties>
+
     <dependencies>
 		<dependency>
 	        <groupId>io.github.springboot-addons</groupId>
@@ -19,14 +23,17 @@
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-httpclient5</artifactId>
+			<version>${dropwizard-metrics.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-jmx</artifactId>
+			<version>${dropwizard-metrics.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-core</artifactId>
+			<version>${dropwizard-metrics.version}</version>
 		</dependency>
 
 		<dependency>

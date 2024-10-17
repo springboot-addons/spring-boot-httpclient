@@ -36,7 +36,7 @@ spring:
         response-timeout: 3000
         error-management.circuit-name: httpbin-org
       '[POST https://httpbin.org/.*]':
-        response-timeout: 5000
+        response-timeout: 10000
         error-management.circuit-name: httpbin-org
       '[.* https://testhost:4443/.*]':
         proxy: https://localhost:3128
