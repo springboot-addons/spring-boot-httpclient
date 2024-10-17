@@ -26,7 +26,7 @@ spring:
       socket-config:
         so-timeout: PT60S
       host-config:
-        '[https://httpbin.agglo-larochelle.fr]': 10 
+        '[https://httpbin.org]': 10 
         '[https://testhost:4443]': 20 
     # See properties from org.apache.hc.client5.http.config.RequestConfig
     request-config:
@@ -45,10 +45,10 @@ spring:
         error-management:
           circuit-name: default
           broken-circuit-action: 503
-      '[GET https://httpbin.agglo-larochelle.fr/.*]':
+      '[GET https://httpbin.org/.*]':
         response-timeout: 3000
         error-management.circuit-name: httpbin-org
-      '[POST https://httpbin.agglo-larochelle.fr/.*]':
+      '[POST https://httpbin.org/.*]':
         response-timeout: 5000
         error-management.circuit-name: httpbin-org
       '[.* https://testhost:4443/.*]':

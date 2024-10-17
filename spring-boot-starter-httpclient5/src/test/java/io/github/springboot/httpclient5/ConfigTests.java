@@ -33,8 +33,8 @@ public class ConfigTests {
 	
 	@Test
 	public void testRequestConfigKeyExpension() throws Exception {
-		Assertions.assertTrue(config.getRequestConfig().containsKey("GET https://httpbin.agglo-larochelle.fr/.*")) ;
-		Assertions.assertTrue(config.getPool().getHostConfig().containsKey("https://httpbin.agglo-larochelle.fr")) ;
+		Assertions.assertTrue(config.getRequestConfig().containsKey("GET " + Constants.HTTPBIN_TEST_HOST + "/.*")) ;
+		Assertions.assertTrue(config.getPool().getHostConfig().containsKey(Constants.HTTPBIN_TEST_HOST + "")) ;
 	}
 	
 	@Test
@@ -50,15 +50,16 @@ public class ConfigTests {
 	public void testConnectionManagerConfig() throws Exception {
 		Assertions.assertEquals(128, cm.getMaxTotal()) ;
 		Assertions.assertEquals(30, cm.getDefaultMaxPerRoute());
-		Assertions.assertEquals(10, cm.getMaxPerRoute(new HttpRoute(new HttpHost("httpbin.agglo-larochelle.fr", 443)))) ;
-		Assertions.assertEquals(30, cm.getMaxPerRoute(new HttpRoute(new HttpHost("httpbin.agglo-larochelle.fr", 443), new HttpHost("https", "localhost", 3128)))) ;
+		String httpbinHostname = Constants.HTTPBIN_TEST_HOST.replace("https://", "") ;
+		Assertions.assertEquals(10, cm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinHostname, 443)))) ;
+		Assertions.assertEquals(30, cm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinHostname, 443), new HttpHost("https", "localhost", 3128)))) ;
 		Assertions.assertEquals(20, cm.getMaxPerRoute(new HttpRoute(new HttpHost("testhost", 4443), new HttpHost("https", "localhost", 3128)))) ;
 	}
 	
 	@Test
 	public void testInterceptorConfig() throws Exception {
 		RequestConfigProperties someHostConfig = config.getRequestConfigProperties("GET", "https://somehost/test");
-		RequestConfigProperties httpBinConfig = config.getRequestConfigProperties("GET", "https://httpbin.agglo-larochelle.fr/test");
+		RequestConfigProperties httpBinConfig = config.getRequestConfigProperties("GET", Constants.HTTPBIN_TEST_HOST + "/test");
 
 		Assertions.assertFalse(someHostConfig.getInterceptors().get("myinter")) ; ;
 		Assertions.assertTrue(someHostConfig.getCustomRequestContext().containsKey("propA")) ; ;

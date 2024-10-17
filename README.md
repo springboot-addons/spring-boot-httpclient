@@ -21,7 +21,7 @@ Httpclient configuration support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5</artifactId>
-		<version>1.0.4</version>
+		<version>1.0.5</version>
 	</dependency>
 
 Httpclient actuator support 
@@ -29,7 +29,7 @@ Httpclient actuator support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
-		<version>1.0.4</version>
+		<version>1.0.5</version>
 	</dependency>
 
 
@@ -38,7 +38,7 @@ Httpclient resilience4j support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-		<version>1.0.4</version>
+		<version>1.0.5</version>
 	</dependency>
 
 
@@ -48,7 +48,7 @@ Httpclient all in one support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-all</artifactId>
-		<version>1.0.4</version>
+		<version>1.0.5</version>
 		<type>pom</type>
 	</dependency>
 
@@ -62,6 +62,7 @@ Minimum recommended configuration :
 	    request-config:
 	      '[default]':
 	        connect-timeout: 1000
+	        connection-request-timeout: 1000
 	        response-timeout: 3000
 
 Full sample configuration : 
@@ -93,6 +94,7 @@ Full sample configuration :
 	      '[default]':
 	        connection-keep-alive: PT30S
 	        connect-timeout: 1000
+	        connection-request-timeout: 1000
 	        response-timeout: 2000
 	        headers-propagation:
 	         enabled: true

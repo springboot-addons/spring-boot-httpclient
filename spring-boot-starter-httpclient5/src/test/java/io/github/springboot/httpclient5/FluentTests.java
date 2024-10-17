@@ -27,7 +27,7 @@ public class FluentTests {
 
 	@Test
 	public void testExecutor() throws Exception {
-		final HttpResponse response = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/headers")).returnResponse();
+		final HttpResponse response = executor.execute(Request.get(Constants.HTTPBIN_TEST_HOST + "/headers")).returnResponse();
 		Assertions.assertEquals(200, response.getCode()) ;
 	}
 	

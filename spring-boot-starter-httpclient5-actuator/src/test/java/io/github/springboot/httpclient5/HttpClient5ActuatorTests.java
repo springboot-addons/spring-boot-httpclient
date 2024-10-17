@@ -28,7 +28,7 @@ import io.github.springboot.httpclient5.actuator.HttpClientEndpoint;
 @ActiveProfiles("test")
 @ComponentScan("io.github.springboot.httpclient5.core")
 public class HttpClient5ActuatorTests {
-	private static final String HTTPBIN_HOST = "https://httpbin.agglo-larochelle.fr";
+	private static final String HTTPBIN_HOST = "https://httpbin.org";
 	
 	@Autowired
 	ApplicationContext context;

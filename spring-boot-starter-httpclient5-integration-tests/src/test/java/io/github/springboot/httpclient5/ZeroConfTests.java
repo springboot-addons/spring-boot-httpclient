@@ -30,14 +30,14 @@ public class ZeroConfTests {
 
 	@Test
 	public void testHttpsClient() throws Exception {
-		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
+		final HttpGet httpGet = new HttpGet(Constants.HTTPBIN_TEST_HOST + "/headers");
 		final CloseableHttpResponse response = httpClient.execute(httpGet);
 		EntityUtils.toString(response.getEntity());
 	}
 
 	@Test
 	public void testExecutor() throws Exception {
-		final String content = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
+		final String content = executor.execute(Request.get(Constants.HTTPBIN_TEST_HOST + "/headers")).returnContent().asString();
 		Assertions.assertTrue(content.contains("User-Agent"));
 	}
 }

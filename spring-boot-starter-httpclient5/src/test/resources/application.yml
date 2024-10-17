@@ -1,4 +1,4 @@
-app.httpbin-host : httpbin.agglo-larochelle.fr
+app.httpbin-host : httpbin.org
 
 logging:
   level:
@@ -30,8 +30,9 @@ spring:
     request-config:
       '[default]':
         connection-keep-alive: PT30S
-        connect-timeout: 1000
-        response-timeout: 2000
+        connect-timeout: PT1S
+        connection-request-timeout: PT1S 
+        response-timeout: PT2S
         retry-config: 
           max-retries: 2
           retry-interval: PT3S

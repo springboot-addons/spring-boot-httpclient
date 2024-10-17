@@ -46,7 +46,7 @@ public class HttpClient5Resilience4jTests {
     @Order(4)
 	public void testRateLimiter() throws Exception {
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
+		final HttpGet httpGet = new HttpGet(Constants.HTTPBIN_TEST_HOST + "/headers");
 		long begin = System.currentTimeMillis() ;
 		for (int i = 0; i < 12; i++) {
 			final CloseableHttpResponse response = httpClient.execute(httpGet);
@@ -64,7 +64,7 @@ public class HttpClient5Resilience4jTests {
     @Order(1)
 	public void testHttpClientPostSoTimeout() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpPost httpPost = new HttpPost("https://httpbin.agglo-larochelle.fr/delay/4");
+		final HttpPost httpPost = new HttpPost(Constants.HTTPBIN_TEST_HOST + "/delay/4");
 		try {
 			httpClient.execute(httpPost);
 		} catch (final Exception e) {
@@ -78,7 +78,7 @@ public class HttpClient5Resilience4jTests {
     @Order(2)
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final String content = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
+		final String content = executor.execute(Request.get(Constants.HTTPBIN_TEST_HOST + "/headers")).returnContent().asString();
 		Assertions.assertTrue(content.contains("User-Agent"));
 		circuitBreakerRegistry.find("httpbin-org").get().reset();
 	}
@@ -115,7 +115,7 @@ public class HttpClient5Resilience4jTests {
     @Order(3)
 	public void testCircuitBreakerHttp503() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/status/503");
+		final HttpGet httpGet = new HttpGet(Constants.HTTPBIN_TEST_HOST + "/status/503");
 		for (int i = 0; i < 3; i++) {
 			final HttpResponse response = httpClient.execute(httpGet);
 			Assertions.assertTrue(response.getCode() == 503);

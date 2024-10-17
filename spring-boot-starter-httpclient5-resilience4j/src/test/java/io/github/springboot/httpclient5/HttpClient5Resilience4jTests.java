@@ -31,6 +31,8 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 @ActiveProfiles("test")
 @ComponentScan("io.github.springboot.httpclient5.core")
 public class HttpClient5Resilience4jTests {
+	private static final String HTTPBIN_HOST = "https://httpbin.org";
+
 
 	@Autowired
 	ApplicationContext context;
@@ -41,7 +43,7 @@ public class HttpClient5Resilience4jTests {
 	@Test
 	public void testRateLimiter() throws Exception {
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
+		final HttpGet httpGet = new HttpGet(HTTPBIN_HOST+ "/headers");
 		long begin = System.currentTimeMillis() ;
 		for (int i = 0; i < 12; i++) {
 			final CloseableHttpResponse response = httpClient.execute(httpGet);
@@ -58,7 +60,7 @@ public class HttpClient5Resilience4jTests {
 	@Test
 	public void testHttpClientPostSoTimeout() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpPost httpPost = new HttpPost("https://httpbin.agglo-larochelle.fr/delay/4");
+		final HttpPost httpPost = new HttpPost(HTTPBIN_HOST+ "/delay/4");
 		try {
 			httpClient.execute(httpPost);
 		} catch (final Exception e) {
@@ -71,7 +73,7 @@ public class HttpClient5Resilience4jTests {
 	@Test
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final String content = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
+		final String content = executor.execute(Request.get(HTTPBIN_HOST+ "/headers")).returnContent().asString();
 		Assertions.assertTrue(content.contains("User-Agent"));
 		circuitBreakerRegistry.find("httpbin-org").get().reset();
 	}
@@ -106,7 +108,7 @@ public class HttpClient5Resilience4jTests {
 	@Test
 	public void testCircuitBreakerHttp503() throws Exception {
 		final HttpClient httpClient = context.getBean(HttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/status/503");
+		final HttpGet httpGet = new HttpGet(HTTPBIN_HOST+ "/status/503");
 		for (int i = 0; i < 3; i++) {
 			final HttpResponse response = httpClient.execute(httpGet);
 			Assertions.assertTrue(response.getCode() == 503);

@@ -22,7 +22,9 @@ import io.github.springboot.httpclient5.core.config.model.HeadersPropagationProp
 @ActiveProfiles("test")
 @ComponentScan("io.github.springboot.httpclient5.core")
 public class WebTests {
+	private static final String HTTPBIN_HOST = "https://httpbin.org";
 
+	
 	@Autowired
 	Executor executor;
 
@@ -31,7 +33,7 @@ public class WebTests {
 
 	@Test
 	public void testConfig() throws Exception {
-		HeadersPropagationProperties headersPropagationProperties = config.getRequestConfigProperties("GET", "https://httpbin.agglo-larochelle.fr/headers").getHeadersPropagation() ;
+		HeadersPropagationProperties headersPropagationProperties = config.getRequestConfigProperties("GET", HTTPBIN_HOST+ "/headers").getHeadersPropagation() ;
 		Assertions.assertNotNull(headersPropagationProperties) ;
 		Assertions.assertTrue(headersPropagationProperties.getEnabled()) ;		
 		Assertions.assertEquals("X-TEST-.*", headersPropagationProperties.getUp().get(0)) ;
@@ -39,7 +41,7 @@ public class WebTests {
 	
 	@Test
 	public void testExecutor() throws Exception {
-		final String content = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
+		final String content = executor.execute(Request.get(HTTPBIN_HOST+ "/headers")).returnContent().asString();
 		Assertions.assertTrue(content.contains("SRU ADDED HEADER"));
 	}
 

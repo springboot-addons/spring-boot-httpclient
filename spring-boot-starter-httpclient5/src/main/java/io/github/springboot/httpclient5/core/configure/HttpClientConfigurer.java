@@ -16,11 +16,15 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
 
 @Configuration
 public class HttpClientConfigurer {
+
+	@Autowired(required = false)
+	private ObjectProvider<HttpClientBuilder> httpClientBuilderProvider;
 
 	@Autowired(required = false)
 	private ObjectProvider<CookieStore> cookieStoreProvider;
@@ -31,7 +35,6 @@ public class HttpClientConfigurer {
 	@Autowired
 	private ObjectProvider<ExecChainHandler> execChainHandlerProvider;
 
-	
 	@Autowired
 	private ObjectProvider<HttpResponseInterceptor> responseInterceptors;
 
@@ -58,7 +61,8 @@ public class HttpClientConfigurer {
 	
 	@Bean
 	public CloseableHttpClient closeableHttpClient(PoolingHttpClientConnectionManager cm) {
-		HttpClientBuilder builder = HttpClientBuilder.create() ;
+		HttpClientBuilder builder = httpClientBuilderProvider.getIfAvailable(HttpClientBuilder::create) ;
+		
 		builder.setUserAgent(config.getUserAgent()) ;
 		builder.setConnectionManager(cm) ;
 	    requestInterceptors.orderedStream().forEach(builder::addRequestInterceptorLast);

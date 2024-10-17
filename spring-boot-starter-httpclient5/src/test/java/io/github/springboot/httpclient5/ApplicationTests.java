@@ -35,7 +35,7 @@ public class ApplicationTests {
 	@Test
 	public void testHttpsClient() throws Exception {
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
+		final HttpGet httpGet = new HttpGet(Constants.HTTPBIN_TEST_HOST + "/headers");
 		final CloseableHttpResponse response = httpClient.execute(httpGet);
 		EntityUtils.toString(response.getEntity());
 	}
@@ -43,7 +43,7 @@ public class ApplicationTests {
 	@Test
 	public void testHttpClientSoTimeout() throws Exception {
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://httpbin.agglo-larochelle.fr/delay/4");
+		final HttpGet httpGet = new HttpGet(Constants.HTTPBIN_TEST_HOST + "/delay/4");
 		try {
 			httpClient.execute(httpGet);
 			fail("Timeout should have occured");
@@ -54,7 +54,7 @@ public class ApplicationTests {
 	@Test
 	public void testHttpClientPostSoTimeout() throws Exception {
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
-		final HttpPost httpPost = new HttpPost("https://httpbin.agglo-larochelle.fr/delay/4");
+		final HttpPost httpPost = new HttpPost(Constants.HTTPBIN_TEST_HOST + "/delay/4");
 		try {
 			httpClient.execute(httpPost);
 		} catch (final Exception e) {
@@ -65,41 +65,41 @@ public class ApplicationTests {
 	@Test
 	public void testHttpClientBasicAuth() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final String content = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/basic-auth/admin/pwd")).returnContent().asString();
+		final String content = executor.execute(Request.get(Constants.HTTPBIN_TEST_HOST + "/basic-auth/admin/pwd")).returnContent().asString();
 		assertTrue(content.contains("authenticated"));
 	}
 	
 	@Test
 	public void testHttpClientPreemptiveBasicAuth() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final String content = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/hidden-basic-auth/admin/pwd")).returnContent().asString();
+		final String content = executor.execute(Request.get(Constants.HTTPBIN_TEST_HOST + "/hidden-basic-auth/admin/pwd")).returnContent().asString();
 		assertTrue(content.contains("authenticated"));
 	}
 	
 	@Test
 	public void testExecutor() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final String content = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/headers")).returnContent().asString();
+		final String content = executor.execute(Request.get(Constants.HTTPBIN_TEST_HOST + "/headers")).returnContent().asString();
 		assertTrue(content.contains("User-Agent"));
 	}
 	
 	@Test
 	public void testRetry() throws Exception {
 		final Executor executor = context.getBean(Executor.class);
-		final int code = executor.execute(Request.get("https://httpbin.agglo-larochelle.fr/status/503")).returnResponse().getCode();
+		final int code = executor.execute(Request.get(Constants.HTTPBIN_TEST_HOST + "/status/503")).returnResponse().getCode();
 		assertEquals(503, code);
 	}
 	
 	@Test
 	public void testInterceptorActivation() throws Exception {
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
-		final HttpPost req = new HttpPost("https://httpbin.agglo-larochelle.fr/headers");
+		final HttpPost req = new HttpPost(Constants.HTTPBIN_TEST_HOST + "/headers");
 		CloseableHttpResponse response = httpClient.execute(req);
 		EntityUtils.toString(response.getEntity());
 		
 		Assertions.assertFalse(TestInterceptor.wasActivated);
 
-		final HttpGet req2 = new HttpGet("https://httpbin.agglo-larochelle.fr/headers");
+		final HttpGet req2 = new HttpGet(Constants.HTTPBIN_TEST_HOST + "/headers");
 		response = httpClient.execute(req2);
 		EntityUtils.toString(response.getEntity());
 		

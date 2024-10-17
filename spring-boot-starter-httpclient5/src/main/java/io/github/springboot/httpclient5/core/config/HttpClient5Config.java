@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
+import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -59,6 +61,8 @@ public class HttpClient5Config {
 	
 	private String userAgent ;
 	
+	private boolean autoconfig = true; 
+	
 	@Autowired
 	ConfigurableEnvironment env;
 	
@@ -78,6 +82,17 @@ public class HttpClient5Config {
 		Map<String, Integer> ehc = new HashMap<String, Integer>();
 		pool.getHostConfig().forEach((k, v) -> ehc.put(env.resolvePlaceholders(k), v));
 		pool.setHostConfig(ehc) ;
+		
+		if (autoconfig && requestConfig.isEmpty()) {
+			RequestConfigProperties defaultRequestConfig = new RequestConfigProperties();
+			defaultRequestConfig.setResponseTimeout(Timeout.ofSeconds(30)) ;
+			defaultRequestConfig.setConnectionRequestTimeout(Timeout.ofSeconds(3)) ;
+			defaultRequestConfig.setConnectTimeout(Timeout.ofSeconds(3)) ;
+			requestConfig.put(HttpClient5Config.DEFAULT_HOST_KEY, defaultRequestConfig) ;
+			
+			pool.setMaxConnPerRoute(50) ;
+			pool.setPoolConcurrencyPolicy(PoolConcurrencyPolicy.LAX) ;
+		}
 	}
 	
 	@SneakyThrows
