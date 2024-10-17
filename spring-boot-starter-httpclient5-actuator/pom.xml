@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-parent</artifactId>
-		<version>1.0.5-SNAPSHOT</version>
+		<version>1.0.5</version>
 	</parent>
 	
     <artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
