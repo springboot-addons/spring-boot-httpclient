@@ -1,3 +1,4 @@
 io.github.springboot.httpclient.web.async.autoconfigure.AsyncExecutorConfig
 io.github.springboot.httpclient.web.headers.autoconfigure.HeadersConfiguration
 io.github.springboot.httpclient.web.headers.RequestHeadersProviders
+io.github.springboot.httpclient.web.rest.autoconfigure.HttpClient5RestTemplateConfig
