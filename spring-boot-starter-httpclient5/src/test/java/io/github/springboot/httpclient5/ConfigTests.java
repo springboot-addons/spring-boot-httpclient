@@ -1,5 +1,7 @@
 package io.github.springboot.httpclient5;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hc.client5.http.HttpRoute;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.HttpHost;
@@ -34,7 +36,7 @@ public class ConfigTests {
 	@Test
 	public void testRequestConfigKeyExpension() throws Exception {
 		Assertions.assertTrue(config.getRequestConfig().containsKey("GET " + Constants.HTTPBIN_TEST_HOST + "/.*")) ;
-		Assertions.assertTrue(config.getPool().getHostConfig().containsKey(Constants.HTTPBIN_TEST_HOST + "")) ;
+		Assertions.assertTrue(config.getPool().getHostConfig().containsKey(Constants.HTTPBIN_TEST_HOST + ":443")) ;
 	}
 	
 	@Test
@@ -50,6 +52,9 @@ public class ConfigTests {
 	public void testConnectionManagerConfig() throws Exception {
 		Assertions.assertEquals(128, cm.getMaxTotal()) ;
 		Assertions.assertEquals(30, cm.getDefaultMaxPerRoute());
+		Assertions.assertEquals(500, config.getPool().getDefaultConnectionConfig().getConnectTimeout().convert(TimeUnit.MILLISECONDS));
+		
+		
 		String httpbinHostname = Constants.HTTPBIN_TEST_HOST.replace("https://", "") ;
 		Assertions.assertEquals(10, cm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinHostname, 443)))) ;
 		Assertions.assertEquals(30, cm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinHostname, 443), new HttpHost("https", "localhost", 3128)))) ;

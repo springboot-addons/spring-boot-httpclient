@@ -36,7 +36,8 @@ public class HttpClientConnectionManagerConfigurer {
 		httpConnectionFactory.ifAvailable(pool::setConnectionFactory);
 		sslSocketFactoryProvider.ifAvailable(pool::setSSLSocketFactory);
 		schemePortResolverProvider.ifAvailable(pool::setSchemePortResolver);
-		pool.setDefaultSocketConfig(pool.getSocketConfig().build()) ;
+		pool.setDefaultSocketConfig(pool.getDefaultSocketConfig().build()) ;
+		pool.setDefaultConnectionConfig(pool.getDefaultConnectionConfig().build()) ;
 		log.debug("Connection Manager is {}", pool);
 		
 		PoolingHttpClientConnectionManager connectionManager = pool.build();

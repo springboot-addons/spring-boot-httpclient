@@ -57,5 +57,4 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 			log.warn("Unable to configure httpclient request, no uri available : using defaut configuration", e);
 		}
 	}
-	
 }

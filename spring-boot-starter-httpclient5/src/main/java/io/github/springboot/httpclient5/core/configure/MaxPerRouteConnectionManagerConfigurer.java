@@ -4,11 +4,14 @@ import java.net.URI;
 
 import org.apache.hc.client5.http.HttpRoute;
 import org.apache.hc.client5.http.SchemePortResolver;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.util.Timeout;
 import org.springframework.stereotype.Component;
 
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
+import io.github.springboot.httpclient5.core.config.model.ConnectionConfigProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -30,14 +33,33 @@ public class MaxPerRouteConnectionManagerConfigurer implements PoolingHttpClient
 			HttpHost proxy = config.getRequestConfig("GET", url).getProxy() ;
 			final HttpRoute httpRoute = getHttpRoute(url, proxy);
 			
-			Integer maxActive = e.getValue() ;
-			if (maxActive != null) {
-				log.info("Configuring maxPerRoute for {} via {} to {}", url, proxy, maxActive) ;
-				cm.setMaxPerRoute(httpRoute, maxActive);
+			ConnectionConfigProperties connProperties = e.getValue() ;
+			
+			Integer maxConnections = connProperties.getMaxConnections() ;
+			if (maxConnections != null) {
+				log.info("Configuring maxPerRoute for {} via {} to {}", url, proxy,maxConnections) ;
+				cm.setMaxPerRoute(httpRoute, maxConnections);
 			}
+			
+			cm.setConnectionConfigResolver(this::getConnectionConfig) ;
 		});
 	}
 	
+	protected ConnectionConfig getConnectionConfig(HttpRoute route) {
+		String routeUri = route.getTargetHost().toURI() ;
+		ConnectionConfigProperties connectionConfigProperties = config.getPool().getHostConfig().get(routeUri) ;
+		if (connectionConfigProperties == null) {
+			return null ;
+		}
+		
+		if (connectionConfigProperties.getConnectTimeout().equals(Timeout.ofMinutes(3))) {
+			connectionConfigProperties.setConnectTimeout(config.getPool().getDefaultConnectionConfig().getConnectTimeout()) ;
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Using connectionConfig for {} => {}", routeUri, connectionConfigProperties) ;
+		}	
+		return connectionConfigProperties.build() ;
+	}
 	
 	@SneakyThrows
 	protected HttpRoute getHttpRoute(final String uri, HttpHost proxy) {

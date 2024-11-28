@@ -1,11 +1,13 @@
-logging:
-  level:
-    io.github.springboot.httpclient5: INFO
+app.httpbin-host : httpbin.org
 
 server:
   port: 8282
   servlet:
     context-path: /httpclient
+
+logging:
+  level:
+    io.github.springboot.httpclient5.core: DEBUG
 
 spring:
   application:
@@ -22,17 +24,23 @@ spring:
       conn-pool-policy: LIFO
       connection-time-to-live: PT120S
       pool-concurrency-policy: STRICT
+      default-connection-config:
+        connect-timeout: PT1S
+        socket-timeout: PT30S
       # see properties from org.apache.hc.core5.http.io.SocketConfig
-      socket-config:
+      default-socket-config:
         so-timeout: PT60S
       host-config:
-        '[https://httpbin.org]': 10 
-        '[https://testhost:4443]': 20 
+        '[https://${app.httpbin-host}]':
+          connect-timeout: PT1S
+          max-connections: 10 
+        '[https://testhost:4443]':
+          connect-timeout: PT2S
+          max-connections: 20 
     # See properties from org.apache.hc.client5.http.config.RequestConfig
     request-config:
       '[default]':
         connection-keep-alive: PT30S
-        connect-timeout: 1000
         response-timeout: 2000
         headers-propagation:
           enabled: true
@@ -55,8 +63,6 @@ spring:
         proxy: https://localhost:3128
       '[.* https://testhost/.*]':
         response-timeout: 1000
-      '[POST https://testhost/.*]':
-        connect-timeout: 2000
       '[POST https://testhost/subpath/.*]':
         response-timeout: 3000
 

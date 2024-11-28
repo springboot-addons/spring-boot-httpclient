@@ -92,6 +92,8 @@ public class ApplicationTests {
 	
 	@Test
 	public void testInterceptorActivation() throws Exception {
+		TestInterceptor.wasActivated = false ;
+		
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
 		final HttpPost req = new HttpPost(Constants.HTTPBIN_TEST_HOST + "/headers");
 		CloseableHttpResponse response = httpClient.execute(req);

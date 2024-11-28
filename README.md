@@ -3,6 +3,7 @@ Spring Boot AutoConfiguration starters for Apache HttpClient 5.x
 
 * Requires SpringBoot 3.0.x or higher and Java 17 +
 * Tested with SpringBoot 3.1.x and SpringBoot 3.2.x
+* Spring Boot 3.3 / spring-boot-httpclient 1.0.6 need HttpClient5 5.3.x +
 
 ***Documentation In progress***
 
@@ -21,7 +22,7 @@ Httpclient configuration support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.6</version>
 	</dependency>
 
 Httpclient actuator support 
@@ -29,7 +30,7 @@ Httpclient actuator support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.6</version>
 	</dependency>
 
 
@@ -38,7 +39,7 @@ Httpclient resilience4j support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.6</version>
 	</dependency>
 
 
@@ -48,22 +49,23 @@ Httpclient all in one support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-all</artifactId>
-		<version>1.0.5</version>
+		<version>1.0.6</version>
 		<type>pom</type>
 	</dependency>
 
-Minimum recommended configuration : 
+Minimum recommended configuration : (or no configuration => it will use this defaults)
 
 	spring:
 	  httpclient5:
 	    pool:
 	      max-connper-route: 50
 	      pool-concurrency-policy: LAX
+	      default-connection-config:
+	        connect-timeout: PT3S
 	    request-config:
 	      '[default]':
-	        connect-timeout: 1000
-	        connection-request-timeout: 1000
-	        response-timeout: 3000
+	        connection-request-timeout: PT3S
+	        response-timeout: PT30S
 
 Full sample configuration : 
 
@@ -84,16 +86,25 @@ Full sample configuration :
 	      connection-time-to-live: PT120S
 	      pool-concurrency-policy: STRICT
 	      # see properties from org.apache.hc.core5.http.io.SocketConfig
-	      socket-config:
+	      default-socket-config:
 	        so-timeout: PT60S
+	      # see properties from org.apache.hc.client5.http.config.ConnectionConfig
+	      default-connection-config:
+	        connect-timeout: PT1S
+	        socket-timeout: PT30S
 	      host-config:
-	        '[https://httpbin.agglo-larochelle.fr]': 10 
-	        '[https://testhost:4443]': 20 
+	        '[https://${app.httpbin-host}]':
+		       # see properties from org.apache.hc.client5.http.config.ConnectionConfig + max-connections
+	          connect-timeout: PT1S
+	          max-connections: 10 
+	        '[https://testhost:4443]':
+	          connect-timeout: PT2S
+	          max-connections: 20 
 	    # See properties from org.apache.hc.client5.http.config.RequestConfig + addons headers-propagation, error-management
+	    # WARNING connection-timeout deprecated and no more working on 5.2.x+, use host-config or default-connection-config
 	    request-config:
 	      '[default]':
 	        connection-keep-alive: PT30S
-	        connect-timeout: 1000
 	        connection-request-timeout: 1000
 	        response-timeout: 2000
 	        headers-propagation:
@@ -129,8 +140,6 @@ Full sample configuration :
 	        proxy: https://localhost:3128
 	      '[.* https://testhost/.*]':
 	        response-timeout: 1000
-	      '[POST https://testhost/.*]':
-	        connect-timeout: 2000
 	      '[POST https://testhost/subpath/.*]':
 	        response-timeout: 3000
 
