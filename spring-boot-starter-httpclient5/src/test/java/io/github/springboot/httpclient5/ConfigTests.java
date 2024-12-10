@@ -3,12 +3,14 @@ package io.github.springboot.httpclient5;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hc.client5.http.HttpRoute;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.util.Timeout;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.ActiveProfiles;
@@ -32,6 +34,9 @@ public class ConfigTests {
 
 	@Autowired
 	PoolingHttpClientConnectionManager cm;
+	
+	@Value("${spring.httpclient5.request-config.default.connection-request-timeout}")
+	Timeout defaultConnectionRequestTimeout  ;
 	
 	@Test
 	public void testRequestConfigKeyExpension() throws Exception {
@@ -74,5 +79,16 @@ public class ConfigTests {
 		Assertions.assertEquals("surcharge", httpBinConfig.getCustomRequestContext().get("propA")) ; ;
 	}
 
-	
+
+	@Test
+	public void testRequestConfigBinding() throws Exception {
+		RequestConfig requestConfig = config.getRequestConfig("GET", Constants.HTTPBIN_TEST_HOST + "/test");
+
+		Timeout connectionRequestTimeout = requestConfig.getConnectionRequestTimeout() ;
+		Assertions.assertEquals(defaultConnectionRequestTimeout, connectionRequestTimeout) ;
+		Assertions.assertEquals(1000, connectionRequestTimeout.toMilliseconds()) ;
+
+		Timeout reqponseTimeout = requestConfig.getResponseTimeout() ;
+		Assertions.assertEquals(Timeout.ofSeconds(3), reqponseTimeout) ;
+	}
 }
