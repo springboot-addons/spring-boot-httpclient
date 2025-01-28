@@ -61,9 +61,9 @@ public class ConfigTests {
 		
 		
 		String httpbinHostname = Constants.HTTPBIN_TEST_HOST.replace("https://", "") ;
-		Assertions.assertEquals(10, cm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinHostname, 443)))) ;
-		Assertions.assertEquals(30, cm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinHostname, 443), new HttpHost("https", "localhost", 3128)))) ;
-		Assertions.assertEquals(20, cm.getMaxPerRoute(new HttpRoute(new HttpHost("testhost", 4443), new HttpHost("https", "localhost", 3128)))) ;
+		Assertions.assertEquals(10, cm.getMaxPerRoute(new HttpRoute(new HttpHost("https", httpbinHostname, 443), null, true))) ;
+		Assertions.assertEquals(30, cm.getMaxPerRoute(new HttpRoute(new HttpHost("https", httpbinHostname, 443), null, new HttpHost("https", "localhost", 3128), true))) ;
+		Assertions.assertEquals(20, cm.getMaxPerRoute(new HttpRoute(new HttpHost("https", "testhost", 4443), null, new HttpHost("https", "localhost", 3128), true))) ;
 	}
 	
 	@Test
