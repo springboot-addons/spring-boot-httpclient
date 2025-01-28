@@ -1,20 +1,26 @@
 package io.github.springboot.httpclient5.resilience4j;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.async.AsyncExecCallback;
+import org.apache.hc.client5.http.async.AsyncExecChain;
+import org.apache.hc.client5.http.async.AsyncExecChainHandler;
 import org.apache.hc.client5.http.classic.ExecChain;
 import org.apache.hc.client5.http.classic.ExecChain.Scope;
 import org.apache.hc.client5.http.classic.ExecChainHandler;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
+import org.apache.hc.core5.http.nio.AsyncEntityProducer;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -22,9 +28,9 @@ import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.Retry.Context;
+import io.github.resilience4j.retry.RetryConfig;
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
 import io.github.springboot.httpclient5.core.config.model.RequestConfigProperties;
-import io.github.resilience4j.retry.RetryConfig;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
  * ResilienceExecChainHandler
  */
 @Slf4j
-public class ResilienceExecChainHandler implements ExecChainHandler {
+public class ResilienceExecChainHandler implements ExecChainHandler, AsyncExecChainHandler {
 
 	private final CircuitBreakerRegistry cbRegistry;
 	private final RateLimiterRegistry rlregstry;
@@ -101,8 +107,48 @@ public class ResilienceExecChainHandler implements ExecChainHandler {
 		} else {
 			return brokenCircuitResponse(circuitBreaker, requestConfigProperties.getErrorManagement().getBrokenCircuitAction());
 		}
-
 	}
+	
+	@Override
+	public void execute(HttpRequest request, AsyncEntityProducer entityProducer,
+			org.apache.hc.client5.http.async.AsyncExecChain.Scope scope, AsyncExecChain chain,
+			AsyncExecCallback asyncExecCallback) throws HttpException, IOException {
+		
+		String method = request.getMethod();
+		String requestUri;
+		try {
+			requestUri = request.getUri().toString();
+		} catch (URISyntaxException e) {
+			throw new IOException(e) ;
+		}
+		RequestConfigProperties requestConfigProperties = config.getRequestConfigProperties(method, requestUri);
+		String circuitName = requestConfigProperties.getErrorManagement().getCircuitName() ;
+
+		final CircuitBreaker circuitBreaker = cbRegistry.circuitBreaker(circuitName);
+		if (log.isTraceEnabled()) {
+			log.trace("Before circuit breakers {} state {}, metrics {}", circuitBreaker.getName(), circuitBreaker.getState(), ToStringBuilder.reflectionToString(circuitBreaker.getMetrics())) ;
+		}
+
+		if (circuitBreaker.tryAcquirePermission()) {
+			final long start = System.nanoTime();
+			final Retry retry = Retry.of(circuitName, getRetryConfig(requestConfigProperties));
+			final Context<HttpResponse> retryContext = retry.context();
+
+			while (true) {
+				if (circuitName != HttpClientResilience4jAutoConfiguration.DEFAULT_CIRCUIT) {
+					final RateLimiter rateLimiter = rlregstry.rateLimiter(circuitName);
+					RateLimiter.waitForPermission(rateLimiter);
+				}
+		        final Resilience4JAsyncExecCallback instrumentedAsyncExecCallback =
+		                new Resilience4JAsyncExecCallback(circuitBreaker, retryContext, start, asyncExecCallback, request);
+		        chain.proceed(request, entityProducer, scope, instrumentedAsyncExecCallback);
+
+			}
+		} else {
+			throw new HttpException("broken circuit for " + requestUri);
+		}
+	}
+	
 
 	private RetryConfig getRetryConfig(RequestConfigProperties requestConfigProperties) {
 		final Integer maxAttempts = requestConfigProperties.getErrorManagement().getMaxAttempts();
