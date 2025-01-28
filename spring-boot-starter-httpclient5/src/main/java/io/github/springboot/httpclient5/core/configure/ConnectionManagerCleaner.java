@@ -5,7 +5,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.springframework.stereotype.Component;
 
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
@@ -21,7 +20,7 @@ public class ConnectionManagerCleaner implements PoolingHttpClientConnectionMana
 
 	private final HttpClient5Config config ;
 	
-	private PoolingHttpClientConnectionManager cm; 
+	private ConfigurableConnPoolControl cm; 
 	private ScheduledFuture<?> cleanerTask;
 	
 	private ScheduledExecutorService executor ;
@@ -38,7 +37,7 @@ public class ConnectionManagerCleaner implements PoolingHttpClientConnectionMana
 	}
 	
 	@Override
-	public void configure(PoolingHttpClientConnectionManager cm) {
+	public void configure(ConfigurableConnPoolControl cm) {
 		this.cm = cm;
 		long delay = config.getPool().getConnectionIdleTimeout().convert(TimeUnit.MILLISECONDS) / 10 ;
 		cleanerTask = executor.scheduleWithFixedDelay(this::clean, delay, delay, TimeUnit.MILLISECONDS) ;

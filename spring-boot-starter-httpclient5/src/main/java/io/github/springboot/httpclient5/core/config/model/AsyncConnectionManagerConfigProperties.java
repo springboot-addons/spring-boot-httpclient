@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.core5.util.TimeValue;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -13,17 +13,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
 
-public class ConnectionManagerConfigProperties implements DefaultConfigConfigurer{
+public class AsyncConnectionManagerConfigProperties implements DefaultConfigConfigurer {
 	private static final int DEFAULT_CLOSE_IDLE_CONNECTION_WAIT_TIME_SECS = 30;
 
 	@Delegate
-	private PoolingHttpClientConnectionManagerBuilder builder = PoolingHttpClientConnectionManagerBuilder.create();
+	private PoolingAsyncClientConnectionManagerBuilder builder = PoolingAsyncClientConnectionManagerBuilder.create();
 	
-	@Setter
-	@Getter
-	@NestedConfigurationProperty
-	private SocketConfigProperties defaultSocketConfig;
-
 	@Setter
 	@Getter
 	@NestedConfigurationProperty
@@ -38,7 +33,7 @@ public class ConnectionManagerConfigProperties implements DefaultConfigConfigure
 	@Getter
 	private TimeValue connectionIdleTimeout = TimeValue.ofSeconds(DEFAULT_CLOSE_IDLE_CONNECTION_WAIT_TIME_SECS) ;
 	
-	public PoolingHttpClientConnectionManagerBuilder get() {
+	public PoolingAsyncClientConnectionManagerBuilder get() {
 		return builder;
 	}
 	

@@ -155,6 +155,7 @@ public class ConfigurableHttpRequestRetryStrategy implements HttpRequestRetryStr
         Object val = context.getAttribute(MAX_RETRIES);
         Integer maxRetries ;
         HttpRequest request = (HttpRequest) context.getAttribute(HttpClientContext.HTTP_REQUEST) ;
+//        HttpRequest request = (HttpRequest) HttpClientContext.castOrCreate(context).getRequest() ;
         if (val != null) {
         	maxRetries = (Integer) val;
         }

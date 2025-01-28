@@ -5,7 +5,6 @@ import java.net.URI;
 import org.apache.hc.client5.http.HttpRoute;
 import org.apache.hc.client5.http.SchemePortResolver;
 import org.apache.hc.client5.http.config.ConnectionConfig;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.util.Timeout;
 import org.springframework.stereotype.Component;
@@ -24,7 +23,7 @@ public class MaxPerRouteConnectionManagerConfigurer implements PoolingHttpClient
 	private final SchemePortResolver schemePortResolver; 
 	
 	@Override
-	public void configure(PoolingHttpClientConnectionManager cm) {
+	public void configure(ConfigurableConnPoolControl cm) {
 		config.getPool().getHostConfig().entrySet().stream().forEach(e -> {
 			String url = e.getKey() ;
 			if (!url.endsWith("/")) {

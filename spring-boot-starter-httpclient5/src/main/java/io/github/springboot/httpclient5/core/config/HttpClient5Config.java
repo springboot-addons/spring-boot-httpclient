@@ -21,11 +21,14 @@ import org.springframework.util.ConcurrentLruCache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.springboot.httpclient5.core.config.model.AsyncConnectionManagerConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.CharCodingConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.ConnectionConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.ConnectionManagerConfigProperties;
+import io.github.springboot.httpclient5.core.config.model.DefaultConfigConfigurer;
 import io.github.springboot.httpclient5.core.config.model.Http1ConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.RequestConfigProperties;
+import io.github.springboot.httpclient5.core.config.model.SocketConfigProperties;
 import io.github.springboot.httpclient5.core.utils.PatternUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.AccessLevel;
@@ -56,6 +59,9 @@ public class HttpClient5Config {
 	
 	@NestedConfigurationProperty
 	private ConnectionManagerConfigProperties pool = new ConnectionManagerConfigProperties() ;
+
+	@NestedConfigurationProperty
+	private AsyncConnectionManagerConfigProperties asyncPool = new AsyncConnectionManagerConfigProperties() ;
 	
 	@NestedConfigurationProperty
 	private Http1ConfigProperties http1 = new Http1ConfigProperties();
@@ -100,7 +106,15 @@ public class HttpClient5Config {
 		pool.setHostConfig(ehc) ;
 		
 		if (autoconfig) {
+			if (requestConfig.isEmpty()) {
+				RequestConfigProperties defaultRequestConfig = new RequestConfigProperties();
+				defaultRequestConfig.setResponseTimeout(DEFAULT_RESPONSE_TIMEOUT) ;
+				defaultRequestConfig.setConnectionRequestTimeout(DEFAULT_CONNECTION_REQUEST_TIMEOUT) ;
+				requestConfig.put(HttpClient5Config.DEFAULT_HOST_KEY, defaultRequestConfig) ;
+			}
+
 			managedDefaultsOnZeroConf(pool);
+			managedDefaultsOnZeroConf(asyncPool);
 		}
 	}
 
@@ -121,33 +135,30 @@ public class HttpClient5Config {
 		}
 	}
 
-	private void managedDefaultsOnZeroConf(ConnectionManagerConfigProperties cpool) {
-		if (requestConfig.isEmpty()) {
-			RequestConfigProperties defaultRequestConfig = new RequestConfigProperties();
-			defaultRequestConfig.setResponseTimeout(DEFAULT_RESPONSE_TIMEOUT) ;
-			defaultRequestConfig.setConnectionRequestTimeout(DEFAULT_CONNECTION_REQUEST_TIMEOUT) ;
-			
-			requestConfig.put(HttpClient5Config.DEFAULT_HOST_KEY, defaultRequestConfig) ;
-		}
-		
-		if (pool.getHostConfig().isEmpty()) {
+	private void managedDefaultsOnZeroConf(DefaultConfigConfigurer cpool) {
+		if (!hasMaxConnPerRouteConfigured()) {
 			cpool.setMaxConnPerRoute(DEFAULT_MAX_CONNEXION_PER_HOST) ;
 			cpool.setPoolConcurrencyPolicy(PoolConcurrencyPolicy.LAX) ;
-	
-			ConnectionConfig connectionConfig = ConnectionConfig.custom()
-					.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT)
-					.setSocketTimeout(DEFAULT_SOCKET_TIMEOUT)
-					.setTimeToLive(TimeValue.ofSeconds(120))  		   // Usual 
-					.setValidateAfterInactivity(Timeout.ofSeconds(20)) // Usual tomcat connection timeout
-					.build();
-			cpool.setDefaultConnectionConfig(connectionConfig) ;
-
-			SocketConfig socketConfig = SocketConfig.custom()
-					.setSoTimeout(DEFAULT_SOCKET_TIMEOUT)
-					.build();
-			cpool.setDefaultSocketConfig(socketConfig) ;
 		}
 		
+		if (cpool.getDefaultConnectionConfig() == null) {
+			ConnectionConfigProperties connectionConfig = new ConnectionConfigProperties() ;
+			connectionConfig.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT) ;
+			connectionConfig.setSocketTimeout(DEFAULT_SOCKET_TIMEOUT);
+			connectionConfig.setTimeToLive(TimeValue.ofSeconds(120))  ;		   // Usual 
+			connectionConfig.setValidateAfterInactivity(Timeout.ofSeconds(20)) ;// Usual tomcat connection timeout
+			cpool.setDefaultConnectionConfig(connectionConfig) ;
+		}
+		if (cpool.getDefaultSocketConfig() == null) {
+			SocketConfigProperties socketConfig = new SocketConfigProperties() ;
+			socketConfig.setSoTimeout(DEFAULT_SOCKET_TIMEOUT);
+			cpool.setDefaultSocketConfig(socketConfig) ;
+		}
+	}
+	
+	private boolean hasMaxConnPerRouteConfigured() {
+		return env.getProperty("spring.httpclient5.pool.max-connper-route", Integer.class) != null
+				|| env.getProperty("spring.httpclient5.async-pool.max-connper-route", Integer.class) != null;
 	}
 	
 	@SneakyThrows

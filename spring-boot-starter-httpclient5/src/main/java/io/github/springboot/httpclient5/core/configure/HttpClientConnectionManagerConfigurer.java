@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Configuration;
 
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
 import io.github.springboot.httpclient5.core.config.model.ConnectionManagerConfigProperties;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration
@@ -37,12 +39,15 @@ public class HttpClientConnectionManagerConfigurer {
 		sslSocketFactoryProvider.ifAvailable(pool::setSSLSocketFactory);
 		schemePortResolverProvider.ifAvailable(pool::setSchemePortResolver);
 		pool.setDefaultSocketConfig(pool.getDefaultSocketConfig().build()) ;
-		pool.setDefaultConnectionConfig(pool.getDefaultConnectionConfig().build()) ;
+		
+		if (pool.getDefaultConnectionConfig() != null) {
+			pool.setDefaultConnectionConfig(pool.getDefaultConnectionConfig().build()) ;
+		}
 		log.debug("Connection Manager is {}", pool);
 		
 		PoolingHttpClientConnectionManager connectionManager = pool.build();
-		
-		cmConfigurers.orderedStream().forEach(c -> c.configure(connectionManager));
+		ConfigurableConnPoolControl wrapper = new PoolingHttpClientConnectionManagerWrapper(connectionManager) ;
+		cmConfigurers.orderedStream().forEach(c -> c.configure(wrapper));
 		
 		return connectionManager ;
 	}
@@ -51,5 +56,11 @@ public class HttpClientConnectionManagerConfigurer {
 	@ConditionalOnMissingBean
 	public SchemePortResolver schemePortResolver() {
 		return new DefaultSchemePortResolver();
+	}
+	
+	@RequiredArgsConstructor
+	public static class PoolingHttpClientConnectionManagerWrapper implements ConfigurableConnPoolControl {
+		@Delegate
+		private final PoolingHttpClientConnectionManager internal ;
 	}
 }
