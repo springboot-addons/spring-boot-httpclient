@@ -33,6 +33,22 @@ spring:
         '[https://testhost:4443]':
           connect-timeout: PT2S
           max-connections: 20 
+    async-pool:
+      max-connper-route: 30
+      dns-resolver: system
+      conn-pool-policy: LIFO
+      connection-time-to-live: PT120S
+      pool-concurrency-policy: LAX
+      # see properties from org.apache.hc.core5.http.io.SocketConfig
+      default-connection-config:
+        connect-timeout: PT0.5S
+        socket-timeout: PT30S
+      default-socket-config:
+        so-timeout: PT60S
+      host-config:
+        '[https://${app.httpbin-host}]':
+          connect-timeout: PT1S
+          max-connections: 5
     # See properties from org.apache.hc.client5.http.config.RequestConfig
     request-config:
       '[default]':

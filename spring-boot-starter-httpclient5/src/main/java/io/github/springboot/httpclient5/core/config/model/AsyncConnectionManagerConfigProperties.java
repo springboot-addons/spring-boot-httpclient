@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
 
-public class AsyncConnectionManagerConfigProperties implements DefaultConfigConfigurer {
+public class AsyncConnectionManagerConfigProperties implements DefaultConfigConfigurer, CommonsPoolProperties {
 	private static final int DEFAULT_CLOSE_IDLE_CONNECTION_WAIT_TIME_SECS = 30;
 
 	@Delegate

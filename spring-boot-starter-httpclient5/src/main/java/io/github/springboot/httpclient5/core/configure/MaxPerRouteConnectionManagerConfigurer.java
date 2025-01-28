@@ -10,6 +10,7 @@ import org.apache.hc.core5.util.Timeout;
 import org.springframework.stereotype.Component;
 
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
+import io.github.springboot.httpclient5.core.config.model.CommonsPoolProperties;
 import io.github.springboot.httpclient5.core.config.model.ConnectionConfigProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -23,8 +24,9 @@ public class MaxPerRouteConnectionManagerConfigurer implements PoolingHttpClient
 	private final SchemePortResolver schemePortResolver; 
 	
 	@Override
-	public void configure(ConfigurableConnPoolControl cm) {
-		config.getPool().getHostConfig().entrySet().stream().forEach(e -> {
+	public void configure(ConfigurableConnPoolControl cm, boolean asyncPool) {
+		CommonsPoolProperties poolProperties = asyncPool ?  config.getAsyncPool() : config.getPool() ;
+		poolProperties.getHostConfig().entrySet().stream().forEach(e -> {
 			String url = e.getKey() ;
 			if (!url.endsWith("/")) {
 				url = url + "/";
@@ -40,19 +42,20 @@ public class MaxPerRouteConnectionManagerConfigurer implements PoolingHttpClient
 				cm.setMaxPerRoute(httpRoute, maxConnections);
 			}
 			
-			cm.setConnectionConfigResolver(this::getConnectionConfig) ;
+			cm.setConnectionConfigResolver(route -> getConnectionConfig(route, poolProperties)) ;
 		});
 	}
 	
-	protected ConnectionConfig getConnectionConfig(HttpRoute route) {
+	protected ConnectionConfig getConnectionConfig(HttpRoute route, CommonsPoolProperties poolProperties) {
 		String routeUri = route.getTargetHost().toURI() ;
-		ConnectionConfigProperties connectionConfigProperties = config.getPool().getHostConfig().get(routeUri) ;
+		
+		ConnectionConfigProperties connectionConfigProperties = poolProperties.getHostConfig().get(routeUri) ;
 		if (connectionConfigProperties == null) {
 			return null ;
 		}
 		
 		if (connectionConfigProperties.getConnectTimeout().equals(Timeout.ofMinutes(3))) {
-			connectionConfigProperties.setConnectTimeout(config.getPool().getDefaultConnectionConfig().getConnectTimeout()) ;
+			connectionConfigProperties.setConnectTimeout(poolProperties.getDefaultConnectionConfig().getConnectTimeout()) ;
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Using connectionConfig for {} => {}", routeUri, connectionConfigProperties) ;
@@ -63,8 +66,9 @@ public class MaxPerRouteConnectionManagerConfigurer implements PoolingHttpClient
 	@SneakyThrows
 	protected HttpRoute getHttpRoute(final String uri, HttpHost proxy) {
 		HttpHost h = HttpHost.create(new URI(uri));
-		HttpHost target = new HttpHost(h.getHostName(), schemePortResolver.resolve(h));
-		return proxy == null ? new HttpRoute(target) : new HttpRoute(target, proxy);
+		boolean secure = "https".equals(h.getSchemeName()) ;
+		HttpHost target = new HttpHost(h.getSchemeName(), h.getHostName(), schemePortResolver.resolve(h));
+		return proxy == null ? new HttpRoute(target, null, secure) : new HttpRoute(target, null, proxy, secure);
 	}	
 }
 

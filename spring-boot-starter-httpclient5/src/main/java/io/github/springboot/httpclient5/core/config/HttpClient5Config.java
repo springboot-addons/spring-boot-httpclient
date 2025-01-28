@@ -104,7 +104,11 @@ public class HttpClient5Config {
 		Map<String, ConnectionConfigProperties> ehc = new HashMap<String, ConnectionConfigProperties>();
 		pool.getHostConfig().forEach((k, v) -> ehc.put(normalizeAndExpandHost(k), v));
 		pool.setHostConfig(ehc) ;
-		
+
+		Map<String, ConnectionConfigProperties> ehcAsync = new HashMap<String, ConnectionConfigProperties>();
+		asyncPool.getHostConfig().forEach((k, v) -> ehcAsync.put(normalizeAndExpandHost(k), v));
+		asyncPool.setHostConfig(ehcAsync) ;
+
 		if (autoconfig) {
 			if (requestConfig.isEmpty()) {
 				RequestConfigProperties defaultRequestConfig = new RequestConfigProperties();

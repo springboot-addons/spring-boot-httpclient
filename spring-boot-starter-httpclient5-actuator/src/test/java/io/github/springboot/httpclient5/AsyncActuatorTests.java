@@ -73,6 +73,9 @@ public class AsyncActuatorTests {
 		
 		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.httpbin.org.get-requests.count") ;
 		Assertions.assertEquals(1, requestCount);
+		
+		int maxConnections = (int) stats.getMetrics().get("org.apache.hc.client5.http.nio.AsyncClientConnectionManager.max-connections") ;
+		Assertions.assertEquals(5, maxConnections);
 	}
 	
 	@Test
@@ -104,8 +107,6 @@ public class AsyncActuatorTests {
 		Assertions.assertTrue(done) ;
 		Assertions.assertNotNull(stats);
 		Assertions.assertNotNull(stats.getMetrics());
-		int maxConnections = (int) stats.getMetrics().get("org.apache.hc.client5.http.nio.AsyncClientConnectionManager.max-connections") ;
-		Assertions.assertTrue(maxConnections > 0);
 		
 		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.httpbin.org.get-requests.count") ;
 		Assertions.assertEquals(2, requestCount);

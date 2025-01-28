@@ -47,7 +47,7 @@ public class HttpClientConnectionManagerConfigurer {
 		
 		PoolingHttpClientConnectionManager connectionManager = pool.build();
 		ConfigurableConnPoolControl wrapper = new PoolingHttpClientConnectionManagerWrapper(connectionManager) ;
-		cmConfigurers.orderedStream().forEach(c -> c.configure(wrapper));
+		cmConfigurers.orderedStream().forEach(c -> c.configure(wrapper, false));
 		
 		return connectionManager ;
 	}

@@ -1,5 +1,7 @@
 package io.github.springboot.httpclient5.core.configure;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -8,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Component;
 
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
+import io.github.springboot.httpclient5.core.config.model.CommonsPoolProperties;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +24,7 @@ public class ConnectionManagerCleaner implements PoolingHttpClientConnectionMana
 	private final HttpClient5Config config ;
 	
 	private ConfigurableConnPoolControl cm; 
-	private ScheduledFuture<?> cleanerTask;
+	private List<ScheduledFuture<?>> cleanerTasks = new ArrayList<>();
 	
 	private ScheduledExecutorService executor ;
 
@@ -32,15 +35,16 @@ public class ConnectionManagerCleaner implements PoolingHttpClientConnectionMana
 
 	@PreDestroy
 	public void dispose() {
-		cleanerTask.cancel(false) ;
+		cleanerTasks.forEach(t -> t.cancel(false)) ;
 		executor.shutdown();
 	}
 	
 	@Override
-	public void configure(ConfigurableConnPoolControl cm) {
+	public void configure(ConfigurableConnPoolControl cm, boolean asyncPool) {
 		this.cm = cm;
-		long delay = config.getPool().getConnectionIdleTimeout().convert(TimeUnit.MILLISECONDS) / 10 ;
-		cleanerTask = executor.scheduleWithFixedDelay(this::clean, delay, delay, TimeUnit.MILLISECONDS) ;
+		CommonsPoolProperties poolProperties = asyncPool ?  config.getAsyncPool() : config.getPool() ;
+		long delay = poolProperties.getConnectionIdleTimeout().convert(TimeUnit.MILLISECONDS) / 10;
+		cleanerTasks.add(executor.scheduleWithFixedDelay(this::clean, delay, delay, TimeUnit.MILLISECONDS)) ;
 	}
 
 	protected void clean() {
