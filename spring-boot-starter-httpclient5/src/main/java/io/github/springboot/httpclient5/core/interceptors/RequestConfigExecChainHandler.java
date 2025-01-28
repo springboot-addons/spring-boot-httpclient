@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import org.apache.hc.client5.http.classic.ExecChain;
 import org.apache.hc.client5.http.classic.ExecChain.Scope;
 import org.apache.hc.client5.http.classic.ExecChainHandler;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -38,7 +39,11 @@ public class RequestConfigExecChainHandler implements ExecChainHandler {
 			
 			// connection-request-timeout management, HttpRequestConfigurerInterceptor is too late in the process
 			RequestConfigProperties requestConfigProperties = config.getRequestConfigProperties(method, uri.toString());
-			scope.clientContext.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfigProperties.build());
+			RequestConfig requestConfig = requestConfigProperties.build();
+			// SRU sb 3.3 : to be removed
+			scope.clientContext.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig);
+			// SRU sb 3.4 : to be keept
+			HttpClientContext.castOrCreate(scope.clientContext).setRequestConfig(requestConfig); ;
 			
 			return chain.proceed(request, scope);
 		
