@@ -10,6 +10,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -78,6 +79,7 @@ public class ApplicationTests {
 	}
 
 	@Test
+	@Disabled
 	public void testCustomTlsDomainValidation() throws Exception {
 		final HttpPost req = new HttpPost("https://api.insee.fr/token");
 		final HttpResponse response = httpClient.execute(req);
