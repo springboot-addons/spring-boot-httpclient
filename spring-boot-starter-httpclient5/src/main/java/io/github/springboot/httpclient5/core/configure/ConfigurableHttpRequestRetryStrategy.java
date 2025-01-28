@@ -1,5 +1,4 @@
 package io.github.springboot.httpclient5.core.configure;
-
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;
@@ -154,7 +153,7 @@ public class ConfigurableHttpRequestRetryStrategy implements HttpRequestRetryStr
         Args.notNull(response, "response");
         Object val = context.getAttribute(MAX_RETRIES);
         Integer maxRetries ;
-        HttpRequest request = (HttpRequest) context.getAttribute(HttpClientContext.HTTP_REQUEST) ;
+        HttpRequest request = (HttpRequest) HttpClientContext.castOrCreate(context).getRequest() ;
         if (val != null) {
         	maxRetries = (Integer) val;
         }
