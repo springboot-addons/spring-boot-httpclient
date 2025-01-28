@@ -65,9 +65,6 @@ public class RequestConfigExecChainHandler implements ExecChainHandler, AsyncExe
 			// connection-request-timeout management, HttpRequestConfigurerInterceptor is too late in the process
 			RequestConfigProperties requestConfigProperties = config.getRequestConfigProperties(method, uri.toString());
 			RequestConfig requestConfig = requestConfigProperties.build();
-			// SRU sb 3.3 : to be removed
-			context.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig);
-			// SRU sb 3.4 : to be keept
 			HttpClientContext.castOrCreate(context).setRequestConfig(requestConfig); ;
 			
 		} catch (URISyntaxException e) {

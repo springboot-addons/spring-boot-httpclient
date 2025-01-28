@@ -53,7 +53,7 @@ public class HttpAsyncClientConfigurer {
 	@Autowired
 	private HttpClient5Config config ;
 	
-	@Bean
+	@Bean(destroyMethod = "initiateShutdown")
 	public CloseableHttpAsyncClient closeableHttpAsyncClient(PoolingAsyncClientConnectionManager cm) {
 		HttpAsyncClientBuilder builder = httpAsyncClientBuilderProvider.getIfAvailable(HttpAsyncClientBuilder::create) ;
 		
@@ -76,8 +76,9 @@ public class HttpAsyncClientConfigurer {
 			retryStrategy = new ConfigurableHttpRequestRetryStrategy(config) ;
 		}
 		builder.setRetryStrategy(retryStrategy) ;
-		
-		return builder.build();
+		CloseableHttpAsyncClient asyncClient = builder.build();
+		asyncClient.start();
+		return asyncClient;
 	}
 	
 }

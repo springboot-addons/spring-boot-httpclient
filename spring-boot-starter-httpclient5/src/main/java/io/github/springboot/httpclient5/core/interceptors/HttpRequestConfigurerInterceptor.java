@@ -42,9 +42,6 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 			
 			RequestConfigProperties requestConfigProperties = config.getRequestConfigProperties(method, uri.toString());
 			RequestConfig requestConfig = requestConfigProperties.build();
-			// SRU sb 3.3 : to be removed
-			context.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig);
-			// SRU sb 3.4 : to be keept
 			HttpClientContext.castOrCreate(context).setRequestConfig(requestConfig); ;
 
 			context.setAttribute(REQUEST_CONFIG_EXTENDED, requestConfigProperties);
