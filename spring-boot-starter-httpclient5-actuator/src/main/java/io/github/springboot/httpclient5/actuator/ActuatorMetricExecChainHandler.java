@@ -18,7 +18,7 @@ import com.codahale.metrics.httpclient5.HttpClientMetricNameStrategy;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ActuatorMetricExecChainHandler implements ExecChainHandler {
+public class ActuatorMetricExecChainHandler implements ExecChainHandler{
 	private final MetricRegistry registry;
 	private final HttpClientMetricNameStrategy metricNameStrategy;
 	private final String name;
