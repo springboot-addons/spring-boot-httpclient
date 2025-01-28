@@ -66,15 +66,10 @@ public class RequestConfigExecChainHandler implements ExecChainHandler, AsyncExe
 			RequestConfigProperties requestConfigProperties = config.getRequestConfigProperties(method, uri.toString());
 			RequestConfig requestConfig = requestConfigProperties.build();
 			// SRU sb 3.3 : to be removed
-			scope.clientContext.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig);
+			context.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig);
 			// SRU sb 3.4 : to be keept
-			HttpClientContext.castOrCreate(scope.clientContext).setRequestConfig(requestConfig); ;
+			HttpClientContext.castOrCreate(context).setRequestConfig(requestConfig); ;
 			
-			return chain.proceed(request, scope);
-		
-		} catch (HttpException | IOException e) {
-			log.warn("Unable to configure httpclient request, no uri available : using defaut configuration", e);
-			throw e ;
 		} catch (URISyntaxException e) {
 			throw new HttpException(e.getMessage()) ;
 		}
