@@ -3,6 +3,7 @@ package io.github.springboot.httpclient5.core.interceptors;
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.EntityDetails;
 import org.apache.hc.core5.http.HttpException;
@@ -40,7 +41,12 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 			log.debug("Configuring httpclient for {} {}", method, uri);
 			
 			RequestConfigProperties requestConfigProperties = config.getRequestConfigProperties(method, uri.toString());
-			context.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfigProperties.build());
+			RequestConfig requestConfig = requestConfigProperties.build();
+			// SRU sb 3.3 : to be removed
+			context.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig);
+			// SRU sb 3.4 : to be keept
+			HttpClientContext.castOrCreate(context).setRequestConfig(requestConfig); ;
+
 			context.setAttribute(REQUEST_CONFIG_EXTENDED, requestConfigProperties);
 			
 			SimplePredefinedCredentialsProvider credentials = requestConfigProperties.getCredentials() ;
@@ -48,7 +54,10 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 				request.addHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, "Basic " + credentials.toBase64Encoded()));
 			}
 			else {
+				// SRU sb 3.3 : to be removed
 				context.setAttribute(HttpClientContext.CREDS_PROVIDER, requestConfigProperties.getCredentials());
+				// SRU sb 3.4 : to be keept
+				HttpClientContext.castOrCreate(context).setCredentialsProvider(requestConfigProperties.getCredentials());
 			}
 			
 			requestConfigProperties.getCustomRequestContext().forEach(context::setAttribute);

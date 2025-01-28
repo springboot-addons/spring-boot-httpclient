@@ -81,8 +81,7 @@ public class HeadersPropagationInterceptor implements HttpRequestInterceptor, Ht
 	
 	@SneakyThrows
 	protected HeadersPropagationProperties getConfiguration(HttpContext httpContext) {
-		final HttpClientContext clientContext = HttpClientContext.adapt(httpContext);
-		HttpRequest request = (HttpRequest) clientContext.getAttribute(HttpClientContext.HTTP_REQUEST);
+		HttpRequest request = HttpClientContext.castOrCreate(httpContext).getRequest(); ;
 		return config.getRequestConfigProperties(request.getMethod(), request.getUri().toString()).getHeadersPropagation();
 	}
 }
