@@ -48,9 +48,8 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 			HttpClientContext.castOrCreate(context).setRequestConfig(requestConfig); ;
 
 			context.setAttribute(REQUEST_CONFIG_EXTENDED, requestConfigProperties);
-			
 			SimplePredefinedCredentialsProvider credentials = requestConfigProperties.getCredentials() ;
-			if (credentials != null && credentials.isPreemptive()) {
+			if (credentials != null && credentials.isPreemptive() && !request.containsHeader(HttpHeaders.AUTHORIZATION)) {
 				request.addHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, "Basic " + credentials.toBase64Encoded()));
 			}
 			else {
