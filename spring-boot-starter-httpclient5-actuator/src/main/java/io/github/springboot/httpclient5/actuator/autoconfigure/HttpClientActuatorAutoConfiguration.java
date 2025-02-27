@@ -2,9 +2,12 @@ package io.github.springboot.httpclient5.actuator.autoconfigure;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
+import org.apache.hc.client5.http.async.AsyncExecChainHandler;
 import org.apache.hc.client5.http.classic.ExecChainHandler;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.nio.AsyncClientConnectionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,52 +22,81 @@ import com.codahale.metrics.httpclient5.HttpClientMetricNameStrategy;
 import com.codahale.metrics.jmx.JmxReporter;
 
 import io.github.springboot.httpclient5.actuator.ActuatorMetricExecChainHandler;
+import io.github.springboot.httpclient5.actuator.HttpAsyncClientEndpoint;
 import io.github.springboot.httpclient5.actuator.HttpClientEndpoint;
+import io.github.springboot.httpclient5.actuator.InstrumentedAsyncExecChainHandler;
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
 import jakarta.annotation.PreDestroy;
 
 @Configuration
 @ConditionalOnProperty(name = "spring.httpclient5.core.actuator.enabled", havingValue = "true", matchIfMissing = true)
 public class HttpClientActuatorAutoConfiguration {
-    private static final String METRICS_PREFIX = HttpClientConnectionManager.class.getName();
-	@Autowired
+    private static final String SYNC_METRICS_PREFIX = HttpClientConnectionManager.class.getName();
+    private static final String ASYNC_METRICS_PREFIX = AsyncClientConnectionManager.class.getName();
+
+    @Autowired
 	protected HttpClient5Config config;
 
 	private String name;
 	private MetricRegistry metricRegistry;
 	
 	@Bean("legacyMetricRegistry")
-	public MetricRegistry getMetricsRegistry(PoolingHttpClientConnectionManager cm) {
+	public MetricRegistry getMetricsRegistry(PoolingHttpClientConnectionManager cm, PoolingAsyncClientConnectionManager asyncCm) {
 		metricRegistry = new MetricRegistry();
         // this acquires a lock on the connection pool; remove if contention sucks
-        metricRegistry.registerGauge(name(METRICS_PREFIX, name, "available-connections"),
+        metricRegistry.registerGauge(name(SYNC_METRICS_PREFIX, name, "available-connections"),
                 () -> {
                     return cm.getTotalStats().getAvailable();
                 });
         // this acquires a lock on the connection pool; remove if contention sucks
-        metricRegistry.registerGauge(name(METRICS_PREFIX, name, "leased-connections"),
+        metricRegistry.registerGauge(name(SYNC_METRICS_PREFIX, name, "leased-connections"),
                 () -> cm.getTotalStats().getLeased());
         // this acquires a lock on the connection pool; remove if contention sucks
-        metricRegistry.registerGauge(name(METRICS_PREFIX, name, "max-connections"),
+        metricRegistry.registerGauge(name(SYNC_METRICS_PREFIX, name, "max-connections"),
                 () -> cm.getTotalStats().getMax()
         );
         // this acquires a lock on the connection pool; remove if contention sucks
-        metricRegistry.registerGauge(name(METRICS_PREFIX, name, "pending-connections"),
+        metricRegistry.registerGauge(name(SYNC_METRICS_PREFIX, name, "pending-connections"),
                 () -> cm.getTotalStats().getPending());
+        
+        
+        // this acquires a lock on the connection pool; remove if contention sucks
+        metricRegistry.registerGauge(name(ASYNC_METRICS_PREFIX, name, "available-connections"),
+                () -> asyncCm.getTotalStats().getAvailable());
+        // this acquires a lock on the connection pool; remove if contention sucks
+        metricRegistry.registerGauge(name(ASYNC_METRICS_PREFIX, name, "leased-connections"),
+                () -> asyncCm.getTotalStats().getLeased());
+        // this acquires a lock on the connection pool; remove if contention sucks
+        metricRegistry.registerGauge(name(ASYNC_METRICS_PREFIX, name, "max-connections"),
+                () -> asyncCm.getTotalStats().getMax());
+        // this acquires a lock on the connection pool; remove if contention sucks
+        metricRegistry.registerGauge(name(ASYNC_METRICS_PREFIX, name, "pending-connections"),
+                () -> asyncCm.getTotalStats().getPending());
+        
 		return metricRegistry;
 	}
 
 	@PreDestroy
 	public void dispose() {
-		metricRegistry.remove(name(METRICS_PREFIX, name, "available-connections"));
-		metricRegistry.remove(name(METRICS_PREFIX, name, "leased-connections"));
-		metricRegistry.remove(name(METRICS_PREFIX, name, "max-connections"));
-		metricRegistry.remove(name(METRICS_PREFIX, name, "pending-connections"));
+		metricRegistry.remove(name(SYNC_METRICS_PREFIX, name, "available-connections"));
+		metricRegistry.remove(name(SYNC_METRICS_PREFIX, name, "leased-connections"));
+		metricRegistry.remove(name(SYNC_METRICS_PREFIX, name, "max-connections"));
+		metricRegistry.remove(name(SYNC_METRICS_PREFIX, name, "pending-connections"));
+		
+		metricRegistry.remove(name(ASYNC_METRICS_PREFIX, name, "available-connections"));
+		metricRegistry.remove(name(ASYNC_METRICS_PREFIX, name, "leased-connections"));
+		metricRegistry.remove(name(ASYNC_METRICS_PREFIX, name, "max-connections"));
+		metricRegistry.remove(name(ASYNC_METRICS_PREFIX, name, "pending-connections"));
 	}
 	
 	@Bean
 	public HttpClientEndpoint httpClientEndpoint(@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
 		return new HttpClientEndpoint(config, metricRegistry);
+	}
+	
+	@Bean
+	public HttpAsyncClientEndpoint asyncHttpClientEndpoint(@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
+		return new HttpAsyncClientEndpoint(config, metricRegistry);
 	}
 
 	@Bean
@@ -77,10 +109,18 @@ public class HttpClientActuatorAutoConfiguration {
 
 	@Bean
 	@Order(Ordered.LOWEST_PRECEDENCE)
-	public ExecChainHandler chainableInstrumentedHttpRequestExecutor(
+	public ExecChainHandler syncInstrumentedExecChainHandler(
 			@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
 		HttpClientMetricNameStrategy metricNameStrategy = getMetricNameStrategy(config.getJmx().getMetricNameStrategy());
 		return new ActuatorMetricExecChainHandler(metricRegistry, metricNameStrategy);
+	}
+	
+	@Bean
+	@Order(Ordered.LOWEST_PRECEDENCE)
+	public AsyncExecChainHandler asyncInstrumentedExecChainHandler(
+			@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
+		HttpClientMetricNameStrategy metricNameStrategy = getMetricNameStrategy(config.getJmx().getMetricNameStrategy());
+		return new InstrumentedAsyncExecChainHandler(metricRegistry, metricNameStrategy);
 	}
 
 	private HttpClientMetricNameStrategy getMetricNameStrategy(String name) {

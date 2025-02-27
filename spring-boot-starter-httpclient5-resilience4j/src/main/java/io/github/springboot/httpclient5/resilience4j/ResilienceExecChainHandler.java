@@ -1,20 +1,26 @@
 package io.github.springboot.httpclient5.resilience4j;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.async.AsyncExecCallback;
+import org.apache.hc.client5.http.async.AsyncExecChain;
+import org.apache.hc.client5.http.async.AsyncExecChainHandler;
 import org.apache.hc.client5.http.classic.ExecChain;
 import org.apache.hc.client5.http.classic.ExecChain.Scope;
 import org.apache.hc.client5.http.classic.ExecChainHandler;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
+import org.apache.hc.core5.http.nio.AsyncEntityProducer;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -22,9 +28,9 @@ import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.Retry.Context;
+import io.github.resilience4j.retry.RetryConfig;
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
 import io.github.springboot.httpclient5.core.config.model.RequestConfigProperties;
-import io.github.resilience4j.retry.RetryConfig;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,8 +44,6 @@ public class ResilienceExecChainHandler implements ExecChainHandler {
 	private final RateLimiterRegistry rlregstry;
 	private final HttpClient5Config config;
 
-	// TODO Chain of responsability of client.doExecute() inspired from
-	// javax.servlet.Filter
 	public ResilienceExecChainHandler(HttpClient5Config config, CircuitBreakerRegistry cbRegistry,
 			RateLimiterRegistry rlregstry) {
 		this.config = config;
@@ -101,10 +105,9 @@ public class ResilienceExecChainHandler implements ExecChainHandler {
 		} else {
 			return brokenCircuitResponse(circuitBreaker, requestConfigProperties.getErrorManagement().getBrokenCircuitAction());
 		}
-
 	}
-
-	private RetryConfig getRetryConfig(RequestConfigProperties requestConfigProperties) {
+	
+	protected static RetryConfig getRetryConfig(RequestConfigProperties requestConfigProperties) {
 		final Integer maxAttempts = requestConfigProperties.getErrorManagement().getMaxAttempts();
 		final Integer waitDuration = requestConfigProperties.getErrorManagement().getWaitDuration();
 		final RetryConfig retryConfig = RetryConfig.custom().maxAttempts(maxAttempts == null ? 1 : maxAttempts)

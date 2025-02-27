@@ -1,4 +1,4 @@
-app.httpbin-host : httpbin.org
+app.httpbin-host : http://nas.capsi-informatique.fr:9999
 
 logging:
   level:
@@ -27,12 +27,28 @@ spring:
       default-socket-config:
         so-timeout: PT60S
       host-config:
-        '[https://${app.httpbin-host}]':
+        '[${app.httpbin-host}]':
           connect-timeout: PT1S
           max-connections: 10 
         '[https://testhost:4443]':
           connect-timeout: PT2S
           max-connections: 20 
+    async-pool:
+      max-connper-route: 30
+      dns-resolver: system
+      conn-pool-policy: LIFO
+      connection-time-to-live: PT120S
+      pool-concurrency-policy: LAX
+      # see properties from org.apache.hc.core5.http.io.SocketConfig
+      default-connection-config:
+        connect-timeout: PT0.5S
+        socket-timeout: PT30S
+      default-socket-config:
+        so-timeout: PT60S
+      host-config:
+        '[${app.httpbin-host}]':
+          connect-timeout: PT1S
+          max-connections: 5
     # See properties from org.apache.hc.client5.http.config.RequestConfig
     request-config:
       '[default]':
@@ -46,7 +62,7 @@ spring:
           '[myinter]': false
         custom-request-context:           
           '[propA]': "abc"
-      '[GET https://${app.httpbin-host}/.*]':
+      '[GET ${app.httpbin-host}/.*]':
         response-timeout: 3000
         interceptors:
           '[myinter]': true
@@ -54,12 +70,12 @@ spring:
         custom-request-context:           
           '[propA]': "surcharge"
           '[propB]': "newOne"
-      '[GET https://${app.httpbin-host}/basic-auth/.*]':
+      '[GET ${app.httpbin-host}/basic-auth/.*]':
         credentials: admin:pwd
         #credentials: BASIC(admin:pwd)
-      '[GET https://${app.httpbin-host}/hidden-basic-auth/.*]':
+      '[GET ${app.httpbin-host}/hidden-basic-auth/.*]':
         credentials: PREEMPTIVE(admin:pwd)
-      '[POST https://${app.httpbin-host}/.*]':
+      '[POST ${app.httpbin-host}/.*]':
         response-timeout: 10000
       '[.* https://testhost:4443/.*]':
         proxy: https://localhost:3128

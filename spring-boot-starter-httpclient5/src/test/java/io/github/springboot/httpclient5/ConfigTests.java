@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hc.client5.http.HttpRoute;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.util.Timeout;
 import org.junit.jupiter.api.Assertions;
@@ -35,13 +36,17 @@ public class ConfigTests {
 	@Autowired
 	PoolingHttpClientConnectionManager cm;
 	
+	@Autowired
+	PoolingAsyncClientConnectionManager asyncPoolCm;
+
+	
 	@Value("${spring.httpclient5.request-config.default.connection-request-timeout}")
 	Timeout defaultConnectionRequestTimeout  ;
 	
 	@Test
 	public void testRequestConfigKeyExpension() throws Exception {
 		Assertions.assertTrue(config.getRequestConfig().containsKey("GET " + Constants.HTTPBIN_TEST_HOST + "/.*")) ;
-		Assertions.assertTrue(config.getPool().getHostConfig().containsKey(Constants.HTTPBIN_TEST_HOST + ":443")) ;
+		Assertions.assertTrue(config.getPool().getHostConfig().containsKey(Constants.HTTPBIN_TEST_HOST)) ;
 	}
 	
 	@Test
@@ -59,13 +64,28 @@ public class ConfigTests {
 		Assertions.assertEquals(30, cm.getDefaultMaxPerRoute());
 		Assertions.assertEquals(500, config.getPool().getDefaultConnectionConfig().getConnectTimeout().convert(TimeUnit.MILLISECONDS));
 		
-		
-		String httpbinHostname = Constants.HTTPBIN_TEST_HOST.replace("https://", "") ;
-		Assertions.assertEquals(10, cm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinHostname, 443)))) ;
-		Assertions.assertEquals(30, cm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinHostname, 443), new HttpHost("https", "localhost", 3128)))) ;
-		Assertions.assertEquals(20, cm.getMaxPerRoute(new HttpRoute(new HttpHost("testhost", 4443), new HttpHost("https", "localhost", 3128)))) ;
+		String httpbinHostname = Constants.HTTPBIN_TEST_HOST_NAME ;
+		int httpbinPost = Constants.HTTPBIN_TEST_PORT;
+		String httpbinScheme = Constants.HTTPBIN_TEST_SCHEME;
+		Assertions.assertEquals(10, cm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinScheme, httpbinHostname, httpbinPost), null, "https".equals(httpbinScheme)))) ;
+		Assertions.assertEquals(30, cm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinScheme, httpbinHostname, httpbinPost), null, new HttpHost("https", "localhost", 3128), "https".equals(httpbinScheme)))) ;
+		Assertions.assertEquals(20, cm.getMaxPerRoute(new HttpRoute(new HttpHost("https", "testhost", 4443), null, new HttpHost("https", "localhost", 3128), true))) ;
 	}
-	
+
+	@Test
+	public void testPoolingAsyncConnectionManagerConfig() throws Exception {
+		Assertions.assertEquals(0, asyncPoolCm.getMaxTotal()) ;
+		Assertions.assertEquals(20, asyncPoolCm.getDefaultMaxPerRoute());
+		Assertions.assertEquals(100, config.getAsyncPool().getDefaultConnectionConfig().getConnectTimeout().convert(TimeUnit.MILLISECONDS));
+		
+		String httpbinHostname = Constants.HTTPBIN_TEST_HOST_NAME ;
+		int httpbinPost = Constants.HTTPBIN_TEST_PORT;
+		String httpbinScheme = Constants.HTTPBIN_TEST_SCHEME;
+		Assertions.assertEquals(15, asyncPoolCm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinScheme, httpbinHostname, httpbinPost), null, "https".equals(httpbinScheme)))) ;
+		Assertions.assertEquals(20, asyncPoolCm.getMaxPerRoute(new HttpRoute(new HttpHost(httpbinScheme, httpbinHostname, httpbinPost), null, new HttpHost("https", "localhost", 3128), "https".equals(httpbinScheme)))) ;
+		Assertions.assertEquals(40, asyncPoolCm.getMaxPerRoute(new HttpRoute(new HttpHost("https", "testhost", 4443), null, new HttpHost("https", "localhost", 3128), true))) ;
+	}
+
 	@Test
 	public void testInterceptorConfig() throws Exception {
 		RequestConfigProperties someHostConfig = config.getRequestConfigProperties("GET", "https://somehost/test");

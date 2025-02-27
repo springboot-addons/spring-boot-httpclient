@@ -3,9 +3,11 @@ package io.github.springboot.httpclient5.core.interceptors;
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.EntityDetails;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpRequest;
@@ -42,15 +44,18 @@ public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor 
 			
 			RequestConfigProperties requestConfigProperties = config.getRequestConfigProperties(method, uri.toString());
 			RequestConfig requestConfig = requestConfigProperties.build();
-			// SRU sb 3.3 : to be removed
-			context.setAttribute(HttpClientContext.REQUEST_CONFIG, requestConfig);
-			// SRU sb 3.4 : to be keept
 			HttpClientContext.castOrCreate(context).setRequestConfig(requestConfig); ;
 
 			context.setAttribute(REQUEST_CONFIG_EXTENDED, requestConfigProperties);
 			SimplePredefinedCredentialsProvider credentials = requestConfigProperties.getCredentials() ;
-			if (credentials != null && credentials.isPreemptive() && !request.containsHeader(HttpHeaders.AUTHORIZATION)) {
-				request.addHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, "Basic " + credentials.toBase64Encoded()));
+			if (credentials != null && credentials.isPreemptive()) {
+				Header header = request.getHeader(HttpHeaders.AUTHORIZATION) ;
+				if (header == null || StringUtils.isBlank(header.getValue())) {
+					request.addHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, "Basic " + credentials.toBase64Encoded()));
+				}
+				else {
+					log.debug("Autorization header present, skipping configured auth {}", credentials);
+				}
 			}
 			else {
 				// SRU sb 3.3 : to be removed

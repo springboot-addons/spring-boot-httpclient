@@ -19,12 +19,12 @@ import io.github.springboot.httpclient5.core.config.HttpClient5Config;
  *
  * @author sru
  */
-@Endpoint(id = "httpclient5")
-public class HttpClientEndpoint {
+@Endpoint(id = "httpAsyncClient5")
+public class HttpAsyncClientEndpoint {
 	private final HttpClient5Config properties;
 	private final MetricRegistry registry;
 
-	public HttpClientEndpoint(HttpClient5Config configuration, MetricRegistry registry) {
+	public HttpAsyncClientEndpoint(HttpClient5Config configuration, MetricRegistry registry) {
 		this.properties = configuration;
 		this.registry = registry;
 	}
@@ -43,7 +43,7 @@ public class HttpClientEndpoint {
 		final Map<String, Object> metrics = new HashMap<>();
 		// gauge
 		final SortedMap<String, Gauge> gauges = registry
-				.getGauges((name, metric) -> name.startsWith("org.apache.hc.client5.http.io.HttpClientConnectionManager."));
+				.getGauges((name, metric) -> name.startsWith("org.apache.hc.client5.http.nio.AsyncClientConnectionManager."));
 		for (final Map.Entry<String, Gauge> entry : gauges.entrySet()) {
 			metrics.put(entry.getKey(), entry.getValue().getValue());
 		}
