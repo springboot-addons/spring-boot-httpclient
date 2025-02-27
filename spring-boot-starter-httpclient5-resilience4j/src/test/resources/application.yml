@@ -1,4 +1,4 @@
-app.httpbin-host : httpbin.org
+app.httpbin-host : http://nas.capsi-informatique.fr:9999
 
 logging:
   level:
@@ -26,7 +26,7 @@ spring:
       default-socket-config:
         so-timeout: PT60S
       host-config:
-        '[https://${app.httpbin-host}]':
+        '[${app.httpbin-host}]':
           connect-timeout: PT1S
           max-connections: 10 
         '[https://testhost:4443]':
@@ -40,10 +40,10 @@ spring:
         error-management:
           circuit-name: default
           broken-circuit-action: 503
-      '[GET https://${app.httpbin-host}/.*]':
+      '[GET ${app.httpbin-host}/.*]':
         response-timeout: 3000
         error-management.circuit-name: httpbin-org
-      '[POST https://${app.httpbin-host}/.*]':
+      '[POST ${app.httpbin-host}/.*]':
         response-timeout: 10000
         error-management.circuit-name: httpbin-org
       '[.* https://testhost:4443/.*]':

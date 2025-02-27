@@ -19,29 +19,30 @@ import lombok.extern.slf4j.Slf4j;
 public class Resilience4JAsyncExecCallback implements AsyncExecCallback {
     private final AsyncExecCallback delegate;
 	private CircuitBreaker circuitBreaker;
-	private Context<HttpResponse> retryContext;
-	private long start;
+	long start = System.nanoTime();
 
     public Resilience4JAsyncExecCallback(CircuitBreaker circuitBreaker,
-    				Context<HttpResponse> retryContext,
-    				long start,
                     AsyncExecCallback delegate,
                     HttpRequest request) {
         this.circuitBreaker = circuitBreaker;
-		this.retryContext = retryContext;
-		this.start = start;
 		this.delegate = delegate;
     }
 
     @Override
     public AsyncDataConsumer handleResponse(HttpResponse response, EntityDetails entityDetails) throws HttpException, IOException {
+		internalHandleResponse(response);
         return delegate.handleResponse(response, entityDetails);
     }
 
     @Override
     public void handleInformationResponse(HttpResponse response) throws HttpException, IOException {
+		internalHandleResponse(response);
         delegate.handleInformationResponse(response);
+    }
+
+	private void internalHandleResponse(HttpResponse response) {
 		final int statusCode = response.getCode();
+
 		final long durationInNanos = System.nanoTime() - start;
 		if (isError(statusCode)) {
 			circuitBreaker.onError(durationInNanos, TimeUnit.NANOSECONDS,
@@ -50,11 +51,7 @@ public class Resilience4JAsyncExecCallback implements AsyncExecCallback {
 		} else {
 			circuitBreaker.onSuccess(durationInNanos, TimeUnit.NANOSECONDS);
 		}
-		final boolean validationOfResult = retryContext.onResult(response);
-		if (!validationOfResult) {
-			retryContext.onComplete();
-		}
-    }
+	}
 
     @Override
     public void completed() {
@@ -63,11 +60,10 @@ public class Resilience4JAsyncExecCallback implements AsyncExecCallback {
 
     @Override
     public void failed(Exception cause) {
-        delegate.failed(cause);
 		final long durationInNanos = System.nanoTime() - start;
 		circuitBreaker.onError(durationInNanos, TimeUnit.NANOSECONDS, cause);
 		log.debug("After exception circuit breakers state {}, metrics {}", circuitBreaker.getState(), ToStringBuilder.reflectionToString(circuitBreaker.getMetrics())) ;
-		retryContext.onRuntimeError(new RuntimeException(cause));
+        delegate.failed(cause);
     }
 
 	private boolean isError(int code ) {

@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import io.github.springboot.httpclient5.core.utils.LoggingFutureCallback;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -35,24 +36,7 @@ public class AsyncTests {
 	@Test
 	public void testAsyncHttpClient() throws Exception {
 		final SimpleHttpRequest httpGet = SimpleHttpRequest.create("GET", Constants.HTTPBIN_TEST_HOST + "/headers");
-		Future<SimpleHttpResponse> future = async.execute(httpGet, new FutureCallback<SimpleHttpResponse>() {
-
-			@Override
-			public void completed(SimpleHttpResponse result) {
-				System.out.println("Completed");
-			}
-
-			@Override
-			public void failed(Exception ex) {
-				ex.printStackTrace();
-				Assertions.fail(ex) ;
-			}
-
-			@Override
-			public void cancelled() {
-				Assertions.fail("Should not have been cancel") ;
-			}
-		});
+		Future<SimpleHttpResponse> future = async.execute(httpGet, LoggingFutureCallback.INSTANCE);
 		
 		SimpleHttpResponse response = future.get() ;
 		Assertions.assertEquals(200, response.getCode()) ;

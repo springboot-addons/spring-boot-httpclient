@@ -10,5 +10,4 @@ public interface ConfigurableConnPoolControl extends ConnPoolControl<HttpRoute> 
     public void setDefaultConnectionConfig(final ConnectionConfig config) ;
     default public void setDefaultSocketConfig(final SocketConfig config) {}
     public void setConnectionConfigResolver(final Resolver<HttpRoute, ConnectionConfig> connectionConfigResolver) ;
-//    public void setSocketConfigResolver(final Resolver<HttpRoute, SocketConfig> socketConfigResolver) ;
 }

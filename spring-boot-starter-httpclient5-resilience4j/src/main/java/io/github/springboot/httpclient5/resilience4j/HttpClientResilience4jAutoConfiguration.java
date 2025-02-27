@@ -1,5 +1,6 @@
 package io.github.springboot.httpclient5.resilience4j;
 
+import org.apache.hc.client5.http.async.AsyncExecChainHandler;
 import org.apache.hc.client5.http.classic.ExecChainHandler;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -21,5 +22,12 @@ public class HttpClientResilience4jAutoConfiguration {
 	public ExecChainHandler resilienceHttpRequestExecutor(HttpClient5Config config,
 			CircuitBreakerRegistry cbRegistry, RateLimiterRegistry rlRegistry) {
 		return new ResilienceExecChainHandler(config, cbRegistry, rlRegistry);
+	}
+	
+	@Bean
+	@Order(Ordered.HIGHEST_PRECEDENCE)
+	public AsyncExecChainHandler resilienceAsyncHttpRequestExecutor(HttpClient5Config config,
+			CircuitBreakerRegistry cbRegistry, RateLimiterRegistry rlRegistry) {
+		return new ResilienceAsyncExecChainHandler(config, cbRegistry, rlRegistry);
 	}
 }

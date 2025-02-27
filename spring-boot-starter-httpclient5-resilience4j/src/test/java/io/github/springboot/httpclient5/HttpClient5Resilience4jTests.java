@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -30,8 +31,9 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
 @ComponentScan("io.github.springboot.httpclient5.core")
+@DirtiesContext
 public class HttpClient5Resilience4jTests {
-	private static final String HTTPBIN_HOST = "https://httpbin.org";
+	private static final String HTTPBIN_HOST = "http://nas.capsi-informatique.fr:9999";
 
 
 	@Autowired

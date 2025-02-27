@@ -14,6 +14,7 @@ Configuration support for HttpClient through SpringBoot yaml / properties
 - Support for actuator / dropmetrics
 - Support for resilience4j circuit breaker / ratelimiter
 - Support for headers propagation (bidirectional)
+- Support for Async client : CloseableHttpAsyncClient
 - many more
 
 Dependencies : https://mvnrepository.com/artifact/io.github.springboot-addons
@@ -23,7 +24,7 @@ Httpclient configuration support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5</artifactId>
-		<version>1.0.7</version>
+		<version>1.1.1</version>
 	</dependency>
 
 Httpclient actuator support 
@@ -31,7 +32,7 @@ Httpclient actuator support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
-		<version>1.0.7</version>
+		<version>1.1.1</version>
 	</dependency>
 
 
@@ -40,7 +41,7 @@ Httpclient resilience4j support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-		<version>1.0.7</version>
+		<version>1.1.1</version>
 	</dependency>
 
 
@@ -50,7 +51,7 @@ Httpclient all in one support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-all</artifactId>
-		<version>1.0.7</version>
+		<version>1.1.1</version>
 		<type>pom</type>
 	</dependency>
 
@@ -62,7 +63,12 @@ Minimum recommended configuration : (or no configuration => it will use this def
 	      max-connper-route: 50
 	      pool-concurrency-policy: LAX
 	      default-connection-config:
-	        connect-timeout: PT3S
+	        connect-timeout: PT1S
+	    async-pool:
+	      max-connper-route: 50
+	      pool-concurrency-policy: LAX
+	      default-connection-config:
+	        connect-timeout: PT1S
 	    request-config:
 	      '[default]':
 	        connection-request-timeout: PT3S
@@ -79,6 +85,25 @@ Full sample configuration :
 	      buffer-size: 4096
 	      waitForContinueTimeout: PT32S
 	    # see properties org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
+	    async-pool:
+	      max-connper-route: 20
+	      dns-resolver: system
+	      conn-pool-policy: LIFO
+	      connection-time-to-live: PT120S
+	      pool-concurrency-policy: LAX
+	      # see properties from org.apache.hc.core5.http.io.SocketConfig
+	      default-connection-config:
+	        connect-timeout: PT0.1S
+	        socket-timeout: PT15S
+	      default-socket-config:
+	        so-timeout: PT250S
+	      host-config:
+	        '[${app.httpbin-host}]':
+	          connect-timeout: PT0.5S
+	          max-connections: 15 
+	        '[https://testhost:4443]':
+	          connect-timeout: PT0.3S
+	          max-connections: 40
 	    pool:
 	      max-conn-total: 128
 	      max-connper-route: 5
@@ -94,7 +119,7 @@ Full sample configuration :
 	        connect-timeout: PT1S
 	        socket-timeout: PT30S
 	      host-config:
-	        '[https://${app.httpbin-host}]':
+	        '[${app.httpbin-host}]':
 		       # see properties from org.apache.hc.client5.http.config.ConnectionConfig + max-connections
 	          connect-timeout: PT1S
 	          max-connections: 10 
@@ -126,15 +151,15 @@ Full sample configuration :
 	          '[myinterceptor]': false
 	        custom-request-context:           
 	          '[propA]': "abc"
-	      '[GET https://httpbin.agglo-larochelle.fr/.*]':
+	      '[GET https://httpbin.org/.*]':
 	        response-timeout: 3000
 	        error-management.circuit-name: httpbin-org
-	      '[GET https://httpbin.agglo-larochelle.fr/basic-auth/.*]':
+	      '[GET https://httpbin.org/basic-auth/.*]':
 	        credentials: admin:pwd
 	        #credentials: BASIC(admin:pwd)
-	      '[GET https://httpbin.agglo-larochelle.fr/hidden-basic-auth/.*]':
+	      '[GET https://httpbin.org/hidden-basic-auth/.*]':
 	        credentials: PREEMPTIVE(admin:pwd)	        
-	      '[POST https://httpbin.agglo-larochelle.fr/.*]':
+	      '[POST https://httpbin.org/.*]':
 	        response-timeout: 5000
 	        error-management.circuit-name: httpbin-org
 	      '[.* https://testhost:4443/.*]':

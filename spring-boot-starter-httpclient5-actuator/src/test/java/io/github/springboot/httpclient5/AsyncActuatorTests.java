@@ -1,4 +1,5 @@
 package io.github.springboot.httpclient5;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.Future;
 
 import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
@@ -18,6 +19,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import io.github.springboot.httpclient5.actuator.HttpAsyncClientEndpoint;
+import io.github.springboot.httpclient5.core.utils.LoggingFutureCallback;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -44,24 +46,7 @@ public class AsyncActuatorTests {
 	@Order(1)
 	public void testAsyncHttpClient() throws Exception {
 		final SimpleHttpRequest httpGet = SimpleHttpRequest.create("GET", Constants.HTTPBIN_TEST_HOST + "/headers");
-		Future<SimpleHttpResponse> future = async.execute(httpGet, new FutureCallback<SimpleHttpResponse>() {
-
-			@Override
-			public void completed(SimpleHttpResponse result) {
-				System.out.println("Completed");
-			}
-
-			@Override
-			public void failed(Exception ex) {
-				ex.printStackTrace();
-				Assertions.fail(ex) ;
-			}
-
-			@Override
-			public void cancelled() {
-				Assertions.fail("Should not have been cancel") ;
-			}
-		});
+		Future<SimpleHttpResponse> future = async.execute(httpGet, LoggingFutureCallback.INSTANCE);
 		
 		SimpleHttpResponse response = future.get() ;
 		Assertions.assertEquals(200, response.getCode()) ;
@@ -71,7 +56,7 @@ public class AsyncActuatorTests {
 		int connectionsCount = (int) stats.getMetrics().get("org.apache.hc.client5.http.nio.AsyncClientConnectionManager.available-connections") ;
 		Assertions.assertEquals(1, connectionsCount);
 		
-		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.httpbin.org.get-requests.count") ;
+		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.nas.capsi-informatique.fr.get-requests.count") ;
 		Assertions.assertEquals(1, requestCount);
 		
 		int maxConnections = (int) stats.getMetrics().get("org.apache.hc.client5.http.nio.AsyncClientConnectionManager.max-connections") ;
@@ -79,7 +64,7 @@ public class AsyncActuatorTests {
 	}
 	
 	@Test
-	@Order(1)
+	@Order(2)
 	public void testAsyncHttpClientTimeout() throws Exception {
 		final SimpleHttpRequest httpGet = SimpleHttpRequest.create("GET", Constants.HTTPBIN_TEST_HOST + "/delay/4");
 		Future<SimpleHttpResponse> future = async.execute(httpGet, new FutureCallback<SimpleHttpResponse>() {
@@ -91,8 +76,7 @@ public class AsyncActuatorTests {
 
 			@Override
 			public void failed(Exception ex) {
-				Assertions.assertTrue(ex instanceof HttpStreamResetException);
-				Assertions.assertTrue(ex.getMessage().toLowerCase().contains("timeout"));
+				Assertions.assertTrue(ex instanceof SocketTimeoutException);
 			}
 
 			@Override
@@ -108,7 +92,7 @@ public class AsyncActuatorTests {
 		Assertions.assertNotNull(stats);
 		Assertions.assertNotNull(stats.getMetrics());
 		
-		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.httpbin.org.get-requests.count") ;
+		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.nas.capsi-informatique.fr.get-requests.count") ;
 		Assertions.assertEquals(2, requestCount);
 	}
 

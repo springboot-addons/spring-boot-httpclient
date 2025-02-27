@@ -38,14 +38,12 @@ import lombok.extern.slf4j.Slf4j;
  * ResilienceExecChainHandler
  */
 @Slf4j
-public class ResilienceExecChainHandler implements ExecChainHandler, AsyncExecChainHandler {
+public class ResilienceExecChainHandler implements ExecChainHandler {
 
 	private final CircuitBreakerRegistry cbRegistry;
 	private final RateLimiterRegistry rlregstry;
 	private final HttpClient5Config config;
 
-	// TODO Chain of responsability of client.doExecute() inspired from
-	// javax.servlet.Filter
 	public ResilienceExecChainHandler(HttpClient5Config config, CircuitBreakerRegistry cbRegistry,
 			RateLimiterRegistry rlregstry) {
 		this.config = config;
@@ -109,48 +107,7 @@ public class ResilienceExecChainHandler implements ExecChainHandler, AsyncExecCh
 		}
 	}
 	
-	@Override
-	public void execute(HttpRequest request, AsyncEntityProducer entityProducer,
-			org.apache.hc.client5.http.async.AsyncExecChain.Scope scope, AsyncExecChain chain,
-			AsyncExecCallback asyncExecCallback) throws HttpException, IOException {
-		
-		String method = request.getMethod();
-		String requestUri;
-		try {
-			requestUri = request.getUri().toString();
-		} catch (URISyntaxException e) {
-			throw new IOException(e) ;
-		}
-		RequestConfigProperties requestConfigProperties = config.getRequestConfigProperties(method, requestUri);
-		String circuitName = requestConfigProperties.getErrorManagement().getCircuitName() ;
-
-		final CircuitBreaker circuitBreaker = cbRegistry.circuitBreaker(circuitName);
-		if (log.isTraceEnabled()) {
-			log.trace("Before circuit breakers {} state {}, metrics {}", circuitBreaker.getName(), circuitBreaker.getState(), ToStringBuilder.reflectionToString(circuitBreaker.getMetrics())) ;
-		}
-
-		if (circuitBreaker.tryAcquirePermission()) {
-			final long start = System.nanoTime();
-			final Retry retry = Retry.of(circuitName, getRetryConfig(requestConfigProperties));
-			final Context<HttpResponse> retryContext = retry.context();
-
-			while (true) {
-				if (circuitName != HttpClientResilience4jAutoConfiguration.DEFAULT_CIRCUIT) {
-					final RateLimiter rateLimiter = rlregstry.rateLimiter(circuitName);
-					RateLimiter.waitForPermission(rateLimiter);
-				}
-		        final Resilience4JAsyncExecCallback instrumentedAsyncExecCallback =
-		                new Resilience4JAsyncExecCallback(circuitBreaker, retryContext, start, asyncExecCallback, request);
-		        chain.proceed(request, entityProducer, scope, instrumentedAsyncExecCallback);
-
-			}
-		} else {
-			throw new HttpException("broken circuit for " + requestUri);
-		}
-	}
-	
-
-	private RetryConfig getRetryConfig(RequestConfigProperties requestConfigProperties) {
+	protected static RetryConfig getRetryConfig(RequestConfigProperties requestConfigProperties) {
 		final Integer maxAttempts = requestConfigProperties.getErrorManagement().getMaxAttempts();
 		final Integer waitDuration = requestConfigProperties.getErrorManagement().getWaitDuration();
 		final RetryConfig retryConfig = RetryConfig.custom().maxAttempts(maxAttempts == null ? 1 : maxAttempts)

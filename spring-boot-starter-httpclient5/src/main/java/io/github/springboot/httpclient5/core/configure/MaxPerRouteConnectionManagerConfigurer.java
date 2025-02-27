@@ -54,6 +54,7 @@ public class MaxPerRouteConnectionManagerConfigurer implements PoolingHttpClient
 			return null ;
 		}
 		
+		// DEFAULT Timeout -> not configured
 		if (connectionConfigProperties.getConnectTimeout().equals(Timeout.ofMinutes(3))) {
 			connectionConfigProperties.setConnectTimeout(poolProperties.getDefaultConnectionConfig().getConnectTimeout()) ;
 		}

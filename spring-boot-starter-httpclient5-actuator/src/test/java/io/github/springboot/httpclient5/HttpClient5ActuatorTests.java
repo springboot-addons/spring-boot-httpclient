@@ -49,7 +49,7 @@ public class HttpClient5ActuatorTests {
 		Assertions.assertNotNull(stats);
 		Assertions.assertNotNull(stats.getMetrics());
 		
-		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.httpbin.org.get-requests.count") ;
+		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.nas.capsi-informatique.fr.get-requests.count") ;
 		Assertions.assertEquals(1, requestCount);
 	}
 
