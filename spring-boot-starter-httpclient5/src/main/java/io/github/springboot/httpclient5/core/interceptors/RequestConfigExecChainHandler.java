@@ -39,12 +39,12 @@ public class RequestConfigExecChainHandler implements ExecChainHandler, AsyncExe
 			throws IOException, HttpException {
 		try {
 			configure(request, scope.clientContext) ;
-			return chain.proceed(request, scope);
 		
-		} catch (HttpException | IOException e) {
+		} catch (HttpException e) {
 			log.warn("Unable to configure httpclient request, no uri available : using defaut configuration", e);
 			throw e ;
 		}
+		return chain.proceed(request, scope);
 	}
 
 	@Override
