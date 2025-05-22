@@ -5,10 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.core5.http.HttpHost;
-import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
@@ -27,6 +25,7 @@ import io.github.springboot.httpclient5.core.config.model.ConnectionConfigProper
 import io.github.springboot.httpclient5.core.config.model.ConnectionManagerConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.DefaultConfigConfigurer;
 import io.github.springboot.httpclient5.core.config.model.Http1ConfigProperties;
+import io.github.springboot.httpclient5.core.config.model.IOReactorConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.RequestConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.SocketConfigProperties;
 import io.github.springboot.httpclient5.core.utils.PatternUtils;
@@ -65,8 +64,12 @@ public class HttpClient5Config {
 	
 	@NestedConfigurationProperty
 	private Http1ConfigProperties http1 = new Http1ConfigProperties();
+	
 	@NestedConfigurationProperty
 	private CharCodingConfigProperties charCoding = new CharCodingConfigProperties();
+	
+	@NestedConfigurationProperty
+	private IOReactorConfigProperties ioReactor = new IOReactorConfigProperties() ;
 	
 	@NestedConfigurationProperty
 	private Map<String, RequestConfigProperties> requestConfig = new HashMap<String, RequestConfigProperties>();

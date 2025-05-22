@@ -10,6 +10,7 @@ logging:
     io.github.springboot.httpclient5.core: DEBUG
 
 spring:
+  threads.virtual.enabled: true
   application:
     name: tu-springboot-httpclient5
   httpclient5:

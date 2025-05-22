@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
@@ -28,10 +29,13 @@ public class ConnectionManagerCleaner implements PoolingHttpClientConnectionMana
 	private List<ScheduledFuture<?>> cleanerTasks = new ArrayList<>();
 	
 	private ScheduledExecutorService executor ;
+	
+	@Autowired
+	private ThreadFactoryUtils threadFactoryUtils ;
 
 	@PostConstruct
 	public void init() {
-		executor = new ScheduledThreadPoolExecutor(1, ThreadFactoryUtils.getThreadFactory()); 
+		executor = new ScheduledThreadPoolExecutor(1, threadFactoryUtils.getThreadFactory()); 
 	}
 
 	@PreDestroy

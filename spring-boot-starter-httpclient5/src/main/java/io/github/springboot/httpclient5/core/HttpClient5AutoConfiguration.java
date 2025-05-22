@@ -14,7 +14,7 @@ import io.github.springboot.httpclient5.core.utils.ThreadFactoryUtils;
 public class HttpClient5AutoConfiguration {
 	
     @Bean
-    public static ThreadFactoryUtils threadFactoryUtils(@Value("${spring.threads.virtual.enabled:false}") boolean enabled) {
+    public static ThreadFactoryUtils httpClient5ThreadFactoryUtils(@Value("${spring.threads.virtual.enabled:false}") boolean enabled) {
     	return new ThreadFactoryUtils(enabled) ;
     }
     

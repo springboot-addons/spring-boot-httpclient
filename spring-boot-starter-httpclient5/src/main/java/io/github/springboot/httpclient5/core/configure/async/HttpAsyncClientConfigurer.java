@@ -11,6 +11,7 @@ import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
 import org.apache.hc.core5.http.ConnectionReuseStrategy;
 import org.apache.hc.core5.http.HttpRequestInterceptor;
 import org.apache.hc.core5.http.HttpResponseInterceptor;
+import org.apache.hc.core5.reactor.IOReactorConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
 import io.github.springboot.httpclient5.core.configure.ConfigurableHttpRequestRetryStrategy;
+import io.github.springboot.httpclient5.core.utils.ThreadFactoryUtils;
 
 @Configuration
 public class HttpAsyncClientConfigurer {
@@ -76,6 +78,8 @@ public class HttpAsyncClientConfigurer {
 			retryStrategy = new ConfigurableHttpRequestRetryStrategy(config) ;
 		}
 		builder.setRetryStrategy(retryStrategy) ;
+		builder.setIOReactorConfig(config.getIoReactor().build()) ;
+		builder.setThreadFactory(ThreadFactoryUtils.getThreadFactory()) ;
 		CloseableHttpAsyncClient asyncClient = builder.build();
 		asyncClient.start();
 		return asyncClient;

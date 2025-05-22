@@ -46,6 +46,7 @@ public class HttpAsyncClientConnectionManagerConfigurer {
 		log.debug("Connection Manager is {}", pool);
 		
 		PoolingAsyncClientConnectionManager connectionManager = pool.build();
+		
 		ConfigurableConnPoolControl wrapper = new PoolingAsyncClientConnectionManagerWrapper(connectionManager) ;
 		cmConfigurers.orderedStream().forEach(c -> c.configure(wrapper, true));
 		
