@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
 import io.github.springboot.httpclient5.core.config.model.CommonsPoolProperties;
+import io.github.springboot.httpclient5.core.utils.ThreadFactoryUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class ConnectionManagerCleaner implements PoolingHttpClientConnectionMana
 
 	@PostConstruct
 	public void init() {
-		executor = new ScheduledThreadPoolExecutor(1); 
+		executor = new ScheduledThreadPoolExecutor(1, ThreadFactoryUtils.getThreadFactory()); 
 	}
 
 	@PreDestroy

@@ -5,6 +5,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.task.ThreadPoolTaskExecutorBuilder;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import io.github.springboot.httpclient5.core.utils.ThreadFactoryUtils;
 
 /**
  * Pour la propagation des headers via un bean en scope request sur des methodes
@@ -32,12 +35,18 @@ public class AsyncExecutorConfig implements AsyncConfigurer {
 
 	@Autowired
 	private ThreadPoolTaskExecutorBuilder builder;
+	
+	@Autowired
+	private ThreadFactoryUtils threadFactoryUtils;
+	
 
 	@Override
 	@Bean
 	@Primary
 	public Executor getAsyncExecutor() {
-		return builder.build(ContextAwarePoolExecutor.class);
+		ContextAwarePoolExecutor contextAwarePoolExecutor = builder.build(ContextAwarePoolExecutor.class);
+		contextAwarePoolExecutor.setThreadFactory(threadFactoryUtils.getThreadFactory());
+		return contextAwarePoolExecutor;
 	}
 
 	public static class ContextAwarePoolExecutor extends ThreadPoolTaskExecutor {
