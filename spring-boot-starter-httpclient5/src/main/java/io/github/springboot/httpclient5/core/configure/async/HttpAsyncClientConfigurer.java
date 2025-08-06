@@ -1,5 +1,6 @@
 package io.github.springboot.httpclient5.core.configure.async;
 
+import io.github.springboot.httpclient5.core.configure.CustomHttpRoutePlanner;
 import org.apache.hc.client5.http.ConnectionKeepAliveStrategy;
 import org.apache.hc.client5.http.HttpRequestRetryStrategy;
 import org.apache.hc.client5.http.async.AsyncExecChainHandler;
@@ -80,6 +81,7 @@ public class HttpAsyncClientConfigurer {
 		builder.setRetryStrategy(retryStrategy) ;
 		builder.setIOReactorConfig(config.getIoReactor().build()) ;
 		builder.setThreadFactory(ThreadFactoryUtils.getThreadFactory()) ;
+		builder.setRoutePlanner(new CustomHttpRoutePlanner(config));
 		CloseableHttpAsyncClient asyncClient = builder.build();
 		asyncClient.start();
 		return asyncClient;

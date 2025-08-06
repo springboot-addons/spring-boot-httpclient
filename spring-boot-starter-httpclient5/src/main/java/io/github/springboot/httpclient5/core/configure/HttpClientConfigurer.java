@@ -81,7 +81,9 @@ public class HttpClientConfigurer {
 		if (retryStrategy == null) {
 			retryStrategy = new ConfigurableHttpRequestRetryStrategy(config) ;
 		}
-		builder.setRetryStrategy(retryStrategy) ;
+		builder.setRetryStrategy(retryStrategy);
+
+		builder.setRoutePlanner(new CustomHttpRoutePlanner(config));
 		
 		return builder.build();
 	}
