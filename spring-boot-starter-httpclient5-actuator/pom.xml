@@ -9,6 +9,8 @@
 	
     <artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
 
+	<name>spring-boot-starter-httpclient5-actuator</name>
+
 	<properties>
 		<dropwizard-metrics.version>4.2.28</dropwizard-metrics.version>
 	</properties>

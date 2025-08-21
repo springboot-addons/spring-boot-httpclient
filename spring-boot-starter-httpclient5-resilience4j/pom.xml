@@ -8,6 +8,7 @@
 	</parent>
 	
     <artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
+	<name>spring-boot-starter-httpclient5-resilience4j</name>
 
 	<properties>
 		<resilience4j.version>2.2.0</resilience4j.version>
