@@ -55,12 +55,12 @@ public class HttpClientConfigurer {
 	private HttpClient5Config config ;
 	
 	@Bean
-	public Executor httpClientExecutor(CloseableHttpClient httpClient) {
+	public Executor httpClient5Executor(CloseableHttpClient httpClient) {
 		return Executor.newInstance(httpClient);
 	}	
 	
 	@Bean
-	public CloseableHttpClient closeableHttpClient(PoolingHttpClientConnectionManager cm) {
+	public CloseableHttpClient closeableHttpClient5(PoolingHttpClientConnectionManager cm) {
 		HttpClientBuilder builder = httpClientBuilderProvider.getIfAvailable(HttpClientBuilder::create) ;
 		
 		builder.setUserAgent(config.getUserAgent()) ;

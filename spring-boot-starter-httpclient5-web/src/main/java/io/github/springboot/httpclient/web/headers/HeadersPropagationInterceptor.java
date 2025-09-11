@@ -26,11 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 public class HeadersPropagationInterceptor implements HttpRequestInterceptor, HttpResponseInterceptor {
 
 	@Autowired
-	@Qualifier("downHeaders")
+	@Qualifier("hc5DownHeaders")
 	private ObjectProvider<RequestHeadersStorage> downHeadersProvider;
 
 	@Autowired
-	@Qualifier("upHeaders")
+	@Qualifier("hc5UpHeaders")
 	private ObjectProvider<RequestHeadersStorage> upHeadersProvider;
 
 	@Autowired

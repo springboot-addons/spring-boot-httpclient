@@ -17,7 +17,7 @@ import io.github.springboot.httpclient5.core.utils.PatternUtils;
 public class CollectedResponseHeadersProvider implements ResponseHeaderProvider {
 
     @Autowired
-    @Qualifier("upHeaders")
+    @Qualifier("hc5UpHeaders")
     private ObjectProvider<RequestHeadersProviders.RequestHeadersStorage> upHeadersProvider;
 
     @Autowired

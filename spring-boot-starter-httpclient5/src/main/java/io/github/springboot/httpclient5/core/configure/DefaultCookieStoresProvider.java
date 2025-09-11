@@ -14,13 +14,13 @@ import org.springframework.context.annotation.Configuration;
 public class DefaultCookieStoresProvider {
 	@Bean
 	@ConditionalOnProperty(name = "spring.httpclient5.core.cookie-store.type", havingValue = "thread-local", matchIfMissing = false)
-	public CookieStore threadLocalCookieStore() {
+	public CookieStore hc5ThreadLocalCookieStore() {
 		return new ThreadLocalCookieStore();
 	}
 
 	@Bean
 	@ConditionalOnProperty(name = "spring.httpclient5.core.cookie-store.type", havingValue = "shared", matchIfMissing = true)
-	public CookieStore sharedCookieStore() {
+	public CookieStore hc5SharedCookieStore() {
 		return new BasicCookieStore();
 	}
 

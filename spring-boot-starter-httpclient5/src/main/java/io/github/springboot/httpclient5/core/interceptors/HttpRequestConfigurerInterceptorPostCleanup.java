@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @Order(Ordered.LOWEST_PRECEDENCE)
-@Component
+@Component("hc5httpRequestConfigurerInterceptorPostCleanup")
 public class HttpRequestConfigurerInterceptorPostCleanup implements HttpResponseInterceptor {
 
 	@Override

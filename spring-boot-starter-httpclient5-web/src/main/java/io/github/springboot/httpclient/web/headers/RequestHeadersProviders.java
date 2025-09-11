@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.context.WebApplicationContext;
 
-@Configuration
+@Configuration("hc5RequestHeadersProviders")
 public class RequestHeadersProviders {
 
 	public interface RequestHeadersStorage {
@@ -100,27 +100,27 @@ public class RequestHeadersProviders {
 		}
 	}
 
-	@Bean("downHeaders")
+	@Bean("hc5DownHeaders")
 	@ConditionalOnWebApplication
 	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST)
 	public RequestHeadersStorage downHeadersWeb() {
 		return new DefaultRequestHeadersStorage();
 	}
 
-	@Bean("upHeaders")
+	@Bean("hc5UpHeaders")
 	@ConditionalOnWebApplication
 	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST)
 	public RequestHeadersStorage upHeadersWeb() {
 		return new DefaultRequestHeadersStorage();
 	}
 
-	@Bean("downHeaders")
+	@Bean("hc5DownHeaders")
 	@ConditionalOnNotWebApplication
 	public RequestHeadersStorage downHeaders() {
 		return new ThreadLocalRequestHeaderStorage();
 	}
 
-	@Bean("upHeaders")
+	@Bean("hc5UpHeaders")
 	@ConditionalOnNotWebApplication
 	public RequestHeadersStorage upHeaders() {
 		return new ThreadLocalRequestHeaderStorage();

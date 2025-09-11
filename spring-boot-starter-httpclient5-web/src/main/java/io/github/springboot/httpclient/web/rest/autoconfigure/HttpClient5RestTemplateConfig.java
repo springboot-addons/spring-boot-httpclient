@@ -2,7 +2,7 @@ package io.github.springboot.httpclient.web.rest.autoconfigure;
 
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -14,9 +14,10 @@ public class HttpClient5RestTemplateConfig {
 
 	@Bean
 	@Primary
-	public RestTemplateBuilder restTemplateBuilder(HttpClient httpClient) {
-		RestTemplateBuilder builder = new RestTemplateBuilder();
-		builder.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient));
-		return builder;
+	public RestTemplateCustomizer hc5RestTemplateCustomizer(HttpClient httpClient) {
+		return rt -> {
+			rt.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
+			
+		} ;
 	}
 }

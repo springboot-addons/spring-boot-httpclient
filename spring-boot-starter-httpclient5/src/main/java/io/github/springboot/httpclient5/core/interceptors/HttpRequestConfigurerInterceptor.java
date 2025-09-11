@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Component
+@Component("hc5httpRequestConfigurerInterceptor")
 public class HttpRequestConfigurerInterceptor implements HttpRequestInterceptor {
 
 	static final String REQUEST_CONFIG_EXTENDED = HttpClientContext.REQUEST_CONFIG+"-extended";

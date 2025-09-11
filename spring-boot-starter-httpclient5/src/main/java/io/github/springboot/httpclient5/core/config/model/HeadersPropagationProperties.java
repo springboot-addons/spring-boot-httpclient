@@ -17,8 +17,8 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class HeadersPropagationProperties {
 	private Boolean enabled;
-	private List<String> down;
-	private List<String> up;
+	private List<String> down = new ArrayList<String>();
+	private List<String> up = new ArrayList<String>();
 
 	@NestedConfigurationProperty
 	@Builder.Default

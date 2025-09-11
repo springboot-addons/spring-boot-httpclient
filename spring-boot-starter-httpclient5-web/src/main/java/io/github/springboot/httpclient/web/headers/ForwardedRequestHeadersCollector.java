@@ -21,7 +21,7 @@ public class ForwardedRequestHeadersCollector implements RequestHeaderCollector 
     private HttpClient5Config config;
 
     @Autowired
-    @Qualifier("downHeaders")
+    @Qualifier("hc5DownHeaders")
     private ObjectProvider<RequestHeadersProviders.RequestHeadersStorage> downHeaders;
 
     @Override

@@ -14,7 +14,7 @@ public class HeadersConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "spring.httpclient5.web.headers-filter", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public HeadersFilter headersFilter() {
+    public HeadersFilter hc5HeadersFilter() {
         return new HeadersFilter();
     }
 
@@ -23,17 +23,17 @@ public class HeadersConfiguration {
     public static class HeadersPropagationConfiguration {
 
         @Bean
-        public CollectedResponseHeadersProvider collectedResponseHeadersProvider() {
+        public CollectedResponseHeadersProvider hc5CollectedResponseHeadersProvider() {
             return new CollectedResponseHeadersProvider();
         }
 
         @Bean
-        public ForwardedRequestHeadersCollector forwardedRequestHeadersCollector() {
+        public ForwardedRequestHeadersCollector hc5ForwardedRequestHeadersCollector() {
             return new ForwardedRequestHeadersCollector();
         }
         
         @Bean 
-        public HeadersPropagationInterceptor headersPropagationInterceptor() {
+        public HeadersPropagationInterceptor hc5HeadersPropagationInterceptor() {
         	return new HeadersPropagationInterceptor() ;
         }
     }

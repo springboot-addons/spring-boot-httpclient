@@ -40,7 +40,7 @@ public class HttpClientActuatorAutoConfiguration {
 	private String name;
 	private MetricRegistry metricRegistry;
 	
-	@Bean("legacyMetricRegistry")
+	@Bean("hc5LegacyMetricRegistry")
 	public MetricRegistry getMetricsRegistry(PoolingHttpClientConnectionManager cm, PoolingAsyncClientConnectionManager asyncCm) {
 		metricRegistry = new MetricRegistry();
         // this acquires a lock on the connection pool; remove if contention sucks
@@ -90,17 +90,17 @@ public class HttpClientActuatorAutoConfiguration {
 	}
 	
 	@Bean
-	public HttpClientEndpoint httpClientEndpoint(@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
+	public HttpClientEndpoint httpClient5Endpoint(@Qualifier("hc5LegacyMetricRegistry") MetricRegistry metricRegistry) {
 		return new HttpClientEndpoint(config, metricRegistry);
 	}
 	
 	@Bean
-	public HttpAsyncClientEndpoint asyncHttpClientEndpoint(@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
+	public HttpAsyncClientEndpoint asyncHttpClient5Endpoint(@Qualifier("hc5LegacyMetricRegistry") MetricRegistry metricRegistry) {
 		return new HttpAsyncClientEndpoint(config, metricRegistry);
 	}
 
 	@Bean
-	public JmxReporter jmxExporter(@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
+	public JmxReporter hc5JmxExporter(@Qualifier("hc5LegacyMetricRegistry") MetricRegistry metricRegistry) {
 		final JmxReporter reporter = JmxReporter.forRegistry(metricRegistry)
 				.inDomain(config.getJmx().getDomain()).build();
 		reporter.start();
@@ -110,7 +110,7 @@ public class HttpClientActuatorAutoConfiguration {
 	@Bean
 	@Order(Ordered.LOWEST_PRECEDENCE)
 	public ExecChainHandler syncInstrumentedExecChainHandler(
-			@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
+			@Qualifier("hc5LegacyMetricRegistry") MetricRegistry metricRegistry) {
 		HttpClientMetricNameStrategy metricNameStrategy = getMetricNameStrategy(config.getJmx().getMetricNameStrategy());
 		return new ActuatorMetricExecChainHandler(metricRegistry, metricNameStrategy);
 	}
@@ -118,7 +118,7 @@ public class HttpClientActuatorAutoConfiguration {
 	@Bean
 	@Order(Ordered.LOWEST_PRECEDENCE)
 	public AsyncExecChainHandler asyncInstrumentedExecChainHandler(
-			@Qualifier("legacyMetricRegistry") MetricRegistry metricRegistry) {
+			@Qualifier("hc5LegacyMetricRegistry") MetricRegistry metricRegistry) {
 		HttpClientMetricNameStrategy metricNameStrategy = getMetricNameStrategy(config.getJmx().getMetricNameStrategy());
 		return new InstrumentedAsyncExecChainHandler(metricRegistry, metricNameStrategy);
 	}
