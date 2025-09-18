@@ -1,128 +1,56 @@
 package io.github.springboot.httpclient.web.async.autoconfigure;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.task.ThreadPoolTaskExecutorBuilder;
+import org.springframework.boot.task.ThreadPoolTaskExecutorCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.scheduling.annotation.AsyncConfigurer;
+import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import io.github.springboot.httpclient5.core.utils.ThreadFactoryUtils;
 
-/**
- * Pour la propagation des headers via un bean en scope request sur des methodes
- * déclarées @Async (annotation standard spring) ref
- * https://gitlab.com/snippets/175860
- * 
- * @author sru
- *
- */
 @Configuration
 @EnableAsync
 @ConditionalOnWebApplication
-public class AsyncExecutorConfig implements AsyncConfigurer {
+public class AsyncExecutorConfig {
 
-	@Autowired
-	private ThreadPoolTaskExecutorBuilder builder;
-	
 	@Autowired
 	private ThreadFactoryUtils threadFactoryUtils;
 	
-
-	@Override
 	@Bean
-	@Primary
-	public Executor getAsyncExecutor() {
-		ContextAwarePoolExecutor contextAwarePoolExecutor = builder.build(ContextAwarePoolExecutor.class);
-		contextAwarePoolExecutor.setThreadFactory(threadFactoryUtils.getThreadFactory());
-		return contextAwarePoolExecutor;
+	public ThreadPoolTaskExecutorCustomizer hc5ThreadPoolTaskExecutorCustomizer() {
+		return tpte -> { 
+			tpte.setTaskDecorator(new ContextCopyingTaskDecorator());
+			tpte.setThreadFactory(threadFactoryUtils.getThreadFactory());
+		} ;
+	}
+	
+	@Bean
+	public TomcatConnectorCustomizer disableFacadeDiscard() {
+	    return (connector) -> connector.setDiscardFacades(false);
+	}
+	
+	// https://yashsrivastav.hashnode.dev/spring-boot-async-services
+	public static class ContextCopyingTaskDecorator implements TaskDecorator {
+	    @Override
+	    public Runnable decorate(Runnable runnable) {
+	        // Capture the current request attributes
+	        RequestAttributes context = RequestContextHolder.currentRequestAttributes();
+	        return () -> {
+	            try {
+	                // Set the request attributes for this thread
+	                RequestContextHolder.setRequestAttributes(context);
+	                runnable.run();
+	            } finally {
+	                // Reset the request attributes after execution
+	                RequestContextHolder.resetRequestAttributes();
+	            }
+	        };
+	    }
 	}
 
-	public static class ContextAwarePoolExecutor extends ThreadPoolTaskExecutor {
-		private static final long serialVersionUID = -2774656603827672334L;
-
-		@Override
-		public void execute( Runnable task) {
-			super.execute(new ContextAwareRunnable(task, RequestContextHolder.currentRequestAttributes()));
-		}
-
-		@Override
-		public Future<?> submit(Runnable task) {
-			return super.submit(new ContextAwareRunnable(task, RequestContextHolder.currentRequestAttributes()));
-		}
-
-		@Override
-		public <T> Future<T> submit(Callable<T> task) {
-			return super.submit(new ContextAwareCallable<>(task, RequestContextHolder.currentRequestAttributes()));
-		}
-
-		@Override
-		public ListenableFuture<?> submitListenable(Runnable task) {
-			return super.submitListenable(new ContextAwareRunnable(task, RequestContextHolder.currentRequestAttributes()));
-		}
-
-
-		@Override
-		public <T> ListenableFuture<T> submitListenable(Callable<T> task) {
-			return super.submitListenable(
-					new ContextAwareCallable<>(task, RequestContextHolder.currentRequestAttributes()));
-		}
-	}
-
-	public static class ContextAwareCallable<T> implements Callable<T> {
-		private final Callable<T> task;
-		private final RequestAttributes context;
-
-		public ContextAwareCallable(Callable<T> task, RequestAttributes context) {
-			this.task = task;
-			this.context = context;
-		}
-
-		@Override
-		public T call() throws Exception {
-			if (context != null) {
-				RequestContextHolder.setRequestAttributes(context);
-			}
-
-			try {
-				return task.call();
-			} finally {
-				RequestContextHolder.resetRequestAttributes();
-			}
-		}
-	}
-
-	public static class ContextAwareRunnable implements Runnable {
-
-		private final Runnable task;
-		private final RequestAttributes context;
-
-		public ContextAwareRunnable(Runnable task, RequestAttributes context) {
-			this.task = task;
-			this.context = context;
-		}
-
-		@Override
-		public void run() {
-			if (context != null) {
-				RequestContextHolder.setRequestAttributes(context);
-			}
-			try {
-				task.run();
-			} finally {
-				RequestContextHolder.resetRequestAttributes();
-			}
-		}
-	}
 }
