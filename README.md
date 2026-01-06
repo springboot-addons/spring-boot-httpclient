@@ -2,10 +2,10 @@
 Spring Boot AutoConfiguration starters for Apache HttpClient 5.x
 
 * Requires SpringBoot 3.0.x or higher and Java 17 +
-* Tested with SpringBoot 3.1.x and SpringBoot 3.2.x
-* Spring Boot 3.3.x / HttpClient5 5.3.x + need spring-boot-httpclient5 1.0.6+ 
-* Spring Boot 3.4.x / HttpClient5 5.4.x + need spring-boot-httpclient5 1.2.0+ 
-* Spring Boot 4.0.x / HttpClient5 5.5.x + need spring-boot-httpclient5 2.0.0+ 
+
+* Spring Boot 3.3.x / HttpClient5 5.3.x + needs spring-boot-httpclient5 1.0.6+ 
+* Spring Boot 3.4.x / HttpClient5 5.4.x + needs spring-boot-httpclient5 1.2.0+ 
+* Spring Boot 4.0.x / HttpClient5 5.5.x + needs spring-boot-httpclient5 2.0.0+ 
 
 ***Documentation In progress***
 
