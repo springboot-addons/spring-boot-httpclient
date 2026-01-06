@@ -20,8 +20,9 @@ mvn clean
 mvn release:prepare
 
 export / set JDK_JAVA_OPTIONS=--add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
+export / set MAVEN_GPG_PASSPHRASE=xxx
 
-mvn release:perform
+mvn -Prelease-sign-artifacts release:perform
 
 git push
 git push --tags

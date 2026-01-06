@@ -65,7 +65,7 @@
 
 	<properties>
 		<java.version>17</java.version>
-		<version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
+		<version.maven-gpg-plugin>3.1.0</version.maven-gpg-plugin>
 	</properties>
 
 	<modules>
