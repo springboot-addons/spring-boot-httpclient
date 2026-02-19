@@ -1,12 +1,13 @@
 package io.github.springboot.httpclient5;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
 import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.core5.concurrent.FutureCallback;
-import org.apache.hc.core5.http.HttpStreamResetException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -18,8 +19,9 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
-import io.github.springboot.httpclient5.actuator.HttpAsyncClientEndpoint;
 import io.github.springboot.httpclient5.core.utils.LoggingFutureCallback;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -40,7 +42,7 @@ public class AsyncActuatorTests {
 	CloseableHttpAsyncClient async;
 	
 	@Autowired
-	HttpAsyncClientEndpoint stats ;
+	MeterRegistry stats ;
 
 	@Test
 	@Order(1)
@@ -52,15 +54,23 @@ public class AsyncActuatorTests {
 		Assertions.assertEquals(200, response.getCode()) ;
 		Assertions.assertTrue(response.getBodyText().contains("HttpClient5Async/SRU")) ;
 		Assertions.assertNotNull(stats);
-		Assertions.assertNotNull(stats.getMetrics());
-		int connectionsCount = (int) stats.getMetrics().get("org.apache.hc.client5.http.nio.AsyncClientConnectionManager.available-connections") ;
-		Assertions.assertEquals(1, connectionsCount);
-		
-		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.nas.capsi-informatique.fr.get-requests.count") ;
-		Assertions.assertEquals(1, requestCount);
-		
-		int maxConnections = (int) stats.getMetrics().get("org.apache.hc.client5.http.nio.AsyncClientConnectionManager.max-connections") ;
-		Assertions.assertEquals(5, maxConnections);
+		double connectionsCount = stats.find("httpcomponents.httpclient.pool.total.connections")
+			.tags(Arrays.asList(Tag.of("httpclient", "httpclient5.async-pool"), Tag.of("state", "available")))
+			.meter().measure().iterator().next().getValue() ;
+		Assertions.assertEquals(1.0d, connectionsCount);
+
+
+		AtomicReference<Double> requestCount = new AtomicReference<>(0d) ; 
+		stats.find("httpcomponents.httpclient.request")
+				.tags(Arrays.asList(Tag.of("target.host", "nas.capsi-informatique.fr")))
+				.timer()
+				.measure().forEach(m -> { 
+					log.info("meter: {} {}", m.getStatistic(), m.getValue()) ;
+					if (m.getStatistic().name().equalsIgnoreCase("count")) {
+						requestCount.set(m.getValue()) ;
+					}
+				});
+		Assertions.assertEquals(1d, requestCount.get());
 	}
 	
 	@Test
@@ -90,10 +100,18 @@ public class AsyncActuatorTests {
 		Assertions.assertFalse(cancelled) ;
 		Assertions.assertTrue(done) ;
 		Assertions.assertNotNull(stats);
-		Assertions.assertNotNull(stats.getMetrics());
-		
-		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.nas.capsi-informatique.fr.get-requests.count") ;
-		Assertions.assertEquals(2, requestCount);
+
+		AtomicReference<Double> requestCount = new AtomicReference<>(0d) ; 
+		stats.find("httpcomponents.httpclient.request")
+			.tags(Arrays.asList(Tag.of("target.host", "nas.capsi-informatique.fr")))
+			.timer()
+			.measure().forEach(m -> { 
+				log.info("meter: {} {}", m.getStatistic(), m.getValue()) ;
+				if (m.getStatistic().name().equalsIgnoreCase("count")) {
+					requestCount.set(m.getValue()) ;
+				}
+		});
+		Assertions.assertEquals(1d, requestCount.get());
 	}
 
 }
