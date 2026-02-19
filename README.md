@@ -12,7 +12,7 @@ Spring Boot AutoConfiguration starters for Apache HttpClient 5.x
 Configuration support for HttpClient through SpringBoot yaml / properties
 - Support configuration at url / method level for timeouts
 - Http connnection pool size configurable at host level
-- Support for actuator / dropmetrics
+- Support for actuator / dropmetrics (< 2.0.1) / micrometer (spring boot 4.x, httpclient 5.x, starter > 2.0.1)
 - Support for resilience4j circuit breaker / ratelimiter
 - Support for headers propagation (bidirectional)
 - Support for Async client : CloseableHttpAsyncClient
@@ -25,7 +25,7 @@ Httpclient configuration support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5</artifactId>
-		<version>2.0.0</version>
+		<version>2.0.1</version>
 	</dependency>
 
 Httpclient actuator support 
@@ -33,7 +33,7 @@ Httpclient actuator support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
-		<version>2.0.0</version>
+		<version>2.0.1</version>
 	</dependency>
 
 
@@ -42,7 +42,7 @@ Httpclient resilience4j support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-		<version>2.0.0</version>
+		<version>2.0.1</version>
 	</dependency>
 
 
@@ -52,7 +52,7 @@ Httpclient all in one support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-all</artifactId>
-		<version>2.0.0</version>
+		<version>2.0.1</version>
 		<type>pom</type>
 	</dependency>
 
