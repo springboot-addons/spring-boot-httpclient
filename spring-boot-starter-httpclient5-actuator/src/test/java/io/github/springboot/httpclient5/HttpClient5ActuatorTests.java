@@ -1,5 +1,8 @@
 package io.github.springboot.httpclient5;
 
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -21,7 +24,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
-import io.github.springboot.httpclient5.actuator.HttpClientEndpoint;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import lombok.extern.slf4j.Slf4j;
+
 
 /**
  * http client auto configuration tests
@@ -33,11 +39,15 @@ import io.github.springboot.httpclient5.actuator.HttpClientEndpoint;
 @ComponentScan("io.github.springboot.httpclient5.core")
 @TestMethodOrder(OrderAnnotation.class)
 @DirtiesContext
+@Slf4j
 public class HttpClient5ActuatorTests {
 	
 	@Autowired
 	ApplicationContext context;
-
+	
+	@Autowired
+	MeterRegistry stats ;
+	
 	@Test
 	@Order(1)
 	public void testHttpsClientWithStats() throws Exception {
@@ -45,12 +55,24 @@ public class HttpClient5ActuatorTests {
 		final HttpGet httpGet = new HttpGet(Constants.HTTPBIN_TEST_HOST+"/headers");
 		final CloseableHttpResponse response = httpClient.execute(httpGet);
 		EntityUtils.toString(response.getEntity());
-		HttpClientEndpoint stats = getStats();
-		Assertions.assertNotNull(stats);
-		Assertions.assertNotNull(stats.getMetrics());
 		
-		long requestCount = (long) stats.getMetrics().get("org.apache.hc.client5.http.classic.HttpClient.nas.capsi-informatique.fr.get-requests.count") ;
-		Assertions.assertEquals(1, requestCount);
+		Assertions.assertNotNull(stats);
+		double connectionsCount = stats.find("httpcomponents.httpclient.pool.total.connections")
+			.tags(Arrays.asList(Tag.of("httpclient", "httpclient5.pool"), Tag.of("state", "available")))
+			.meter().measure().iterator().next().getValue() ;
+		Assertions.assertEquals(1.0d, connectionsCount);
+
+
+		AtomicReference<Double> requestCount = new AtomicReference<>(0d) ; 
+		stats.find("http.client.request.duration")
+				.tags(Arrays.asList(Tag.of("server.address", "nas.capsi-informatique.fr")))
+				.meter().measure().forEach(m -> { 
+					log.info("meter: {} {}", m.getStatistic(), m.getValue()) ;
+					if (m.getStatistic().name().equalsIgnoreCase("count")) {
+						requestCount.set(m.getValue()) ;
+					}
+				});
+			Assertions.assertEquals(1d, requestCount.get());
 	}
 
 	@Test
@@ -74,8 +96,4 @@ public class HttpClient5ActuatorTests {
 		Assertions.assertTrue(content.contains("User-Agent"));
 	}
 
-	private HttpClientEndpoint getStats() {
-		final HttpClientEndpoint endpoint = context.getBean(HttpClientEndpoint.class);
-		return endpoint;
-	}
 }
