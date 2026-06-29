@@ -1,52 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>io.github.springboot-addons</groupId>
-		<artifactId>spring-boot-starter-httpclient5-parent</artifactId>
-		<version>2.0.2-SNAPSHOT</version>
-	</parent>
-	
-    <artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-	<name>spring-boot-starter-httpclient5-resilience4j</name>
+    <parent>
+        <groupId>io.github.springboot-addons</groupId>
+        <artifactId>spring-boot-starter-httpclient5-parent</artifactId>
+        <version>3.0.1-SNAPSHOT</version>
+    </parent>
 
-	<properties>
-		<resilience4j.version>2.2.0</resilience4j.version>
-	</properties>
+    <artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
+    <name>spring-boot-starter-httpclient5-resilience4j</name>
+
+    <properties>
+        <resilience4j.version>2.4.0</resilience4j.version>
+    </properties>
 
     <dependencies>
-		<dependency>
-	        <groupId>io.github.springboot-addons</groupId>
-	        <artifactId>spring-boot-starter-httpclient5</artifactId>
-	        <version>${project.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>io.github.springboot-addons</groupId>
+            <artifactId>spring-boot-starter-httpclient5</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>io.github.resilience4j</groupId>
-			<artifactId>resilience4j-circuitbreaker</artifactId>
-			<version>${resilience4j.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-circuitbreaker</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>io.github.resilience4j</groupId>
-			<artifactId>resilience4j-spring-boot3</artifactId>
-			<version>${resilience4j.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.hibernate.validator</groupId>
-					<artifactId>hibernate-validator</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-aop</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>io.github.resilience4j</groupId>
-			<artifactId>resilience4j-retry</artifactId>
-			<version>${resilience4j.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-retry</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot4</artifactId>
+            <version>${resilience4j.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 </project>
