@@ -17,8 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.ConcurrentLruCache;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.github.springboot.httpclient5.core.config.model.AsyncConnectionManagerConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.CharCodingConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.ConnectionConfigProperties;
@@ -48,7 +46,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HttpClient5Config {
 	private static final int DEFAULT_MAX_CONNEXION_PER_HOST = 50;
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 	public static final String DEFAULT_HOST_KEY = "default";
 	
 	public static Timeout DEFAULT_CONNECT_TIMEOUT = Timeout.ofSeconds(3) ;
@@ -90,12 +87,6 @@ public class HttpClient5Config {
 	
 	@Autowired
 	ConfigurableEnvironment env;
-	
-	@Override
-	@SneakyThrows
-	public String toString() {
-		return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(this.requestConfig);
-	}
 	
 	@PostConstruct
 	public void init() {
