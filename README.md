@@ -6,6 +6,7 @@ Spring Boot AutoConfiguration starters for Apache HttpClient 5.x
 * Spring Boot 3.3.x / HttpClient5 5.3.x + needs spring-boot-httpclient5 1.0.6+ 
 * Spring Boot 3.4.x / HttpClient5 5.4.x + needs spring-boot-httpclient5 1.2.0+ 
 * Spring Boot 4.0.x / HttpClient5 5.5.x + needs spring-boot-httpclient5 2.0.0+ 
+* Spring Boot 4.1.x / HttpClient5 5.6.x + needs spring-boot-httpclient5 2.1.0+ 
 
 ***Documentation In progress***
 
@@ -25,7 +26,7 @@ Httpclient configuration support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5</artifactId>
-		<version>2.0.1</version>
+		<version>2.1.0</version>
 	</dependency>
 
 Httpclient actuator support 
@@ -33,7 +34,7 @@ Httpclient actuator support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
-		<version>2.0.1</version>
+		<version>2.1.0</version>
 	</dependency>
 
 
@@ -42,7 +43,7 @@ Httpclient resilience4j support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-		<version>2.0.1</version>
+		<version>2.1.0</version>
 	</dependency>
 
 
@@ -52,7 +53,7 @@ Httpclient all in one support
 	<dependency>
 		<groupId>io.github.springboot-addons</groupId>
 		<artifactId>spring-boot-starter-httpclient5-all</artifactId>
-		<version>2.0.1</version>
+		<version>2.1.0</version>
 		<type>pom</type>
 	</dependency>
 
