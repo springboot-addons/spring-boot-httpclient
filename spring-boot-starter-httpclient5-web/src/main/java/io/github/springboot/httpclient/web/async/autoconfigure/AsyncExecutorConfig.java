@@ -1,6 +1,7 @@
 package io.github.springboot.httpclient.web.async.autoconfigure;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.task.ThreadPoolTaskExecutorCustomizer;
 import org.springframework.boot.tomcat.TomcatConnectorCustomizer;
@@ -15,6 +16,7 @@ import io.github.springboot.httpclient5.core.utils.ThreadFactoryUtils;
 
 @Configuration
 @EnableAsync
+@ConditionalOnProperty(name = "spring.httpclient5.web.async-decorator.enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication
 public class AsyncExecutorConfig {
 
