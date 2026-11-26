@@ -11,6 +11,19 @@ The repository root is this directory (`spring-boot-httpclient`). It is **not** 
 `rci-socle-api` repository anymore: do not reference, import or copy files from
 `d:\workspace\rci-socle-api-sb4`.
 
+Current version: `1.3.1-SNAPSHOT`. Last release: `1.3.0` (tag
+`spring-boot-starter-httpclient5-parent-1.3.0`).
+
+## Branches
+
+| Branch | Spring Boot | Starter line |
+|---|---|---|
+| `hc5-sb42` | 4.2.x | 2.2.x |
+| `hc5-sb41` | 4.1.x | 2.1.x |
+| `hc5-sb4` | 4.0.x | 2.0.x |
+| `hc5-sb3` | 3.5.x | 1.3.x (current) |
+
+
 ## Modules
 
 | Module | Purpose |
@@ -27,7 +40,7 @@ The repository root is this directory (`spring-boot-httpclient`). It is **not** 
 - Target: **Java 17** (`java.version=17`, `maven.compiler.release=17`).
 - Build JDK: **17 minimum, validated with JDK 25**. The build must stay JDK 25 compatible.
 - Maven: **3.9.11** through the wrapper (`mvnw`, `mvnw.cmd`).
-- Spring Boot: **3.5.10** (parent BOM). HttpClient 5 version is inherited from the BOM (5.4.x).
+- Spring Boot: **3.5.10** (parent BOM). HttpClient 5 version is inherited from the BOM (5.5.x).
 - Lombok and `spring-boot-configuration-processor` are annotation processors.
 
 ### JDK 23+ / JDK 25 specifics
@@ -79,7 +92,7 @@ Notes:
 - Unreachable endpoints are simulated with `http://127.0.0.1:1`.
 - Useful coverage added: converters, `PatternUtils`, credentials parsing, `RequestConfigProperties`
   merge/copy, retry strategy, route planner, header propagation, `HeadersFilter`, zero-conf defaults.
-- `HttpClient5ConfigIntegrationTest` is not present on this branch.
+- `HttpClient5ConfigIntegrationTest` is disabled on purpose (kept as documentation).
 
 ## Release
 
@@ -111,7 +124,7 @@ The release is a **single command**:
   - `releaseProfiles=release-sign-artifacts` → no need for `-Prelease-sign-artifacts`.
   - `pushChanges=true` → commits, tags and pushes automatically.
   - `localCheckout=true` + `preparationGoals=clean verify`.
-  - Tag format: `<artifactId>-<version>` (e.g. `spring-boot-starter-httpclient5-parent-2.1.2`).
+  - Tag format: `<artifactId>-<version>` (e.g. `spring-boot-starter-httpclient5-parent-1.3.0`).
 - `maven-gpg-plugin` is only active in the `release-sign-artifacts` profile (perform), so normal
   builds never sign.
 - `central-publishing-maven-plugin` publishes automatically (`autoPublish=true`,
@@ -151,3 +164,6 @@ The release is a **single command**:
 3. Run `.\mvnw.cmd test -pl <module>` then `.\mvnw.cmd clean verify`.
 4. Keep the POM dependency versions centralized in the root `pom.xml`.
 5. Do not reintroduce external test endpoints.
+6. When a configuration property or behaviour changes, update `docs/configuration-guide.md`,
+   `docs/CONFIGURATION-ALL.md` and, if relevant, `README.md`. Documentation must match the code,
+   not the old AI-generated examples.
