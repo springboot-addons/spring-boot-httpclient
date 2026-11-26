@@ -8,16 +8,18 @@ Published on Maven Central under `io.github.springboot-addons`.
 
 ## Compatibility
 
-| Spring Boot | HttpClient 5 | Minimum starter version |
-|---|---|---|
-| 3.3.x | 5.3.x | `1.0.6` |
-| 3.4.x | 5.4.x | `1.2.0` |
-| 3.5.x | 5.5.x | `1.3.0` |
-| 4.0.x | 5.5.x | `2.0.0` |
-| 4.1.x | 5.6.x | `2.1.0` |
-| 4.2.x | 5.6.x | `2.2.0` |
+| Spring Boot | HttpClient 5 | Starter line | Recommended version |
+|---|---|---|---|
+| 3.3.x | 5.3.x | 1.0.x | `1.0.6` |
+| 3.4.x | 5.4.x | 1.2.x | `1.2.1` |
+| 3.5.x | 5.5.x | 1.3.x | `1.3.1` |
+| 4.0.x | 5.5.x | 2.0.x | `2.0.2` |
+| 4.1.x | 5.6.x | 2.1.x | `2.1.2` |
+| 4.2.x | 5.6.x | 2.2.x | `2.2.1` |
 
-> This branch: Spring Boot 3.5.10, starter 1.3.x (current `1.3.1-SNAPSHOT`, last release `1.3.0`).
+"Recommended" is the latest release of the corresponding starter line.
+
+This branch: Spring Boot 3.5.x, current version `1.3.2-SNAPSHOT`, last release `1.3.1`.
 
 Java 17 is the runtime target. The build runs on JDK 17 up to JDK 25.
 
@@ -27,7 +29,7 @@ Java 17 is the runtime target. The build runs on JDK 17 up to JDK 25.
 |---|---|
 | `spring-boot-starter-httpclient5` | Core: sync/async clients, pools, request rules, retries, authentication |
 | `spring-boot-starter-httpclient5-web` | Bidirectional HTTP header propagation, `@Async` context propagation, `RestTemplate` customization |
-| `spring-boot-starter-httpclient5-actuator` | Micrometer request metrics and connection-pool metrics |
+| `spring-boot-starter-httpclient5-actuator` | Micrometer observations and connection-pool metrics |
 | `spring-boot-starter-httpclient5-resilience4j` | Resilience4j circuit breaker and rate limiter integration |
 | `spring-boot-starter-httpclient5-all` | POM aggregator for the four starters above |
 | `spring-boot-starter-httpclient5-integration-tests` | End-to-end sample and test application |
@@ -38,7 +40,7 @@ Java 17 is the runtime target. The build runs on JDK 17 up to JDK 25.
 <dependency>
     <groupId>io.github.springboot-addons</groupId>
     <artifactId>spring-boot-starter-httpclient5</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 ```
 
@@ -181,7 +183,7 @@ The web starter also:
 
 ## Actuator and Resilience4j
 
-Add `spring-boot-starter-httpclient5-actuator` for Micrometer request metrics and pool metrics.
+Add `spring-boot-starter-httpclient5-actuator` for Micrometer observations and pool metrics.
 Add `spring-boot-starter-httpclient5-resilience4j` to apply a Resilience4j circuit breaker and,
 when the circuit name is not `default`, a rate limiter with the same name:
 
