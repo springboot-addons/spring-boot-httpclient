@@ -34,7 +34,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 @ActiveProfiles("test")
 @TestMethodOrder(OrderAnnotation.class)
 @DirtiesContext
-public class HttpClient5Resilience4jTests {
+public class HttpClient5Resilience4jTests extends AbstractHttpBinTest {
 
 	@Autowired
 	ApplicationContext context;
@@ -87,7 +87,8 @@ public class HttpClient5Resilience4jTests {
     @Order(5)
 	public void testCircuitBreakerException() throws Exception {
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://test.unknown-azerty.com");
+		// Port 1 on the loopback interface is never listening: guarantees a fast connection failure.
+		final HttpGet httpGet = new HttpGet("http://127.0.0.1:1");
 		boolean hasRecovered = false;
 		boolean hasBeenBreaked = false;
 		for (int i = 0; i < 4; i++) {

@@ -29,3 +29,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Maven release plugin ###
+release.properties
+pom.xml.releaseBackup
+pom.xml.tag
+pom.xml.next
+dependency-reduced-pom.xml

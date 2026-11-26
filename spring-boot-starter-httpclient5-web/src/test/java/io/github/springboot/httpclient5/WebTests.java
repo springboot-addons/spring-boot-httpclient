@@ -27,10 +27,9 @@ import io.github.springboot.httpclient5.core.utils.LoggingFutureCallback;
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
 @ComponentScan("io.github.springboot.httpclient5.core")
-public class WebTests {
-	private static final String HTTPBIN_HOST = "http://nas.capsi-informatique.fr:9999";
+public class WebTests extends AbstractHttpBinTest {
+	private static final String HTTPBIN_HOST = Constants.HTTPBIN_TEST_HOST;
 
-	
 	@Autowired
 	Executor executor;
 
