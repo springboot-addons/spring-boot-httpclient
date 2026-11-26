@@ -8,11 +8,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.ActiveProfiles;
 
+import io.github.springboot.httpclient5.AbstractHttpBinTest;
 import io.github.springboot.httpclient5.core.config.HttpClient5Config;
 
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
-public class HttpRequestConfigurerInterceptorTest {
+public class HttpRequestConfigurerInterceptorTest extends AbstractHttpBinTest {
 
 	@Autowired
 	HttpClient5Config configurer;

@@ -1,29 +1,68 @@
-From https://dzone.com/articles/publish-your-artifacts-to-maven-central
+Release process
+===============
 
-Deltas : 
-* Signing : 
-	gpg --list-keys 
-	gpg --keyserver keys.openpgp.org --send-keys ID
+Artifacts are published to Maven Central:
+https://repo1.maven.org/maven2/io/github/springboot-addons/
 
-* OSSRH repo (on distributionManagement and nexus-staging-maven-plugin)
-  https://oss.sonatype.org/ -> https://s01.oss.sonatype.org/
+References:
+- https://central.sonatype.org/publish/release/
+- https://maven.apache.org/plugins/maven-gpg-plugin/sign-mojo.html
 
-ref : https://central.sonatype.org/publish/release/
 
-Releases in : https://repo1.maven.org/maven2/io/github/springboot-addons/
+Prerequisites (one-time setup)
+------------------------------
 
-Proceedure : tout doit etre committé
+1. GPG key
 
-Use Java 17 
+    gpg --list-secret-keys
+    gpg --keyserver keys.openpgp.org --send-keys <KEY_ID>
 
-mvn clean
-mvn release:prepare
+2. GPG passphrase (permanent Windows user variable, then restart the terminal)
 
-export / set JDK_JAVA_OPTIONS=--add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED
-export / set MAVEN_GPG_PASSPHRASE=xxx
+    setx MAVEN_GPG_PASSPHRASE "your-passphrase"
 
-mvn -Prelease-sign-artifacts release:perform
+   maven-gpg-plugin 3.2.8 reads this variable automatically (recommended practice).
+   No export of JDK_JAVA_OPTIONS is needed: the required --add-opens flags are in .mvn/jvm.config.
 
-git push
-git push --tags
+3. Maven Central credentials in %USERPROFILE%\.m2\settings.xml, server id "central".
 
+4. Git: the current branch must track origin (the release plugin pushes commits and tags).
+
+    git push -u origin <branch>
+
+5. Docker must be running (the release runs `clean verify`, and the tests use Testcontainers).
+
+
+Release (one command)
+---------------------
+
+    .\mvnw.cmd release:prepare release:perform
+
+or, with a Maven installation instead of the wrapper:
+
+    mvn release:prepare release:perform
+
+The POM configuration:
+- maven-release-plugin activates the "release-sign-artifacts" profile during perform,
+  pushes commits/tags automatically, uses a local checkout and runs `clean verify` before tagging.
+- maven-gpg-plugin signs artifacts (verify phase) using MAVEN_GPG_PASSPHRASE.
+- central-publishing-maven-plugin uploads and publishes automatically (waitUntil=published).
+
+What happens:
+1. release:prepare updates versions, runs the tests, commits, tags (e.g.
+   spring-boot-starter-httpclient5-parent-2.0.2), pushes, then bumps to the next SNAPSHOT and pushes.
+2. release:perform builds the tag, signs the artifacts and deploys them to Maven Central.
+
+If something fails:
+- during prepare: `.\mvnw.cmd release:rollback`, then clean up any tag/commit left behind.
+- during perform: the tag is already pushed; re-run `.\mvnw.cmd release:perform` (or restart from the tag).
+
+Do not commit: release.properties, pom.xml.releaseBackup, pom.xml.tag, pom.xml.next.
+
+
+Notes
+-----
+
+- Target Java is 17; the build works with JDK 17 up to JDK 25.
+- `target/checkout` from a previous perform contains read-only Git objects: remove it with
+  `cmd /c "rmdir /s /q target"` before a clean build if Maven cannot delete it.

@@ -193,3 +193,34 @@ Full sample configuration :
 	        timeoutDuration: 1s
 	        limitRefreshPeriod: 1000ms
 	        registerHealthIndicator: true
+
+## Build
+
+Java 17 is the target, but the build runs on JDK 17 up to JDK 25.
+Use the Maven Wrapper (Maven 3.9.11):
+
+```bash
+./mvnw clean verify
+```
+
+On Windows PowerShell:
+
+```powershell
+.\mvnw.cmd clean verify
+```
+
+The test suite uses Testcontainers with a local `go-httpbin` container, so **Docker must be running**.
+No external test endpoint is required.
+
+## Release
+
+Requires a GPG key, the `MAVEN_GPG_PASSPHRASE` environment variable and Maven Central credentials
+(server id `central`). A release is a single command that prepares, signs, deploys and automatically
+publishes to Maven Central:
+
+```powershell
+.\mvnw.cmd release:prepare release:perform
+```
+
+The Maven Release Plugin commits, tags and pushes automatically. See `AGENTS.md` for the one-time
+setup and recovery procedure.

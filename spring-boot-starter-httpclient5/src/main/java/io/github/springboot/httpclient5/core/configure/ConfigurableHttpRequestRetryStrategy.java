@@ -46,6 +46,9 @@ public class ConfigurableHttpRequestRetryStrategy implements HttpRequestRetryStr
     private static final String RETRY_INTERVAL = "RETRY_INTERVAL";
 	private static final String MAX_RETRIES = "MAX_RETRIES";
 
+	/** Used when neither the response nor the request configuration provides a retry interval. */
+	static final TimeValue DEFAULT_RETRY_INTERVAL = TimeValue.ofSeconds(1);
+
     /**
      * Derived {@code IOExceptions} which shall not be retried
      */
@@ -197,7 +200,7 @@ public class ConfigurableHttpRequestRetryStrategy implements HttpRequestRetryStr
             }
         }
         TimeValue retryInterval = (TimeValue) context.getAttribute(RETRY_INTERVAL) ;
-        return retryInterval;
+        return retryInterval != null ? retryInterval : DEFAULT_RETRY_INTERVAL;
     }
 
     protected boolean handleAsIdempotent(final HttpRequest request) {
