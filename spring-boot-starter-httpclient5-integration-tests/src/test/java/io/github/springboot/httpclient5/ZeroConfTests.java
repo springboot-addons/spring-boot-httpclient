@@ -20,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
  */
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("none")
-public class ZeroConfTests {
+public class ZeroConfTests extends AbstractHttpBinTest {
 
 	@Autowired
 	CloseableHttpClient httpClient;

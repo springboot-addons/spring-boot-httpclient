@@ -1,6 +1,7 @@
 package io.github.springboot.httpclient.web.async.autoconfigure;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.task.ThreadPoolTaskExecutorCustomizer;
@@ -25,10 +26,21 @@ public class AsyncExecutorConfig {
 	
 	@Bean
 	public ThreadPoolTaskExecutorCustomizer hc5ThreadPoolTaskExecutorCustomizer() {
-		return tpte -> { 
-			tpte.setTaskDecorator(new ContextCopyingTaskDecorator());
-			tpte.setThreadFactory(threadFactoryUtils.getThreadFactory());
-		} ;
+		return tpte -> tpte.setThreadFactory(threadFactoryUtils.getThreadFactory()) ;
+	}
+
+	/**
+	 * Propagates the request context to asynchronous tasks.
+	 * <p>
+	 * Registered as a {@link TaskDecorator} bean so that it also applies to the
+	 * {@code SimpleAsyncTaskExecutor} used when virtual threads are enabled
+	 * ({@code spring.threads.virtual.enabled=true}); the thread-pool customizer would be ignored
+	 * in that case.
+	 */
+	@Bean
+	@ConditionalOnMissingBean(TaskDecorator.class)
+	public TaskDecorator hc5ContextCopyingTaskDecorator() {
+		return new ContextCopyingTaskDecorator();
 	}
 	
 	@Bean
@@ -40,16 +52,25 @@ public class AsyncExecutorConfig {
 	public static class ContextCopyingTaskDecorator implements TaskDecorator {
 	    @Override
 	    public Runnable decorate(Runnable runnable) {
-	        // Capture the current request attributes
-	        RequestAttributes context = RequestContextHolder.currentRequestAttributes();
+	        // Capture the current request attributes (may be null when no request is active)
+	        RequestAttributes context = RequestContextHolder.getRequestAttributes();
+	        if (context == null) {
+	            return runnable;
+	        }
 	        return () -> {
+	            RequestAttributes previous = RequestContextHolder.getRequestAttributes();
 	            try {
 	                // Set the request attributes for this thread
-	                RequestContextHolder.setRequestAttributes(context);
+	                RequestContextHolder.setRequestAttributes(context, true);
 	                runnable.run();
 	            } finally {
-	                // Reset the request attributes after execution
-	                RequestContextHolder.resetRequestAttributes();
+	                // Restore the previous attributes (or clear them)
+	                if (previous == null) {
+	                    RequestContextHolder.resetRequestAttributes();
+	                }
+	                else {
+	                    RequestContextHolder.setRequestAttributes(previous, true);
+	                }
 	            }
 	        };
 	    }

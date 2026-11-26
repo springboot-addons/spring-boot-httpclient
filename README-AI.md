@@ -123,9 +123,9 @@ Add the dependency to your project:
 
 ```xml
 <dependency>
-    <groupId>io.github.springboot</groupId>
+    <groupId>io.github.springboot-addons</groupId>
     <artifactId>spring-boot-starter-httpclient5</artifactId>
-    <version>1.0.0</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 
@@ -147,11 +147,16 @@ public class MyService {
 
 ## Testing
 
-The configuration has been tested with various scenarios including:
-- Default configuration values
-- Host-specific configurations
-- Method and URI pattern matching
-- Request interceptor support
-- Authentication configurations
+The test suite covers:
+- Default (zero-conf) configuration values
+- Host-specific configurations and host key normalization
+- Method and URI pattern matching, request config merge/copy
+- Converters, retry strategy, route planner, credentials parsing
+- Request interceptor and header propagation
+- Synchronous and asynchronous clients, retries, basic/preemptive authentication
+- Actuator metrics and Resilience4j circuit breaker / rate limiter
+
+Tests use a local Testcontainers `go-httpbin` container (Docker required), so no external service
+or private host is needed. Run `./mvnw clean verify`.
 
 For a complete example of configuration, see `src/test/resources/application-example.yml`.

@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @TestMethodOrder(OrderAnnotation.class)
 @DirtiesContext
-public class AsyncActuatorTests {
+public class AsyncActuatorTests extends AbstractHttpBinTest {
 
 	@Autowired
 	CloseableHttpAsyncClient async;
@@ -62,7 +62,7 @@ public class AsyncActuatorTests {
 
 		AtomicReference<Double> requestCount = new AtomicReference<>(0d) ; 
 		stats.find("http.client.request.duration")
-				.tags(Arrays.asList(Tag.of("server.address", "nas.capsi-informatique.fr")))
+				.tags(Arrays.asList(Tag.of("server.address", Constants.HTTPBIN_TEST_HOST_NAME)))
 				.meter().measure().forEach(m -> { 
 					log.info("meter: {} {}", m.getStatistic(), m.getValue()) ;
 					if (m.getStatistic().name().equalsIgnoreCase("count")) {
@@ -102,7 +102,7 @@ public class AsyncActuatorTests {
 
 		AtomicReference<Double> requestCount = new AtomicReference<>(0d) ; 
 		stats.find("http.client.request.duration")
-				.tags(Arrays.asList(Tag.of("server.address", "nas.capsi-informatique.fr")))
+				.tags(Arrays.asList(Tag.of("server.address", Constants.HTTPBIN_TEST_HOST_NAME)))
 				.meter().measure().forEach(m -> { 
 					log.info("meter: {} {}", m.getStatistic(), m.getValue()) ;
 					if (m.getStatistic().name().equalsIgnoreCase("count")) {

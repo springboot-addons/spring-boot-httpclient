@@ -10,15 +10,10 @@
     <artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
     <name>spring-boot-starter-httpclient5-resilience4j</name>
 
-    <properties>
-        <resilience4j.version>2.4.0</resilience4j.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>io.github.springboot-addons</groupId>
             <artifactId>spring-boot-starter-httpclient5</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>

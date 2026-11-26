@@ -1,12 +1,13 @@
 # spring-boot-httpclient
 Spring Boot AutoConfiguration starters for Apache HttpClient 5.x
 
-* Requires SpringBoot 3.0.x or higher and Java 17 +
+* Requires SpringBoot 3.0.x or higher and Java 17 + (the build is validated with JDK 25)
 
 * Spring Boot 3.3.x / HttpClient5 5.3.x + needs spring-boot-httpclient5 1.0.6+ 
 * Spring Boot 3.4.x / HttpClient5 5.4.x + needs spring-boot-httpclient5 1.2.0+ 
 * Spring Boot 4.0.x / HttpClient5 5.5.x + needs spring-boot-httpclient5 2.0.0+ 
 * Spring Boot 4.1.x / HttpClient5 5.6.x + needs spring-boot-httpclient5 2.1.0+ 
+* Spring Boot 4.2.x / HttpClient5 5.6.x + needs spring-boot-httpclient5 2.1.2+ 
 
 ***Documentation In progress***
 
@@ -15,7 +16,7 @@ Configuration support for HttpClient through SpringBoot yaml / properties
 - Http connnection pool size configurable at host level
 - Support for actuator / dropmetrics (< 2.0.1) / micrometer (spring boot 4.x, httpclient 5.x, starter > 2.0.1)
 - Support for resilience4j circuit breaker / ratelimiter
-- Support for headers propagation (bidirectional)
+- Support for headers propagation (bidirectional), including `@Async` tasks and virtual threads
 - Support for Async client : CloseableHttpAsyncClient
 - many more
 
@@ -194,3 +195,35 @@ Full sample configuration :
 	        timeoutDuration: 1s
 	        limitRefreshPeriod: 1000ms
 	        registerHealthIndicator: true
+
+## Build
+
+Java 17 is the target, but the build runs on JDK 17 up to JDK 25.
+Use the Maven Wrapper (Maven 3.9.11):
+
+```bash
+./mvnw clean verify
+```
+
+On Windows PowerShell:
+
+```powershell
+.\mvnw.cmd clean verify
+```
+
+The test suite uses Testcontainers with a local
+[`go-httpbin`](https://github.com/mccutchen/go-httpbin) container, so **Docker must be running**.
+No external test endpoint is required.
+
+## Release
+
+Requires a GPG key, the `MAVEN_GPG_PASSPHRASE` environment variable and Maven Central credentials
+(server id `central`). A release is a single command that prepares, signs, deploys and automatically
+publishes to Maven Central:
+
+```powershell
+.\mvnw.cmd release:prepare release:perform
+```
+
+The Maven Release Plugin commits, tags and pushes automatically. See `AGENTS.md` for the one-time
+setup and recovery procedure.

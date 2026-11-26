@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @ActiveProfiles("test")
 @Slf4j
 @DirtiesContext
-public class AsyncTests {
+public class AsyncTests extends AbstractHttpBinTest {
 
 	@Autowired
 	CloseableHttpAsyncClient async;

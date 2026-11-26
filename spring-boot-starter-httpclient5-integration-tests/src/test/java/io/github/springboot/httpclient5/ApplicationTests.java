@@ -27,21 +27,13 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
 @DirtiesContext
-public class ApplicationTests {
+public class ApplicationTests extends AbstractHttpBinTest {
 
 	@Autowired
 	ApplicationContext context;
 	
 	@Autowired
 	CloseableHttpClient httpClient;
-
-	@Test
-	public void testHttpsTrustSpecificDomain() throws Exception {
-		final HttpGet httpGet = new HttpGet(
-				"https://fr.news.yahoo.com/renault-r%C3%A9union-extraordinaire-ca-jeudi-soir-150308444.html");
-		final CloseableHttpResponse response = httpClient.execute(httpGet);
-		EntityUtils.toString(response.getEntity());
-	}
 
 	@Test
 	public void testHttpsClient() throws Exception {

@@ -62,7 +62,7 @@ The client automatically applies different configurations based on the request:
 ```java
 // This request will use configuration for GET requests to httpbin host
 // with a 30 second timeout and interceptors enabled
-String result = apiService.getData("http://nas.capsi-informatique.fr:9999/get");
+String result = apiService.getData("http://localhost:8080/get");
 
 // This request will use default configuration with 5 second timeout
 String result2 = apiService.getData("https://api.example.com/data");

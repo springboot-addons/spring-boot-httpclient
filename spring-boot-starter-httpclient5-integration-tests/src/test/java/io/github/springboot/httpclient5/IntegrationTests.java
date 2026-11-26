@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-public class IntegrationTests {
+public class IntegrationTests extends AbstractHttpBinTest {
 	private String base64ClientCredentials = new String(Base64.getEncoder().encode("admin:admin".getBytes()));
 
 	@Autowired
