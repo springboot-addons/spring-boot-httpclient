@@ -13,17 +13,14 @@
 		<dependency>
 			<groupId>io.github.springboot-addons</groupId>
 			<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.springboot-addons</groupId>
 			<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.springboot-addons</groupId>
 			<artifactId>spring-boot-starter-httpclient5-web</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>

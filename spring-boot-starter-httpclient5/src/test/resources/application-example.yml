@@ -2,7 +2,7 @@
 # This demonstrates all major configuration options
 
 # Base application properties
-app.httpbin-host: http://nas.capsi-informatique.fr:9999
+app.httpbin-host: http://localhost:8080
 
 logging:
   level:

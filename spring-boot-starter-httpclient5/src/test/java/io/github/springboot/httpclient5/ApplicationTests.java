@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @ActiveProfiles("test")
 @Slf4j
 @DirtiesContext
-public class ApplicationTests {
+public class ApplicationTests extends AbstractHttpBinTest {
 
 	@Autowired
 	ApplicationContext context;

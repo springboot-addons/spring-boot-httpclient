@@ -11,14 +11,10 @@
 
 	<name>spring-boot-starter-httpclient5-actuator</name>
 
-	<properties>
-	</properties>
-
     <dependencies>
 		<dependency>
 	        <groupId>io.github.springboot-addons</groupId>
 	        <artifactId>spring-boot-starter-httpclient5</artifactId>
-	        <version>${project.version}</version>
 		</dependency>
 
 		<!-- Source: https://mvnrepository.com/artifact/io.micrometer/micrometer-core -->

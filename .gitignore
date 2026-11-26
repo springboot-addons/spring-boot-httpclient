@@ -2,6 +2,13 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Maven release plugin ###
+release.properties
+pom.xml.releaseBackup
+pom.xml.tag
+pom.xml.next
+dependency-reduced-pom.xml
+
 ### STS ###
 .apt_generated
 .classpath

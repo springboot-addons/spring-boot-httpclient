@@ -94,9 +94,12 @@ Request configurations are matched using pattern matching of `method + uri`:
 ## Testing
 
 The configuration system includes:
-- Unit tests in `HttpClient5ConfigTest.java`
-- Integration tests in `HttpClient5ConfigIntegrationTest.java`
+- Unit tests in `HttpClient5ConfigTest.java` (zero-conf defaults, placeholders, host normalization)
+- Unit tests for converters, `PatternUtils`, `RequestConfigProperties`, credentials and retry strategy
+- Spring integration tests backed by a local Testcontainers `go-httpbin` container
 - Comprehensive test configuration in `application-example.yml`
+
+Docker is required to run the tests (Testcontainers). Use `./mvnw clean verify`.
 
 ## Usage
 

@@ -42,8 +42,8 @@ import lombok.extern.slf4j.Slf4j;
 @ComponentScan("io.github.springboot.httpclient5.core")
 @DirtiesContext
 @Slf4j
-public class HttpClient5Resilience4jAsyncTests {
-	private static final String HTTPBIN_HOST = "http://nas.capsi-informatique.fr:9999";
+public class HttpClient5Resilience4jAsyncTests extends AbstractHttpBinTest {
+	private static final String HTTPBIN_HOST = Constants.HTTPBIN_TEST_HOST;
 
 	@Autowired
 	ApplicationContext context;
@@ -78,7 +78,8 @@ public class HttpClient5Resilience4jAsyncTests {
 	@Test
 	public void testCircuitBreakerException() throws Exception {
 		final CloseableHttpAsyncClient httpClient = context.getBean(CloseableHttpAsyncClient.class);
-		final SimpleHttpRequest httpGet = SimpleHttpRequest.create("GET", "https://test.unknown-azerty.com");
+		// Port 1 on the loopback interface is never listening: guarantees a fast connection failure.
+		final SimpleHttpRequest httpGet = SimpleHttpRequest.create("GET", "http://127.0.0.1:1");
 
 		boolean hasBeenBreaked = false;
 		for (int i = 0; i < 4; i++) {

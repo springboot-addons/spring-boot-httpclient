@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @ActiveProfiles("test")
 @Slf4j
-public class ConfigTests {
+public class ConfigTests extends AbstractHttpBinTest {
 
 	@Autowired
 	HttpClient5Config config;

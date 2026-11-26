@@ -32,8 +32,8 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 @ActiveProfiles("test")
 @ComponentScan("io.github.springboot.httpclient5.core")
 @DirtiesContext
-public class HttpClient5Resilience4jTests {
-	private static final String HTTPBIN_HOST = "http://nas.capsi-informatique.fr:9999";
+public class HttpClient5Resilience4jTests extends AbstractHttpBinTest {
+	private static final String HTTPBIN_HOST = Constants.HTTPBIN_TEST_HOST;
 
 
 	@Autowired
@@ -83,7 +83,8 @@ public class HttpClient5Resilience4jTests {
 	@Test
 	public void testCircuitBreakerException() throws Exception {
 		final CloseableHttpClient httpClient = context.getBean(CloseableHttpClient.class);
-		final HttpGet httpGet = new HttpGet("https://test.unknown-azerty.com");
+		// Port 1 on the loopback interface is never listening: guarantees a fast connection failure.
+		final HttpGet httpGet = new HttpGet("http://127.0.0.1:1");
 		boolean hasRecovered = false;
 		boolean hasBeenBreaked = false;
 		for (int i = 0; i < 4; i++) {
