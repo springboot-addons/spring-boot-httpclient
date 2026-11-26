@@ -8,7 +8,7 @@ release instructions are in [AGENTS.md](AGENTS.md); user documentation starts at
 
 - Group: `io.github.springboot-addons`
 - Current branch: `hc5-sb4` (Spring Boot 4.0.x)
-- Current version: `2.0.2-SNAPSHOT`; last release: `2.0.1`
+- Current version: `2.0.3-SNAPSHOT`; last release: `2.0.2`
 - Runtime target: Java 17; build validated with JDK 25
 - Maven Wrapper: 3.9.11
 - Public Maven repository: Maven Central
