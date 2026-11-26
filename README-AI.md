@@ -1,162 +1,67 @@
-# spring-boot-httpclient5
+# AI agent quick reference
 
-A Spring Boot starter for Apache HttpClient 5 with comprehensive configuration options.
+This file is a compact context for AI coding agents. The authoritative contribution, build and
+release instructions are in [AGENTS.md](AGENTS.md); user documentation starts at
+[README.md](README.md).
 
-## Features
+## Project snapshot
 
-- Support for both synchronous and asynchronous HTTP clients
-- Comprehensive connection pooling configuration
-- HTTP/1.0 specific configuration options
-- Request-level configuration based on method and URI patterns
-- JMX monitoring support
-- Customizable request interceptors and context
-- Authentication support (basic, preemptive)
+- Group: `io.github.springboot-addons`
+- Current branch: `hc5-sb42` (Spring Boot 4.2.x)
+- Current version: `2.2.1-SNAPSHOT`; last release: `2.2.0`
+- Runtime target: Java 17; build validated with JDK 25
+- Maven Wrapper: 3.9.11
+- Public Maven repository: Maven Central
 
-## Configuration Options
+## Module map
 
-### Basic Configuration
+| Module | Main entry points |
+|---|---|
+| `spring-boot-starter-httpclient5` | `HttpClient5AutoConfiguration`, `HttpClient5Config`, `HttpClientConfigurer`, `HttpAsyncClientConfigurer`, `RequestConfigProperties` |
+| `spring-boot-starter-httpclient5-web` | `AsyncExecutorConfig`, `HeadersConfiguration`, `HeadersFilter`, `HeadersPropagationInterceptor`, `HttpClient5RestTemplateConfig` |
+| `spring-boot-starter-httpclient5-actuator` | `HttpClientActuatorAutoConfiguration` |
+| `spring-boot-starter-httpclient5-resilience4j` | `HttpClientResilience4jAutoConfiguration`, `ResilienceExecChainHandler` |
 
-```yaml
-spring:
-  httpclient5:
-    user-agent: HttpClient5/SRU
-    jmx.domain: ${spring.application.name}
+## Configuration in one minute
+
+- Prefix: `spring.httpclient5`.
+- `pool` / `async-pool`: Apache connection-manager builder properties plus `connection-idle-timeout`
+  and `host-config`.
+- `request-config`: map of `METHOD + " " + URI` regex rules merged in lexicographic order on top of
+  `[default]`.
+- Starter extensions per rule: `credentials`, `retry-config`, `interceptors`,
+  `custom-request-context`, `error-management`, `headers-propagation`.
+- Zero-conf defaults: 3 s connection-request, 30 s response, 50 max-per-route, LAX, 3 s connect,
+  30 s socket, 120 s TTL, 30 s idle timeout.
+
+See [docs/CONFIGURATION-ALL.md](docs/CONFIGURATION-ALL.md) for the full list.
+
+## Invariants
+
+1. Keep `java.version` / `maven.compiler.release` at **17**.
+2. Keep `<proc>full</proc>` in the compiler plugin: JDK 23+ no longer discovers annotation
+   processors from the classpath.
+3. Keep the `--add-opens` flags in `.mvn/jvm.config`; do not reintroduce `JDK_JAVA_OPTIONS` in the
+   release procedure.
+4. Tests must stay self-contained: Testcontainers `go-httpbin`, never a private/external host.
+5. The release is a single command and uses `MAVEN_GPG_PASSPHRASE`, `releaseProfiles`,
+   `autoPublish` and automatic push.
+6. Target Spring Boot versions per branch: `hc5-sb3` 3.5.x, `hc5-sb4` 4.0.x, `hc5-sb41` 4.1.x,
+   `hc5-sb42` 4.2.x.
+
+## Commands
+
+```powershell
+.\mvnw.cmd clean verify          # full build + Testcontainers tests (Docker required)
+.\mvnw.cmd test -pl <module>     # one module
+.\mvnw.cmd clean test-compile    # fast compile check
+.\mvnw.cmd release:prepare release:perform
 ```
 
-### HTTP/1.0 Specific Configuration
+## Documentation map
 
-```yaml
-spring:
-  httpclient5:
-    http1:
-      buffer-size: 4096
-      waitForContinueTimeout: PT32S
-```
-
-### Connection Pool Configuration
-
-#### Synchronous Pool
-```yaml
-spring:
-  httpclient5:
-    pool:
-      max-conn-total: 128
-      max-connper-route: 30
-      dns-resolver: system
-      conn-pool-policy: LIFO
-      connection-time-to-live: PT120S
-      pool-concurrency-policy: STRICT
-      default-connection-config:
-        connect-timeout: PT0.5S
-        socket-timeout: PT30S
-      default-socket-config:
-        so-timeout: PT60S
-      host-config:
-        '[http://example.com]':
-          connect-timeout: PT1S
-          max-connections: 10
-```
-
-#### Asynchronous Pool
-```yaml
-spring:
-  httpclient5:
-    async-pool:
-      max-connper-route: 25
-      dns-resolver: system
-      conn-pool-policy: LIFO
-      connection-time-to-live: PT180S
-      pool-concurrency-policy: LAX
-      default-connection-config:
-        connect-timeout: PT0.2S
-        socket-timeout: PT20S
-      default-socket-config:
-        so-timeout: PT300S
-      host-config:
-        '[https://testhost:4443]':
-          connect-timeout: PT0.4S
-          max-connections: 50
-```
-
-### Request Configuration
-
-Request configurations are applied based on method and URI patterns:
-
-```yaml
-spring:
-  httpclient5:
-    request-config:
-      '[default]':
-        connection-keep-alive: PT60S
-        connection-request-timeout: PT2S
-        response-timeout: PT5S
-        retry-config:
-          max-retries: 3
-          retry-interval: PT5S
-        interceptors:
-          '[myinter]': false
-        custom-request-context:
-          '[propA]': "default-value"
-      
-      # Specific configuration for GET requests to httpbin host
-      '[GET ${app.httpbin-host}/.*]':
-        response-timeout: 30000
-        interceptors:
-          '[myinter]': true
-          '[tu-interceptor]': true
-        custom-request-context:
-          '[propA]': "surcharge"
-          '[propB]': "newOne"
-      
-      # Specific configuration for requests with basic auth
-      '[GET ${app.httpbin-host}/basic-auth/.*]':
-        credentials: admin:pwd
-      
-      # Specific configuration for requests with proxy
-      '[.* https://testhost:4443/.*]':
-        proxy: https://localhost:3128
-```
-
-## Usage
-
-Add the dependency to your project:
-
-```xml
-<dependency>
-    <groupId>io.github.springboot-addons</groupId>
-    <artifactId>spring-boot-starter-httpclient5</artifactId>
-    <version>2.1.2</version>
-</dependency>
-```
-
-Then inject the HttpClient in your service:
-
-```java
-@Service
-public class MyService {
-    
-    private final HttpClient httpClient;
-    
-    public MyService(HttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
-    
-    // Use httpClient for making requests
-}
-```
-
-## Testing
-
-The test suite covers:
-- Default (zero-conf) configuration values
-- Host-specific configurations and host key normalization
-- Method and URI pattern matching, request config merge/copy
-- Converters, retry strategy, route planner, credentials parsing
-- Request interceptor and header propagation
-- Synchronous and asynchronous clients, retries, basic/preemptive authentication
-- Actuator metrics and Resilience4j circuit breaker / rate limiter
-
-Tests use a local Testcontainers `go-httpbin` container (Docker required), so no external service
-or private host is needed. Run `./mvnw clean verify`.
-
-For a complete example of configuration, see `src/test/resources/application-example.yml`.
+- [README.md](README.md) – user overview and quick start
+- [docs/configuration-guide.md](docs/configuration-guide.md) – configuration concepts
+- [docs/CONFIGURATION-ALL.md](docs/CONFIGURATION-ALL.md) – property reference
+- [docs/usage-example.md](docs/usage-example.md) – code examples
+- [AGENTS.md](AGENTS.md) – contributor/build/release instructions

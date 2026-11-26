@@ -1,125 +1,76 @@
-# spring-boot-httpclient5 Configuration System Summary
+# Configuration model
 
-## Overview
+`spring-boot-httpclient5` exposes one configuration tree under `spring.httpclient5`. This page is a
+short overview; see the [configuration guide](docs/configuration-guide.md) and the
+[full reference](docs/CONFIGURATION-ALL.md) for details.
 
-This project provides a Spring Boot starter for Apache HttpClient 5 with comprehensive configuration capabilities. The configuration system allows fine-grained control over HTTP client behavior through Spring Boot's configuration mechanisms.
+## Four layers
 
-## Key Configuration Components
+1. **Bootstrap flags** – enable/disable auto-configuration
+   (`spring.httpclient5.core.enabled`, `.core.actuator.enabled`, `.core.resilience4j.enabled`,
+   `.web.*.enabled`).
+2. **Connection pools** – `spring.httpclient5.pool` (sync) and `spring.httpclient5.async-pool`
+   (async): connections, timeouts, socket options, per-host overrides.
+3. **Request rules** – `spring.httpclient5.request-config`: regex rules on `METHOD + " " + URI`
+   that carry Apache `RequestConfig` values plus credentials, retries, interceptors, context and
+   Resilience4j settings.
+4. **Starter features** – header propagation, Actuator metrics and Resilience4j handlers.
 
-### 1. Base Configuration Properties
-- `user-agent`: Sets the User-Agent header for all requests
-- `jmx.domain`: Configures JMX monitoring domain for metrics collection
+## Zero-configuration defaults
 
-### 2. HTTP/1.0 Specific Configuration
-- `http1.buffer-size`: Size of internal buffer for HTTP communication
-- `http1.waitForContinueTimeout`: Timeout for waiting for CONTINUE response in HTTP/1.1
+| Setting | Value |
+|---|---|
+| Request connection-request timeout | 3 s |
+| Request response timeout | 30 s |
+| Max connections per route (sync and async) | 50 |
+| Pool concurrency policy | `LAX` |
+| Connect timeout | 3 s |
+| Socket timeout | 30 s |
+| Connection TTL | 120 s |
+| Validate after inactivity | 20 s |
+| SO_TIMEOUT (synchronous pool) | 30 s |
+| Idle connection timeout | 30 s |
+| Max total connections | unlimited |
+| User-Agent | none |
 
-### 3. Connection Pool Configuration
+Set `spring.httpclient5.autoconfig=false` to use Apache HttpClient defaults instead.
 
-#### Synchronous Pool (Blocking)
-- `pool.max-conn-total`: Maximum total connections in the pool
-- `pool.max-connper-route`: Maximum connections per route
-- `pool.dns-resolver`: DNS resolver strategy
-- `pool.conn-pool-policy`: Connection pooling policy (LIFO/FIFO)
-- `pool.connection-time-to-live`: Connection time-to-live value
-- `pool.pool-concurrency-policy`: Pool concurrency policy (STRICT/LAX)
-- `pool.default-connection-config`: Default connection configuration
-- `pool.default-socket-config`: Default socket configuration
-- `pool.host-config`: Host-specific configurations
-
-#### Asynchronous Pool (Non-blocking)
-- Similar configuration options to synchronous pool but for async connections
-
-### 4. Request Configuration System
-
-The request configuration system uses pattern matching based on HTTP method and URI:
+## Request rules
 
 ```yaml
 spring:
   httpclient5:
     request-config:
-      '[default]':                    # Default configuration
-        # ... default settings
-      
-      '[GET https://api.example.com/.*]':  # Pattern matching GET requests
-        # ... specific settings
-        
-      '[POST https://testhost/.*]':        # Pattern matching POST requests
-        # ... specific settings
+      '[default]':
+        response-timeout: PT10S
+      '[GET https://api.example.com/.*]':
+        response-timeout: PT30S
+        credentials: user:password
+      '[POST https://api.example.com/.*]':
+        retry-config:
+          max-retries: 2
+          retry-interval: PT1S
 ```
 
-#### Request Configuration Properties:
-- `connection-keep-alive`: Keep-alive timeout
-- `connection-request-timeout`: Connection request timeout
-- `response-timeout`: Response timeout
-- `retry-config`: Retry configuration (max retries, retry interval)
-- `interceptors`: Interceptor enable/disable settings
-- `custom-request-context`: Custom context properties
-- `credentials`: Authentication credentials (basic or preemptive)
-- `proxy`: Proxy server configuration
+- A rule key is a Java regex matched against `METHOD + " " + absolute URI` (full match).
+- `[default]` is the base rule.
+- All matching rules are merged in lexicographic key order; the last value wins.
+- `${...}` placeholders are resolved in keys and values.
+- Host configuration keys are normalized with default ports (`http` → `:80`, `https` → `:443`).
 
-## Configuration File Examples
+## Starter features
 
-### Complete Example
-See `src/test/resources/application-example.yml` for a comprehensive example showing all configuration options.
+- **web**: bidirectional header propagation (`headers-propagation`), request-context propagation to
+  `@Async` tasks, `RestTemplate` customization.
+- **actuator**: request observations and pool metrics (`httpclient5.pool`,
+  `httpclient5.async-pool`).
+- **resilience4j**: circuit breaker and, for non-`default` circuit names, a rate limiter with the
+  same name.
 
-### Minimal Example
-```yaml
-spring:
-  httpclient5:
-    user-agent: MyApplication/1.0
-    pool:
-      max-conn-total: 128
-      max-connper-route: 30
-    async-pool:
-      max-connper-route: 25
-```
+## More documentation
 
-## Pattern Matching Logic
-
-Request configurations are matched using pattern matching of `method + uri`:
-
-1. **Default**: `[default]` - Applied to all requests
-2. **Method + URI**: `[GET https://api.example.com/.*]` - Matches GET requests to specific host
-3. **Method + Host**: `[POST https://testhost/.*]` - Matches POST requests to specific host
-
-## Configuration Loading Process
-
-1. Spring Boot loads configuration from application.yml/application.properties
-2. Configuration is processed by `HttpClient5Config` class
-3. Connection managers and clients are built based on configurations
-4. Request configurations are compiled into pattern matching rules
-5. During request execution, appropriate configurations are applied automatically
-
-## Testing
-
-The configuration system includes:
-- Unit tests in `HttpClient5ConfigTest.java` (zero-conf defaults, placeholders, host normalization)
-- Unit tests for converters, `PatternUtils`, `RequestConfigProperties`, credentials and retry strategy
-- Spring integration tests backed by a local Testcontainers `go-httpbin` container
-- Comprehensive test configuration in `application-example.yml`
-
-Docker is required to run the tests (Testcontainers). Use `./mvnw clean verify`.
-
-## Usage
-
-### In Services:
-```java
-@Service
-public class MyService {
-    private final HttpClient httpClient;
-    
-    public MyService(HttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
-}
-```
-
-The client automatically applies appropriate configurations based on request patterns, making it easy to have different behaviors for different endpoints without complex code changes.
-
-## Documentation
-
-Additional documentation includes:
-- `README.md` - Overview and usage
-- `docs/configuration-guide.md` - Detailed configuration guide
-- `docs/usage-example.md` - Usage examples
+- [README](README.md) – quick start and compatibility
+- [Configuration guide](docs/configuration-guide.md) – concepts and examples
+- [Configuration reference](docs/CONFIGURATION-ALL.md) – every property and default
+- [Usage examples](docs/usage-example.md) – sync, async, fluent, `RestTemplate`, propagation
+- [AGENTS.md](AGENTS.md) – build, test and release procedure
