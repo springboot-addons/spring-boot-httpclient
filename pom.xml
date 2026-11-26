@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>io.github.springboot-addons</groupId>
 	<artifactId>spring-boot-starter-httpclient5-parent</artifactId>
-	<version>2.1.2-SNAPSHOT</version>
+	<version>2.1.2</version>
 	<packaging>pom</packaging>
 	<name>spring-boot-starter-httpclient5-parent</name>
 	<description>Spring Boot AutoConfiguration for Apache HttpClient 5</description>
@@ -61,7 +61,8 @@
 		<connection>scm:git:https://github.com/springboot-addons/spring-boot-httpclient.git</connection>
 		<developerConnection>scm:git:https://github.com/springboot-addons/spring-boot-httpclient.git</developerConnection>
 		<url>https://github.com/springboot-addons/spring-boot-httpclient</url>
-	</scm>
+	  <tag>spring-boot-starter-httpclient5-parent-2.1.2</tag>
+  </scm>
 
 	<properties>
 		<!-- Runtime target. The build itself requires JDK 17+ and is validated with JDK 25. -->
