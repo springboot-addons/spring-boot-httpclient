@@ -50,7 +50,7 @@ The POM configuration:
 
 What happens:
 1. release:prepare updates versions, runs the tests, commits, tags (e.g.
-   spring-boot-starter-httpclient5-parent-2.1.2), pushes, then bumps to the next SNAPSHOT and pushes.
+   spring-boot-starter-httpclient5-parent-2.1.1), pushes, then bumps to the next SNAPSHOT and pushes.
 2. release:perform builds the tag, signs the artifacts and deploys them to Maven Central.
 
 If something fails:
