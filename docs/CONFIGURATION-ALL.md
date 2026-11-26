@@ -1,159 +1,295 @@
 # Configuration reference
 
-All properties are prefixed with `spring.httpclient5`. Time values use ISO-8601 durations
-(`PT30S`, `PT1M`, `PT0.5S`) unless stated otherwise. Standard Apache HttpClient builder properties
-are accepted through relaxed binding.
+Reference for `spring-boot-httpclient5` 2.2.x. Every key is written **in full** so it can be copied
+directly into `application.yml` / `application.properties`.
 
-## Base properties
+- Timeouts use ISO-8601 durations: `PT30S`, `PT1M`, `PT0.5S`.
+- `<rule>` means either `[default]` or a request pattern such as
+  `[GET https://api.example.com/.*]`.
+- `<host>` means a host URI such as `https://api.example.com`.
 
-| Property | Default | Description |
-|---|---|---|
-| `spring.httpclient5.user-agent` | unset | `User-Agent` sent by both clients |
-| `spring.httpclient5.autoconfig` | `true` | Apply the zero-configuration defaults described below |
-| `spring.httpclient5.core.enabled` | `true` | Enable/disable the core auto-configuration |
-| `spring.httpclient5.jmx.domain` | `default` | Legacy field, not wired to JMX in 2.x (use Actuator/Micrometer) |
-| `spring.httpclient5.jmx.metric-name-strategy` | `HOST_AND_METHOD` | Legacy field, not used in 2.x |
+This page is ordered by usefulness: request rules and pools first, low-level Apache tuning last.
 
-## HTTP/1 configuration
+## Contents
 
-`spring.httpclient5.http1.*` maps to Apache `Http1Config.Builder`. Apache defaults:
+1. [Request rules](#1-request-rules)
+2. [Connection pools](#2-connection-pools)
+3. [Web starter](#3-web-starter)
+4. [Resilience4j](#4-resilience4j)
+5. [Actuator](#5-actuator)
+6. [Global switches](#6-global-switches)
+7. [Advanced Apache tuning](#7-advanced-apache-tuning)
+8. [Legacy settings](#8-legacy-settings)
 
-| Property | Default | Description |
-|---|---|---|
-| `http1.buffer-size` | `32768` | Internal buffer size |
-| `http1.chunk-size-hint` | `-1` | Chunk size hint |
-| `http1.wait-for-continue-timeout` | unset | Timeout for `Expect: 100-continue` |
-| `http1.max-line-length` | `8192` | Maximum line length |
-| `http1.max-header-count` | `100` | Maximum number of headers |
-| `http1.max-empty-line-count` | `10` | Maximum tolerated empty lines |
-
-## Character coding and I/O reactor
-
-`spring.httpclient5.char-coding.*` maps to `CharCodingConfig.Builder`
-(`charset`, `malformed-input-action`, `unmappable-input-action`).
-
-`spring.httpclient5.io-reactor.*` maps to `IOReactorConfig.Builder`
-(`select-interval`, `io-thread-count`, `so-timeout`, `so-reuse-address`, `so-linger`,
-`so-keepalive`, `tcp-no-delay`, `snd-buf-size`, `rcv-buf-size`, `backlog-size`, ...).
-
-## Connection pools
-
-`pool` is the synchronous pool; `async-pool` is the asynchronous pool. Both expose the same
-properties.
-
-| Property | Zero-conf default | Description |
-|---|---|---|
-| `max-conn-total` | `0` (unlimited) | Maximum total connections |
-| `max-connper-route` | `50` | Maximum connections per route (also binds as `max-conn-per-route`); the 50/LAX zero-conf values are skipped if either pool declares this property |
-| `dns-resolver` | `system` | `system`, `in_memory`, or a `DnsResolver` class name |
-| `conn-pool-policy` | `LIFO` (Apache default) | Connection reuse policy (`LIFO`/`FIFO`) |
-| `connection-time-to-live` | unset | Pool-level connection TTL |
-| `pool-concurrency-policy` | `LAX` | `STRICT` or `LAX` |
-| `connection-idle-timeout` | `PT30S` | Idle connection timeout used by the cleaner |
-| `default-connection-config` | see below | Default `ConnectionConfig` |
-| `default-socket-config` | see below | Default `SocketConfig` (synchronous pool only) |
-| `host-config` | `{}` | Per-host overrides |
-
-### `default-connection-config`
-
-Maps to `ConnectionConfig.Builder`, plus `max-connections` for host entries:
-
-| Property | Zero-conf default | Description |
-|---|---|---|
-| `connect-timeout` | `PT3S` | TCP connect timeout |
-| `socket-timeout` | `PT30S` | Socket read timeout |
-| `time-to-live` | `PT120S` | Connection time-to-live |
-| `validate-after-inactivity` | `PT20S` | Re-validate idle connections after this delay |
-| `idle-timeout` | unset | Idle timeout |
-| `max-connections` | unset | Host config only: max-per-route for that host |
-
-> Prefer `default-connection-config.connect-timeout` / `host-config`. The
-> `RequestConfig.connect-timeout` property is deprecated in Apache HttpClient 5.2+.
-
-### `default-socket-config`
-
-Synchronous pool only (the asynchronous builder has no socket-config hook; use
-`default-connection-config.socket-timeout` there). Maps to `SocketConfig.Builder`:
-
-| Property | Zero-conf default | Description |
-|---|---|---|
-| `so-timeout` | `PT30S` | `SO_TIMEOUT` (synchronous pool) |
-| `so-keepalive` | Apache default (`true`) | `SO_KEEPALIVE` |
-| `tcp-no-delay` | Apache default (`true`) | `TCP_NODELAY` |
-| `so-reuse-address`, `so-linger`, `snd-buf-size`, `rcv-buf-size`, `backlog-size`, `tcp-keep-idle`, `tcp-keep-interval`, `tcp-keep-count` | Apache defaults | Standard socket options |
-
-### `host-config`
-
-Keys are host URIs. Placeholders are expanded and default ports are normalized (`http` → `:80`,
-`https` → `:443`). Values are `ConnectionConfig` properties plus `max-connections`:
+## Typical configuration
 
 ```yaml
-host-config:
-  '[https://api.example.com]':
-    connect-timeout: PT2S
-    socket-timeout: PT45S
-    time-to-live: PT300S
-    max-connections: 20
+spring:
+  httpclient5:
+    user-agent: my-application/1.0
+
+    pool:
+      max-conn-total: 128
+      max-connper-route: 30
+      default-connection-config:
+        connect-timeout: PT1S
+        socket-timeout: PT30S
+
+    async-pool:
+      max-connper-route: 20
+      default-connection-config:
+        connect-timeout: PT1S
+        socket-timeout: PT30S
+
+    request-config:
+      '[default]':
+        connection-request-timeout: PT1S
+        response-timeout: PT10S
+        retry-config:
+          max-retries: 2
+          retry-interval: PT1S
+
+      '[GET https://api.example.com/.*]':
+        response-timeout: PT30S
+
+      '[GET https://api.example.com/basic-auth/.*]':
+        credentials: user:password
 ```
 
-## Request configuration
+---
 
-`spring.httpclient5.request-config` is a map of regex rules matched against `METHOD + " " + URI`.
-`[default]` is the base rule. All matching rules are merged in lexicographic key order (last value
-wins). Placeholders are resolved in keys and values.
+## 1. Request rules
 
-### Standard `RequestConfig` properties
+`spring.httpclient5.request-config` is a map of regex rules applied per exchange.
 
-All `RequestConfig.Builder` properties are available. With no configuration, Apache
-`RequestConfig.DEFAULT` applies; the starter's zero-conf rule overrides the two timeouts below.
+### Rule key format
 
-| Property | Apache default | Starter zero-conf |
+- A rule key is a Java regex matched against `METHOD + " " + absolute URI` (full match).
+- Use `'[default]'` for the base rule.
+- All matching rules are merged in **lexicographic key order**; the last value wins.
+- `${...}` placeholders are resolved at startup, in keys and values.
+
+```yaml
+spring:
+  httpclient5:
+    request-config:
+      '[default]':
+        response-timeout: PT10S
+      '[GET https://api.example.com/.*]':
+        response-timeout: PT30S
+```
+
+### Common Apache `RequestConfig` properties
+
+Replace `<rule>` with your rule key.
+
+> Defaults below are the effective values with the starter's **zero-conf rule**. If you declare your
+> own `[default]` entry, values you do not set keep the Apache `RequestConfig` defaults
+> (connection-request timeout 3 min, response timeout unset).
+
+| Full key | Default | Description |
 |---|---|---|
-| `connection-request-timeout` | 3 min | **3 s** |
-| `response-timeout` | unset | **30 s** |
-| `connection-keep-alive` | 3 min | 3 min |
-| `redirects-enabled` | `true` | `true` |
-| `max-redirects` | `50` | `50` |
-| `authentication-enabled` | `true` | `true` |
-| `content-compression-enabled` | `true` | `true` |
-| `protocol-upgrade-enabled` | `true` | `true` |
-| `hard-cancellation-enabled` | `true` | `true` |
-| `proxy` | unset | unset |
-| `cookie-spec` | unset | unset |
-| `connect-timeout` | unset | unset (deprecated, use connection config) |
+| `spring.httpclient5.request-config.<rule>.connection-request-timeout` | `PT3S` (zero-conf) | Time to wait for a pooled connection |
+| `spring.httpclient5.request-config.<rule>.response-timeout` | `PT30S` (zero-conf) | Time to wait for the response |
+| `spring.httpclient5.request-config.<rule>.connection-keep-alive` | `PT3M` | Keep-alive duration |
+| `spring.httpclient5.request-config.<rule>.redirects-enabled` | `true` | Follow redirects |
+| `spring.httpclient5.request-config.<rule>.max-redirects` | `50` | Maximum redirects |
+| `spring.httpclient5.request-config.<rule>.authentication-enabled` | `true` | Enable authentication |
+| `spring.httpclient5.request-config.<rule>.content-compression-enabled` | `true` | Enable content compression |
+| `spring.httpclient5.request-config.<rule>.protocol-upgrade-enabled` | `true` | Enable protocol upgrade (H2) |
+| `spring.httpclient5.request-config.<rule>.hard-cancellation-enabled` | `true` | Enable hard cancellation |
+| `spring.httpclient5.request-config.<rule>.proxy` | unset | Proxy URI, e.g. `http://localhost:3128` |
+| `spring.httpclient5.request-config.<rule>.cookie-spec` | unset | Cookie policy name |
+| `spring.httpclient5.request-config.<rule>.connect-timeout` | unset | **Deprecated** in Apache; use the pool connection config instead |
 
-### Starter-specific request properties
+Any other `RequestConfig.Builder` property is also bindable; see
+[Apache HttpClient Javadoc](https://hc.apache.org/httpcomponents-client-5.6.x/current/httpclient5/apidocs/).
 
-| Property | Default | Description |
+### Credentials
+
+| Full key | Default | Description |
 |---|---|---|
-| `credentials` | unset | `user:password`, `BASIC(user:password)` or `PREEMPTIVE(user:password)` |
-| `retry-config.max-retries` | `0` | Transport-level retry count |
-| `retry-config.retry-interval` | `PT1S` | Interval between transport retries |
-| `interceptors` | `{}` | `ActivableHttpInterceptor` id → enabled flag |
-| `custom-request-context` | `{}` | Attributes added to the `HttpContext` for the exchange |
-| `error-management.circuit-name` | `default` | Resilience4j circuit breaker name |
-| `error-management.max-attempts` | `1` | Resilience4j retry attempts (1 = no retry) |
-| `error-management.wait-duration` | `0` | Resilience4j retry wait, in milliseconds |
-| `error-management.broken-circuit-action` | `error` | `error` or an HTTP status code |
-| `headers-propagation.enabled` | unset (disabled) | Enable header propagation for this rule |
-| `headers-propagation.down` | `[]` | Regex list: incoming request headers forwarded to outgoing calls |
-| `headers-propagation.up` | `[]` | Regex list: outgoing response headers copied to the incoming response |
-| `headers-propagation.add` | `{}` | Static headers added to outgoing calls |
-| `headers-propagation.remove` | `[]` | Headers removed from outgoing calls |
+| `spring.httpclient5.request-config.<rule>.credentials` | unset | `user:password`, `BASIC(user:password)` or `PREEMPTIVE(user:password)` |
 
-## Auto-configuration switches
+- `BASIC(...)` and the plain form use challenge-based basic authentication.
+- `PREEMPTIVE(...)` sends `Authorization` immediately and keeps an existing header if present.
+- The first `:` separates user and password; the password may contain `:`.
 
-| Property | Default | Module |
+### Transport retries
+
+| Full key | Default | Description |
 |---|---|---|
-| `spring.httpclient5.core.enabled` | `true` | core |
-| `spring.httpclient5.core.actuator.enabled` | `true` | actuator |
-| `spring.httpclient5.core.resilience4j.enabled` | `true` | resilience4j |
-| `spring.httpclient5.web.headers-filter.enabled` | `true` | web |
-| `spring.httpclient5.web.headers-propagation.enabled` | `true` | web |
-| `spring.httpclient5.web.async-decorator.enabled` | `true` | web |
-| `spring.httpclient5.web.rest-template.enabled` | `true` | web |
+| `spring.httpclient5.request-config.<rule>.retry-config.max-retries` | `0` | Retry count for transport-level failures (`429`, `503`, idempotent I/O errors) |
+| `spring.httpclient5.request-config.<rule>.retry-config.retry-interval` | `PT1S` | Delay between transport retries |
 
-## Resilience4j instances
+### Interceptors and request context
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.request-config.<rule>.interceptors` | `{}` | Map `interceptor-id` → enabled |
+| `spring.httpclient5.request-config.<rule>.custom-request-context` | `{}` | Attributes added to the request `HttpContext` |
+
+```yaml
+'[default]':
+  interceptors:
+    '[trace]': true
+  custom-request-context:
+    '[tenant]': acme
+```
+
+An interceptor is a bean extending `ActivableHttpInterceptor`; its id is the map key.
+
+### Resilience4j per rule
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.request-config.<rule>.error-management.circuit-name` | `default` | Resilience4j circuit name |
+| `spring.httpclient5.request-config.<rule>.error-management.max-attempts` | `1` | Retry attempts (`1` = no retry) |
+| `spring.httpclient5.request-config.<rule>.error-management.wait-duration` | `0` | Retry wait, in milliseconds |
+| `spring.httpclient5.request-config.<rule>.error-management.broken-circuit-action` | `error` | `error` or an HTTP status code |
+
+See [Resilience4j](#4-resilience4j) for the instance configuration.
+
+### Header propagation per rule (web starter)
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.request-config.<rule>.headers-propagation.enabled` | unset (disabled) | Enable propagation for this rule |
+| `spring.httpclient5.request-config.<rule>.headers-propagation.down` | `[]` | Regex list: incoming request headers forwarded to outgoing calls |
+| `spring.httpclient5.request-config.<rule>.headers-propagation.up` | `[]` | Regex list: outgoing response headers copied to the incoming response |
+| `spring.httpclient5.request-config.<rule>.headers-propagation.add` | `{}` | Static headers added to outgoing calls |
+| `spring.httpclient5.request-config.<rule>.headers-propagation.remove` | `[]` | Headers removed from outgoing calls |
+
+---
+
+## 2. Connection pools
+
+`pool` is the synchronous pool; `async-pool` is the asynchronous pool. Both use Apache
+connection-manager builders; the asynchronous builder has no `default-socket-config` (use
+`default-connection-config.socket-timeout` instead).
+
+### Common pool settings
+
+#### Synchronous pool
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.pool.max-conn-total` | `0` (unlimited) | Maximum total connections |
+| `spring.httpclient5.pool.max-connper-route` | `50` | Maximum connections per route |
+| `spring.httpclient5.pool.dns-resolver` | `system` | `system`, `in_memory`, or a `DnsResolver` class name |
+| `spring.httpclient5.pool.conn-pool-policy` | `LIFO` | Connection reuse policy (`LIFO` / `FIFO`) |
+| `spring.httpclient5.pool.connection-time-to-live` | unset | Pool-level connection TTL |
+| `spring.httpclient5.pool.pool-concurrency-policy` | `LAX` | `STRICT` or `LAX` |
+| `spring.httpclient5.pool.connection-idle-timeout` | `PT30S` | Idle connection timeout used by the cleaner |
+
+> The `max-connper-route` spelling is historical; `max-conn-per-route` also binds.
+> The `50` / `LAX` zero-conf values are skipped if either pool declares `max-connper-route`.
+
+#### Asynchronous pool
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.async-pool.max-conn-total` | `0` (unlimited) | Maximum total connections |
+| `spring.httpclient5.async-pool.max-connper-route` | `50` | Maximum connections per route |
+| `spring.httpclient5.async-pool.dns-resolver` | `system` | `system`, `in_memory`, or a `DnsResolver` class name |
+| `spring.httpclient5.async-pool.conn-pool-policy` | `LIFO` | Connection reuse policy (`LIFO` / `FIFO`) |
+| `spring.httpclient5.async-pool.connection-time-to-live` | unset | Pool-level connection TTL |
+| `spring.httpclient5.async-pool.pool-concurrency-policy` | `LAX` | `STRICT` or `LAX` |
+| `spring.httpclient5.async-pool.connection-idle-timeout` | `PT30S` | Idle connection timeout used by the cleaner |
+
+### Connection configuration
+
+Applied to routes without a specific host entry. Values below are the zero-conf defaults; if you
+declare the block yourself, unspecified values keep the Apache `ConnectionConfig` defaults.
+
+#### Synchronous pool
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.pool.default-connection-config.connect-timeout` | `PT3S` | TCP connect timeout |
+| `spring.httpclient5.pool.default-connection-config.socket-timeout` | `PT30S` | Socket read timeout |
+| `spring.httpclient5.pool.default-connection-config.time-to-live` | `PT120S` | Connection time-to-live |
+| `spring.httpclient5.pool.default-connection-config.validate-after-inactivity` | `PT20S` | Re-validate idle connections |
+| `spring.httpclient5.pool.default-connection-config.idle-timeout` | unset | Idle timeout |
+
+#### Asynchronous pool
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.async-pool.default-connection-config.connect-timeout` | `PT3S` | TCP connect timeout |
+| `spring.httpclient5.async-pool.default-connection-config.socket-timeout` | `PT30S` | Socket read timeout |
+| `spring.httpclient5.async-pool.default-connection-config.time-to-live` | `PT120S` | Connection time-to-live |
+| `spring.httpclient5.async-pool.default-connection-config.validate-after-inactivity` | `PT20S` | Re-validate idle connections |
+| `spring.httpclient5.async-pool.default-connection-config.idle-timeout` | unset | Idle timeout |
+
+### Socket configuration (synchronous pool only)
+
+`so-timeout` is the zero-conf value; the other entries are Apache `SocketConfig` defaults.
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.pool.default-socket-config.so-timeout` | `PT30S` | `SO_TIMEOUT` |
+| `spring.httpclient5.pool.default-socket-config.so-keepalive` | `true` | `SO_KEEPALIVE` |
+| `spring.httpclient5.pool.default-socket-config.tcp-no-delay` | `true` | `TCP_NODELAY` |
+| `spring.httpclient5.pool.default-socket-config.so-reuse-address` | `false` | `SO_REUSEADDR` |
+| `spring.httpclient5.pool.default-socket-config.so-linger` | `-1` | `SO_LINGER` |
+| `spring.httpclient5.pool.default-socket-config.snd-buf-size` | `0` | Send buffer size |
+| `spring.httpclient5.pool.default-socket-config.rcv-buf-size` | `0` | Receive buffer size |
+| `spring.httpclient5.pool.default-socket-config.backlog-size` | `0` | Backlog size |
+| `spring.httpclient5.pool.default-socket-config.tcp-keep-idle` | `5` | TCP keep-alive idle |
+| `spring.httpclient5.pool.default-socket-config.tcp-keep-interval` | `5` | TCP keep-alive interval |
+| `spring.httpclient5.pool.default-socket-config.tcp-keep-count` | `3` | TCP keep-alive count |
+
+### Host-specific configuration
+
+Keys are host URIs. Placeholders are expanded and default ports are normalized
+(`http` → `:80`, `https` → `:443`).
+
+| Full key | Description |
+|---|---|
+| `spring.httpclient5.pool.host-config.<host>.connect-timeout` | Connect timeout for this host |
+| `spring.httpclient5.pool.host-config.<host>.socket-timeout` | Socket timeout for this host |
+| `spring.httpclient5.pool.host-config.<host>.time-to-live` | Connection TTL for this host |
+| `spring.httpclient5.pool.host-config.<host>.validate-after-inactivity` | Re-validation delay for this host |
+| `spring.httpclient5.pool.host-config.<host>.max-connections` | Max-per-route for this host |
+| `spring.httpclient5.async-pool.host-config.<host>.connect-timeout` | Same, asynchronous pool |
+| `spring.httpclient5.async-pool.host-config.<host>.socket-timeout` | Same, asynchronous pool |
+| `spring.httpclient5.async-pool.host-config.<host>.time-to-live` | Same, asynchronous pool |
+| `spring.httpclient5.async-pool.host-config.<host>.validate-after-inactivity` | Same, asynchronous pool |
+| `spring.httpclient5.async-pool.host-config.<host>.max-connections` | Same, asynchronous pool |
+
+```yaml
+spring:
+  httpclient5:
+    pool:
+      host-config:
+        '[https://api.example.com]':
+          connect-timeout: PT2S
+          socket-timeout: PT45S
+          max-connections: 20
+```
+
+---
+
+## 3. Web starter
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.web.headers-filter.enabled` | `true` | Register the servlet filter that collects/serves headers |
+| `spring.httpclient5.web.headers-propagation.enabled` | `true` | Enable the header-propagation auto-configuration |
+| `spring.httpclient5.web.async-decorator.enabled` | `true` | Propagate the request context to `@Async` tasks |
+| `spring.httpclient5.web.rest-template.enabled` | `true` | Customize Boot's `RestTemplateBuilder` with this `HttpClient` |
+
+Header rules are configured per request rule; see
+[header propagation](#header-propagation-per-rule-web-starter).
+
+---
+
+## 4. Resilience4j
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.core.resilience4j.enabled` | `true` | Enable the Resilience4j handlers |
 
 Instances are standard Spring Boot Resilience4j properties:
 
@@ -174,15 +310,92 @@ resilience4j:
 ```
 
 - `circuit-name` selects `resilience4j.circuitbreaker.instances.<name>`.
-- For any name other than `default`, a `RateLimiter` with the same name is also used; define it in
-  `resilience4j.ratelimiter.instances.<name>` if you need rate limiting.
-- HTTP 5xx and exceptions are failures. `broken-circuit-action` handles the open-circuit response.
+- For any name other than `default`, a `RateLimiter` with the **same name** is also used.
+- HTTP 5xx and exceptions are failures.
+- `broken-circuit-action` accepts `error` (throws) or an HTTP status code.
 
-## Actuator metrics
+---
 
-The actuator module adds:
+## 5. Actuator
 
-- request observations (`http.client.request.duration` and related metrics);
-- pool metrics bound under `httpclient5.pool` and `httpclient5.async-pool`.
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.core.actuator.enabled` | `true` | Enable request observations and pool metrics |
 
-No additional configuration is required beyond the Actuator starter.
+The module registers request observations and pool metrics under `httpclient5.pool` and
+`httpclient5.async-pool`.
+
+---
+
+## 6. Global switches
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.core.enabled` | `true` | Enable the core auto-configuration |
+| `spring.httpclient5.autoconfig` | `true` | Apply zero-conf pool/request defaults |
+| `spring.httpclient5.user-agent` | unset | `User-Agent` header for both clients |
+
+Zero-conf defaults (when `autoconfig=true`):
+
+| Setting | Value |
+|---|---|
+| Request connection-request timeout | 3 s |
+| Request response timeout | 30 s |
+| Max connections per route (both pools) | 50 |
+| Pool concurrency policy | `LAX` |
+| Connect timeout | 3 s |
+| Socket timeout | 30 s |
+| Connection TTL | 120 s |
+| Validate after inactivity | 20 s |
+| SO_TIMEOUT (synchronous pool) | 30 s |
+| Idle connection timeout | 30 s |
+| Max total connections | unlimited |
+
+---
+
+## 7. Advanced Apache tuning
+
+These settings are rarely needed; the defaults are usually correct.
+
+### HTTP/1
+
+| Full key | Apache default | Description |
+|---|---|---|
+| `spring.httpclient5.http1.buffer-size` | `32768` | Internal buffer size |
+| `spring.httpclient5.http1.chunk-size-hint` | `-1` | Chunk size hint |
+| `spring.httpclient5.http1.wait-for-continue-timeout` | unset | Timeout for `Expect: 100-continue` |
+| `spring.httpclient5.http1.max-line-length` | `8192` | Maximum line length |
+| `spring.httpclient5.http1.max-header-count` | `100` | Maximum header count |
+| `spring.httpclient5.http1.max-empty-line-count` | `10` | Maximum tolerated empty lines |
+
+### Character coding
+
+| Full key | Description |
+|---|---|
+| `spring.httpclient5.char-coding.charset` | Character set |
+| `spring.httpclient5.char-coding.malformed-input-action` | Action on malformed input |
+| `spring.httpclient5.char-coding.unmappable-input-action` | Action on unmappable input |
+
+### I/O reactor (asynchronous client)
+
+| Full key | Apache default | Description |
+|---|---|---|
+| `spring.httpclient5.io-reactor.select-interval` | `PT1S` | Selector interval |
+| `spring.httpclient5.io-reactor.io-thread-count` | derived from CPUs | I/O thread count |
+| `spring.httpclient5.io-reactor.so-timeout` | `0` | Socket timeout |
+| `spring.httpclient5.io-reactor.so-keepalive` | `true` | `SO_KEEPALIVE` |
+| `spring.httpclient5.io-reactor.tcp-no-delay` | `true` | `TCP_NODELAY` |
+| `spring.httpclient5.io-reactor.snd-buf-size` | `0` | Send buffer size |
+| `spring.httpclient5.io-reactor.rcv-buf-size` | `0` | Receive buffer size |
+| `spring.httpclient5.io-reactor.backlog-size` | `0` | Backlog size |
+
+---
+
+## 8. Legacy settings
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.jmx.domain` | `default` | Legacy field, not wired to JMX in 2.x |
+| `spring.httpclient5.jmx.metric-name-strategy` | `HOST_AND_METHOD` | Legacy field, not used in 2.x |
+
+Use the Actuator module and Micrometer for monitoring instead.
