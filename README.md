@@ -12,7 +12,7 @@ Published on Maven Central under `io.github.springboot-addons`.
 |---|---|---|
 | 3.3.x | 5.3.x | `1.0.6` |
 | 3.4.x | 5.4.x | `1.2.0` |
-| 3.5.x | 5.4.x | `1.3.0` |
+| 3.5.x | 5.5.x | `1.3.0` |
 | 4.0.x | 5.5.x | `2.0.0` |
 | 4.1.x | 5.6.x | `2.1.0` |
 | 4.2.x | 5.6.x | `2.2.0` (this branch) |

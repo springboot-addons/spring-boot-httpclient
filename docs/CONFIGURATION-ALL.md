@@ -199,8 +199,10 @@ connection-manager builders; the asynchronous builder has no `default-socket-con
 
 ### Connection configuration
 
-Applied to routes without a specific host entry. Values below are the zero-conf defaults; if you
-declare the block yourself, unspecified values keep the Apache `ConnectionConfig` defaults.
+Applied to routes without a specific host entry. The starter always defaults `connect-timeout` to
+3 s; `socket-timeout`, `time-to-live` and `validate-after-inactivity` are filled by the zero-conf
+rule. If you declare the block yourself, omitted socket/TTL/validation values stay unset and Apache
+falls back to its own defaults.
 
 #### Synchronous pool
 

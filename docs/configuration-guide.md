@@ -3,6 +3,27 @@
 This guide describes how `spring-boot-httpclient5` builds and configures Apache HttpClient 5.
 All properties use the `spring.httpclient5` prefix and Spring Boot relaxed binding.
 
+## Quick example
+
+```yaml
+spring:
+  httpclient5:
+    user-agent: my-application/1.0
+    pool:
+      max-conn-total: 128
+      max-connper-route: 30
+      default-connection-config:
+        connect-timeout: PT1S
+        socket-timeout: PT30S
+    request-config:
+      '[default]':
+        connection-request-timeout: PT1S
+        response-timeout: PT10S
+      '[GET https://api.example.com/.*]':
+        response-timeout: PT30S
+        credentials: user:password
+```
+
 ## Contents
 
 1. [How configuration is applied](#how-configuration-is-applied)
