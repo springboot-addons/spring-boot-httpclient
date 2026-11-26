@@ -11,8 +11,8 @@ The repository root is this directory (`spring-boot-httpclient`). It is **not** 
 `rci-socle-api` repository anymore: do not reference, import or copy files from
 `d:\workspace\rci-socle-api-sb4`.
 
-Current version: `2.2.1-SNAPSHOT`. Last release: `2.2.0` (tag
-`spring-boot-starter-httpclient5-parent-2.2.0`).
+Current version: `2.2.2-SNAPSHOT`. Last release: `2.2.1` (tag
+`spring-boot-starter-httpclient5-parent-2.2.1`).
 
 ## Branches
 
@@ -124,7 +124,7 @@ The release is a **single command**:
   - `releaseProfiles=release-sign-artifacts` → no need for `-Prelease-sign-artifacts`.
   - `pushChanges=true` → commits, tags and pushes automatically.
   - `localCheckout=true` + `preparationGoals=clean verify`.
-  - Tag format: `<artifactId>-<version>` (e.g. `spring-boot-starter-httpclient5-parent-2.2.0`).
+  - Tag format: `<artifactId>-<version>` (e.g. `spring-boot-starter-httpclient5-parent-2.2.1`).
 - `maven-gpg-plugin` is only active in the `release-sign-artifacts` profile (perform), so normal
   builds never sign.
 - `central-publishing-maven-plugin` publishes automatically (`autoPublish=true`,

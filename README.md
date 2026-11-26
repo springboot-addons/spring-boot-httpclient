@@ -8,14 +8,18 @@ Published on Maven Central under `io.github.springboot-addons`.
 
 ## Compatibility
 
-| Spring Boot | HttpClient 5 | Minimum starter version |
-|---|---|---|
-| 3.3.x | 5.3.x | `1.0.6` |
-| 3.4.x | 5.4.x | `1.2.0` |
-| 3.5.x | 5.5.x | `1.3.0` |
-| 4.0.x | 5.5.x | `2.0.0` |
-| 4.1.x | 5.6.x | `2.1.0` |
-| 4.2.x | 5.6.x | `2.2.0` (this branch) |
+| Spring Boot | HttpClient 5 | Starter line | Recommended version |
+|---|---|---|---|
+| 3.3.x | 5.3.x | 1.0.x | `1.0.6` |
+| 3.4.x | 5.4.x | 1.2.x | `1.2.1` |
+| 3.5.x | 5.5.x | 1.3.x | `1.3.1` |
+| 4.0.x | 5.5.x | 2.0.x | `2.0.2` |
+| 4.1.x | 5.6.x | 2.1.x | `2.1.2` |
+| 4.2.x | 5.6.x | 2.2.x | `2.2.1` |
+
+"Recommended" is the latest release of the corresponding starter line.
+
+This branch: Spring Boot 4.2.x, current version `2.2.2-SNAPSHOT`, last release `2.2.1`.
 
 Java 17 is the runtime target. The build runs on JDK 17 up to JDK 25.
 
@@ -36,7 +40,7 @@ Java 17 is the runtime target. The build runs on JDK 17 up to JDK 25.
 <dependency>
     <groupId>io.github.springboot-addons</groupId>
     <artifactId>spring-boot-starter-httpclient5</artifactId>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
 </dependency>
 ```
 
