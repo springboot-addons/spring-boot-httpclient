@@ -1,203 +1,228 @@
 # spring-boot-httpclient
-Spring Boot AutoConfiguration starters for Apache HttpClient 5.x
 
-* Requires SpringBoot 3.0.x or higher and Java 17 +
+Spring Boot auto-configuration for **Apache HttpClient 5**: synchronous and asynchronous clients,
+connection pools, per-request configuration, authentication, retries, header propagation, Actuator
+metrics and Resilience4j integration.
 
-* Spring Boot 3.3.x / HttpClient5 5.3.x + needs spring-boot-httpclient5 1.0.6+ 
-* Spring Boot 3.4.x / HttpClient5 5.4.x + needs spring-boot-httpclient5 1.2.0+ 
-* Spring Boot 4.0.x / HttpClient5 5.5.x + needs spring-boot-httpclient5 2.0.0+ 
+Published on Maven Central under `io.github.springboot-addons`.
 
-***Documentation In progress***
+## Compatibility
 
-Configuration support for HttpClient through SpringBoot yaml / properties
-- Support configuration at url / method level for timeouts
-- Http connnection pool size configurable at host level
-- Support for actuator / dropmetrics (< 2.0.1) / micrometer (spring boot 4.x, httpclient 5.x, starter > 2.0.1)
-- Support for resilience4j circuit breaker / ratelimiter
-- Support for headers propagation (bidirectional)
-- Support for Async client : CloseableHttpAsyncClient
-- many more
+| Spring Boot | HttpClient 5 | Minimum starter version |
+|---|---|---|
+| 3.3.x | 5.3.x | `1.0.6` |
+| 3.4.x | 5.4.x | `1.2.0` |
+| 3.5.x | 5.5.x | `1.3.0` |
+| 4.0.x | 5.5.x | `2.0.0` |
+| 4.1.x | 5.6.x | `2.1.0` |
+| 4.2.x | 5.6.x | `2.2.0` |
 
-Dependencies : https://mvnrepository.com/artifact/io.github.springboot-addons
+> This branch: Spring Boot 4.0.4, starter 2.0.x (current `2.0.2-SNAPSHOT`, last release `2.0.1`).
 
-Httpclient configuration support 
+Java 17 is the runtime target. The build runs on JDK 17 up to JDK 25.
 
-	<dependency>
-		<groupId>io.github.springboot-addons</groupId>
-		<artifactId>spring-boot-starter-httpclient5</artifactId>
-		<version>2.0.1</version>
-	</dependency>
+## Modules
 
-Httpclient actuator support 
+| Artifact | Description |
+|---|---|
+| `spring-boot-starter-httpclient5` | Core: sync/async clients, pools, request rules, retries, authentication |
+| `spring-boot-starter-httpclient5-web` | Bidirectional HTTP header propagation, `@Async` context propagation, `RestTemplate` customization |
+| `spring-boot-starter-httpclient5-actuator` | Micrometer observations and connection-pool metrics |
+| `spring-boot-starter-httpclient5-resilience4j` | Resilience4j circuit breaker and rate limiter integration |
+| `spring-boot-starter-httpclient5-all` | POM aggregator for the four starters above |
+| `spring-boot-starter-httpclient5-integration-tests` | End-to-end sample and test application |
 
-	<dependency>
-		<groupId>io.github.springboot-addons</groupId>
-		<artifactId>spring-boot-starter-httpclient5-actuator</artifactId>
-		<version>2.0.1</version>
-	</dependency>
+## Quick start
 
+```xml
+<dependency>
+    <groupId>io.github.springboot-addons</groupId>
+    <artifactId>spring-boot-starter-httpclient5</artifactId>
+    <version>2.0.1</version>
+</dependency>
+```
 
-Httpclient resilience4j support 
+The starter registers:
 
-	<dependency>
-		<groupId>io.github.springboot-addons</groupId>
-		<artifactId>spring-boot-starter-httpclient5-resilience4j</artifactId>
-		<version>2.0.1</version>
-	</dependency>
+- `CloseableHttpClient` (injectable as `HttpClient`)
+- `CloseableHttpAsyncClient` (started)
+- `PoolingHttpClientConnectionManager` and `PoolingAsyncClientConnectionManager`
+- `Executor` (Apache HttpClient fluent API)
 
+```java
+@Service
+public class ApiService {
 
+    private final CloseableHttpClient httpClient;
 
-Httpclient all in one support 
+    public ApiService(CloseableHttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 
-	<dependency>
-		<groupId>io.github.springboot-addons</groupId>
-		<artifactId>spring-boot-starter-httpclient5-all</artifactId>
-		<version>2.0.1</version>
-		<type>pom</type>
-	</dependency>
+    public String get(String url) throws IOException {
+        HttpGet request = new HttpGet(url);
+        try (CloseableHttpResponse response = httpClient.execute(request)) {
+            return EntityUtils.toString(response.getEntity());
+        }
+    }
+}
+```
 
-Minimum recommended configuration : (or no configuration => it will use this defaults)
+Add `spring-boot-starter-httpclient5-all` (type `pom`) to get the web, actuator and Resilience4j
+starters at once.
 
-	spring:
-	  httpclient5:
-	    pool:
-	      max-connper-route: 50
-	      pool-concurrency-policy: LAX
-	      default-connection-config:
-	        connect-timeout: PT1S
-	    async-pool:
-	      max-connper-route: 50
-	      pool-concurrency-policy: LAX
-	      default-connection-config:
-	        connect-timeout: PT1S
-	    request-config:
-	      '[default]':
-	        connection-request-timeout: PT3S
-	        response-timeout: PT30S
+## Behaviour with no configuration
 
-Full sample configuration : 
+The starter is usable without any property. With no configuration it applies:
 
-	spring:
-	  httpclient5:
-	    user-agent: HttpClient5
-	    jmx.domain: ${spring.application.name}
-	    # see properties from org.apache.hc.core5.http.config.Http1Config
-	    http1:
-	      buffer-size: 4096
-	      waitForContinueTimeout: PT32S
-	    # see properties org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
-	    async-pool:
-	      max-connper-route: 20
-	      dns-resolver: system
-	      conn-pool-policy: LIFO
-	      connection-time-to-live: PT120S
-	      pool-concurrency-policy: LAX
-	      # see properties from org.apache.hc.core5.http.io.SocketConfig
-	      default-connection-config:
-	        connect-timeout: PT0.1S
-	        socket-timeout: PT15S
-	      default-socket-config:
-	        so-timeout: PT250S
-	      host-config:
-	        '[${app.httpbin-host}]':
-	          connect-timeout: PT0.5S
-	          max-connections: 15 
-	        '[https://testhost:4443]':
-	          connect-timeout: PT0.3S
-	          max-connections: 40
-	    pool:
-	      max-conn-total: 128
-	      max-connper-route: 5
-	      dns-resolver: system
-	      conn-pool-policy: LIFO
-	      connection-time-to-live: PT120S
-	      pool-concurrency-policy: STRICT
-	      # see properties from org.apache.hc.core5.http.io.SocketConfig
-	      default-socket-config:
-	        so-timeout: PT60S
-	      # see properties from org.apache.hc.client5.http.config.ConnectionConfig
-	      default-connection-config:
-	        connect-timeout: PT1S
-	        socket-timeout: PT30S
-	      host-config:
-	        '[${app.httpbin-host}]':
-		       # see properties from org.apache.hc.client5.http.config.ConnectionConfig + max-connections
-	          connect-timeout: PT1S
-	          max-connections: 10 
-	        '[https://testhost:4443]':
-	          connect-timeout: PT2S
-	          max-connections: 20 
-	    # See properties from org.apache.hc.client5.http.config.RequestConfig + addons headers-propagation, error-management
-	    # WARNING connection-timeout deprecated and no more working on 5.2.x+, use host-config or default-connection-config
-	    request-config:
-	      '[default]':
-	        connection-keep-alive: PT30S
-	        connection-request-timeout: 1000
-	        response-timeout: 2000
-	        headers-propagation:
-	         enabled: true
-	         up: 
-	           - X-TEST-.*
-	         down: 
-	           - X-TEST-.*
-	         add:
-	           '[X-TU]': "SRU ADDED HEADER"
-	        error-management:
-	          circuit-name: default
-	          broken-circuit-action: 503
-	        retry-config: 
-	          max-retries: 2
-	          retry-interval: PT3S
-	        interceptors:
-	          '[myinterceptor]': false
-	        custom-request-context:           
-	          '[propA]': "abc"
-	      '[GET https://httpbin.org/.*]':
-	        response-timeout: 3000
-	        error-management.circuit-name: httpbin-org
-	      '[GET https://httpbin.org/basic-auth/.*]':
-	        credentials: admin:pwd
-	        #credentials: BASIC(admin:pwd)
-	      '[GET https://httpbin.org/hidden-basic-auth/.*]':
-	        credentials: PREEMPTIVE(admin:pwd)	        
-	      '[POST https://httpbin.org/.*]':
-	        response-timeout: 5000
-	        error-management.circuit-name: httpbin-org
-	      '[.* https://testhost:4443/.*]':
-	        proxy: https://localhost:3128
-	      '[.* https://testhost/.*]':
-	        response-timeout: 1000
-	      '[POST https://testhost/subpath/.*]':
-	        response-timeout: 3000
+- a default request rule: connection-request timeout **3 s**, response timeout **30 s**;
+- for both pools: max connections per route **50**, concurrency policy **LAX**,
+  connect timeout **3 s**, socket timeout **30 s**, connection TTL **120 s**,
+  validate-after-inactivity **20 s**; the synchronous pool also gets SO_TIMEOUT **30 s**;
+  idle connections are closed after **30 s**;
+- total connections are not limited (`max-conn-total` unset).
 
-	resilience4j:
-	  circuitbreaker:
-	    instances:
-	      default:
-	        minimumNumberOfCalls: 2
-	        eventConsumerBufferSize: 10
-	        failureRateThreshold: 100
-	        registerHealthIndicator: true
-	        wait-duration-in-open-state: 1000ms
-	      httpbin-org:
-	        minimumNumberOfCalls: 3
-	        slidingWindowSize: 5
-	        eventConsumerBufferSize: 10
-	        failureRateThreshold: 100
-	        registerHealthIndicator: true
-	        wait-duration-in-open-state: 1000ms
-	  ratelimiter:
-	    instances:
-	      httpbin-org:
-	        limitForPeriod: 1
-	        timeoutDuration: 1s
-	        limitRefreshPeriod: 1000ms
-	        registerHealthIndicator: true
+Set `spring.httpclient5.autoconfig=false` to keep the Apache defaults instead.
 
-## Build
+Recommended minimal configuration:
 
-Java 17 is the target, but the build runs on JDK 17 up to JDK 25.
-Use the Maven Wrapper (Maven 3.9.11):
+```yaml
+spring:
+  httpclient5:
+    user-agent: my-application/1.0
+    pool:
+      max-conn-total: 128
+      max-connper-route: 30
+      default-connection-config:
+        connect-timeout: PT1S
+        socket-timeout: PT30S
+    async-pool:
+      max-connper-route: 20
+    request-config:
+      '[default]':
+        connection-request-timeout: PT1S
+        response-timeout: PT10S
+```
+
+> `max-connper-route` is the historical key. The standard relaxed form `max-conn-per-route` also
+> binds.
+
+## Request-level configuration
+
+Rules are matched against `method + " " + absolute URI` with Java regular expressions
+(full match), and merged in lexicographic key order on top of `[default]`:
+
+```yaml
+spring:
+  httpclient5:
+    request-config:
+      '[default]':
+        response-timeout: PT10S
+        retry-config:
+          max-retries: 2
+          retry-interval: PT1S
+        interceptors:
+          '[my-interceptor]': true
+        custom-request-context:
+          '[tenant]': default
+
+      '[GET https://api.example.com/.*]':
+        response-timeout: PT30S
+
+      '[GET https://api.example.com/basic-auth/.*]':
+        credentials: user:password
+
+      '[GET https://api.example.com/hidden-basic-auth/.*]':
+        credentials: PREEMPTIVE(user:password)
+
+      '[POST https://api.example.com/.*]':
+        proxy: http://localhost:3128
+        error-management:
+          circuit-name: api
+          max-attempts: 3
+          wait-duration: 200
+          broken-circuit-action: 503
+```
+
+What is available per rule:
+
+- all standard Apache `RequestConfig` builder properties (`response-timeout`,
+  `connection-request-timeout`, `connection-keep-alive`, `max-redirects`, `proxy`, ...);
+- `credentials`: `user:password`, `BASIC(user:password)` or `PREEMPTIVE(user:password)`;
+- `retry-config`: transport-level retries (`max-retries`, `retry-interval`);
+- `interceptors`: enable/disable any `ActivableHttpInterceptor` bean by its id;
+- `custom-request-context`: attributes stored in the `HttpContext` for the exchange;
+- `error-management`: Resilience4j circuit breaker/rate limiter settings;
+- `headers-propagation`: web starter header rules (see below).
+
+## Header propagation (web starter)
+
+```yaml
+spring:
+  httpclient5:
+    request-config:
+      '[default]':
+        headers-propagation:
+          enabled: true
+          down:            # incoming request headers forwarded to outgoing calls
+            - X-Request-.*
+          up:              # outgoing response headers copied to the incoming response
+            - X-Trace-.*
+          add:             # static headers added to outgoing calls
+            '[X-Application]': my-app
+          remove:          # headers removed from outgoing calls
+            - X-Internal-.*
+```
+
+The web starter also:
+
+- propagates the request context to `@Async` tasks (including virtual threads);
+- customizes Boot's `RestTemplateBuilder`/`RestTemplate` to use the starter's `HttpClient`.
+
+## Actuator and Resilience4j
+
+Add `spring-boot-starter-httpclient5-actuator` for Micrometer observations and pool metrics.
+Add `spring-boot-starter-httpclient5-resilience4j` to apply a Resilience4j circuit breaker and,
+when the circuit name is not `default`, a rate limiter with the same name:
+
+```yaml
+resilience4j:
+  circuitbreaker:
+    instances:
+      api:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+  ratelimiter:
+    instances:
+      api:
+        limitForPeriod: 20
+        limitRefreshPeriod: 1s
+```
+
+```yaml
+spring:
+  httpclient5:
+    request-config:
+      '[GET https://api.example.com/.*]':
+        error-management:
+          circuit-name: api
+          max-attempts: 2
+          wait-duration: 250
+          broken-circuit-action: 503
+```
+
+HTTP 5xx responses and exceptions count as failures. `broken-circuit-action` accepts `error`
+(default, throws an exception) or an HTTP status code returned when the circuit is open.
+
+## Documentation
+
+- [Configuration guide](docs/configuration-guide.md) – concepts, pools, request rules, web/actuator/Resilience4j
+- [Configuration reference](docs/CONFIGURATION-ALL.md) – all properties and defaults
+- [Usage examples](docs/usage-example.md) – sync, async, fluent, `RestTemplate`, header propagation
+- [AGENTS.md](AGENTS.md) – build, test and release procedure for contributors
+
+## Build and test
 
 ```bash
 ./mvnw clean verify
@@ -209,18 +234,20 @@ On Windows PowerShell:
 .\mvnw.cmd clean verify
 ```
 
-The test suite uses Testcontainers with a local `go-httpbin` container, so **Docker must be running**.
-No external test endpoint is required.
+The tests use Testcontainers with a local [`go-httpbin`](https://github.com/mccutchen/go-httpbin)
+container: **Docker must be running**. No external test endpoint is used.
 
 ## Release
 
-Requires a GPG key, the `MAVEN_GPG_PASSPHRASE` environment variable and Maven Central credentials
-(server id `central`). A release is a single command that prepares, signs, deploys and automatically
-publishes to Maven Central:
+A release is a single command that prepares, signs, deploys and publishes to Maven Central:
 
 ```powershell
 .\mvnw.cmd release:prepare release:perform
 ```
 
-The Maven Release Plugin commits, tags and pushes automatically. See `AGENTS.md` for the one-time
-setup and recovery procedure.
+One-time setup: GPG key, `MAVEN_GPG_PASSPHRASE` environment variable, Maven Central credentials
+(server id `central`), branch tracking `origin`, Docker running. See [AGENTS.md](AGENTS.md).
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE).
