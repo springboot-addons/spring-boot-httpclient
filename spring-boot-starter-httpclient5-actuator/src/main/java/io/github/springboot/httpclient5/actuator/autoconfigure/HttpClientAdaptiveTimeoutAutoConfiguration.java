@@ -1,9 +1,13 @@
 package io.github.springboot.httpclient5.actuator.autoconfigure;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.github.springboot.httpclient5.actuator.adaptive.AdaptiveTimeoutDiagnostics;
+import io.github.springboot.httpclient5.actuator.adaptive.AdaptiveTimeoutDiagnosticsLogger;
+import io.github.springboot.httpclient5.actuator.adaptive.AdaptiveTimeoutEndpoint;
 import io.github.springboot.httpclient5.actuator.adaptive.AdaptiveTimeoutExecChainHandler;
 import io.github.springboot.httpclient5.actuator.adaptive.MicrometerAdaptiveTimeoutPolicy;
 import io.github.springboot.httpclient5.core.HttpClient5AutoConfiguration;
@@ -32,6 +36,28 @@ public class HttpClientAdaptiveTimeoutAutoConfiguration {
 	public AdaptiveTimeoutExecChainHandler adaptiveTimeoutExecChainHandler(MicrometerAdaptiveTimeoutPolicy policy,
 			Clock clock) {
 		return new AdaptiveTimeoutExecChainHandler(policy, clock);
+	}
+
+	@Bean
+	public AdaptiveTimeoutDiagnostics adaptiveTimeoutDiagnostics(HttpClient5Config config,
+			MicrometerAdaptiveTimeoutPolicy policy) {
+		return new AdaptiveTimeoutDiagnostics(config, policy);
+	}
+
+	@Bean
+	@ConditionalOnProperty(prefix = "spring.httpclient5.adaptive-timeout.diagnostics", name = "log-enabled",
+			havingValue = "true", matchIfMissing = true)
+	public AdaptiveTimeoutDiagnosticsLogger adaptiveTimeoutDiagnosticsLogger(
+			AdaptiveTimeoutDiagnostics diagnostics, HttpClient5Config config,
+			MicrometerAdaptiveTimeoutPolicy policy) {
+		return new AdaptiveTimeoutDiagnosticsLogger(diagnostics, config, policy);
+	}
+
+	@Bean
+	@ConditionalOnProperty(prefix = "management.endpoint.httpclient5-adaptive-timeout", name = "enabled",
+			havingValue = "true", matchIfMissing = true)
+	public AdaptiveTimeoutEndpoint adaptiveTimeoutEndpoint(AdaptiveTimeoutDiagnostics diagnostics) {
+		return new AdaptiveTimeoutEndpoint(diagnostics);
 	}
 
 	@Bean

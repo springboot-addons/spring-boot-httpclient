@@ -34,7 +34,8 @@ release instructions are in [AGENTS.md](AGENTS.md); user documentation starts at
   `custom-request-context`, `error-management`, `headers-propagation`, `adaptive-timeout`.
 - `adaptive-timeout` (actuator starter, 2.2.x only): global TTFB-based response timeout policy.
   The global switch defaults to `false`; a rule can enable or disable it with
-  `adaptive-timeout.enabled`.
+  `adaptive-timeout.enabled`. Diagnostics: `/actuator/httpclient5-adaptive-timeout`, plus a
+  DEBUG log every minute (only differences).
 - Zero-conf defaults: 3 s connection-request, 30 s response, 50 max-per-route, LAX, 3 s connect,
   30 s socket, 120 s TTL, 30 s idle timeout.
 
