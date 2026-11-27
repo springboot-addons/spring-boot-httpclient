@@ -150,6 +150,16 @@ An interceptor is a bean extending `ActivableHttpInterceptor`; its id is the map
 
 See [Resilience4j](#4-resilience4j) for the instance configuration.
 
+### Adaptive timeout per rule (actuator starter)
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.request-config.<rule>.adaptive-timeout.enabled` | unset (inherits the global flag) | Enable or disable the global adaptive response timeout policy for this rule |
+
+The global switch defaults to `false`, so setting `adaptive-timeout.enabled: true` on selected
+rules enables the policy only for those rules. The policy parameters are global; see
+[Adaptive response timeout](#adaptive-response-timeout-actuator-starter).
+
 ### Header propagation per rule (web starter)
 
 | Full key | Default | Description |
@@ -159,6 +169,55 @@ See [Resilience4j](#4-resilience4j) for the instance configuration.
 | `spring.httpclient5.request-config.<rule>.headers-propagation.up` | `[]` | Regex list: outgoing response headers copied to the incoming response |
 | `spring.httpclient5.request-config.<rule>.headers-propagation.add` | `{}` | Static headers added to outgoing calls |
 | `spring.httpclient5.request-config.<rule>.headers-propagation.remove` | `[]` | Headers removed from outgoing calls |
+
+---
+
+## Adaptive response timeout (actuator starter)
+
+Available with `spring-boot-starter-httpclient5-actuator` on the 2.1.x line. The policy is global;
+a request rule can only enable or disable it through
+`spring.httpclient5.request-config.<rule>.adaptive-timeout.enabled`.
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.adaptive-timeout.enabled` | `false` | Global switch |
+| `spring.httpclient5.adaptive-timeout.dry-run` | `false` | Compute and expose the candidate without applying it |
+| `spring.httpclient5.adaptive-timeout.percentile` | `0.99` | TTFB percentile used for the computation |
+| `spring.httpclient5.adaptive-timeout.factor` | `1.5` | Safety multiplier applied to the percentile |
+| `spring.httpclient5.adaptive-timeout.lower-bound-factor` | `2.0` | Lower bound = factor × minimum observed TTFB |
+| `spring.httpclient5.adaptive-timeout.window` | `PT5M` | Sliding window used to select samples |
+| `spring.httpclient5.adaptive-timeout.max-samples` | `1000` | Maximum samples kept in memory |
+| `spring.httpclient5.adaptive-timeout.min-samples` | `20` | Minimum samples required in the window |
+| `spring.httpclient5.adaptive-timeout.warmup-requests` | `100` | Samples recorded before the policy starts |
+| `spring.httpclient5.adaptive-timeout.refresh-interval` | `PT10S` | Minimum delay between two recalculations |
+| `spring.httpclient5.adaptive-timeout.min-timeout` | `PT0S` | Optional absolute lower bound |
+| `spring.httpclient5.adaptive-timeout.max-timeout` | `PT60S` | Upper bound |
+| `spring.httpclient5.adaptive-timeout.include-timeouts` | `true` | Record timeouts as censored samples |
+| `spring.httpclient5.adaptive-timeout.diagnostics.log-enabled` | `true` | Log differing rules at DEBUG |
+| `spring.httpclient5.adaptive-timeout.diagnostics.change-log-enabled` | `true` | Log timeout changes and STALE transitions at INFO |
+| `spring.httpclient5.adaptive-timeout.diagnostics.change-log-threshold-percent` | `20.0` | Relative change required for an INFO timeout-change event |
+| `spring.httpclient5.adaptive-timeout.diagnostics.log-interval` | `PT1M` | Period between two diagnostic runs |
+| `spring.httpclient5.adaptive-timeout.diagnostics.log-max-rules` | `20` | Maximum differing rules logged per period |
+
+The effective timeout is `clamp(percentile × factor, floor, max-timeout)` where
+`floor = max(min-timeout, lower-bound-factor × minimum observed TTFB)`. It replaces the static
+`response-timeout` while the policy is ready. See the
+[configuration guide](configuration-guide.md#adaptive-response-timeout) for the algorithm and
+limits.
+
+Diagnostics:
+
+- `GET /actuator/httpclient5-adaptive-timeout` (exposed like any Actuator endpoint) returns the
+  current computed timeout, p50/p90/p99, the policy state, the last resolved request and the
+  per-rule configured/candidate/effective/delta values plus request, timeout and failure counts.
+  In `dry-run` mode the candidate is exposed while the effective timeout remains the configured
+  one.
+- Per-rule gauges (`configured`, `candidate`, `effective`, `differs`, `requests`, `timeouts`,
+  `failures`) are tagged with `rule`.
+- The scheduled DEBUG log (`diagnostics.log-interval`, one minute by default) reports only the
+  rules whose candidate differs from the configured one. INFO events are emitted on significant
+  timeout changes and on STALE transitions. The `httpclient5.adaptive.status` gauge can be used for
+  alerting. See [Actuator metrics](actuator-metrics.md#adaptive-timeout-debug-log).
 
 ---
 

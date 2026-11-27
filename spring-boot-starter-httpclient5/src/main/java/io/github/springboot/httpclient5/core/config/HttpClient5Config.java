@@ -2,6 +2,7 @@ package io.github.springboot.httpclient5.core.config;
 
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -10,6 +11,7 @@ import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -17,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.ConcurrentLruCache;
 
+import io.github.springboot.httpclient5.core.config.model.AdaptiveTimeoutProperties;
 import io.github.springboot.httpclient5.core.config.model.AsyncConnectionManagerConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.CharCodingConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.ConnectionConfigProperties;
@@ -69,6 +72,9 @@ public class HttpClient5Config {
 	private IOReactorConfigProperties ioReactor = new IOReactorConfigProperties() ;
 	
 	@NestedConfigurationProperty
+	private AdaptiveTimeoutProperties adaptiveTimeout = new AdaptiveTimeoutProperties();
+
+	@NestedConfigurationProperty
 	private Map<String, RequestConfigProperties> requestConfig = new HashMap<String, RequestConfigProperties>();
 
 	@NestedConfigurationProperty
@@ -84,6 +90,11 @@ public class HttpClient5Config {
 
 	@Autowired(required = false)
 	private RequestConfigCustomizer requestConfigCustomizer = RequestConfigCustomizer.NOOP; 
+
+	@Getter(value = AccessLevel.NONE)
+	@Setter(value = AccessLevel.NONE)
+	@Autowired
+	private ObjectProvider<AdaptiveTimeoutPolicy> adaptiveTimeoutPolicyProvider;
 	
 	@Autowired
 	ConfigurableEnvironment env;
@@ -167,25 +178,43 @@ public class HttpClient5Config {
 	@SneakyThrows
 	public RequestConfigProperties getRequestConfigProperties(String method, String uri) {
 		RequestConfigProperties properties = new RequestConfigProperties(requestConfigPropertiesCache.get(Pair.of(method, uri))) ;
-		return requestConfigCustomizer.customizeRequestConfigProperties(method, uri, properties) ;
+		properties = requestConfigCustomizer.customizeRequestConfigProperties(method, uri, properties) ;
+		applyAdaptiveTimeout(method, uri, properties) ;
+		return properties ;
 //		return requestConfigPropertiesCache.get(Pair.of(method, uri)) ;
-	}		
+	}
+
+	private void applyAdaptiveTimeout(String method, String uri, RequestConfigProperties properties) {
+		if (adaptiveTimeoutPolicyProvider == null) {
+			return;
+		}
+		try {
+			adaptiveTimeoutPolicyProvider.ifAvailable(policy -> {
+				Timeout timeout = policy.resolveTimeout(method, uri, properties);
+				if (timeout != null && !adaptiveTimeout.isDryRun()) {
+					properties.setResponseTimeout(timeout);
+				}
+			});
+		} catch (RuntimeException e) {
+			log.warn("Unable to apply the adaptive response timeout for {} {}, keeping the static value", method, uri, e);
+		}
+	}
 	
 	private RequestConfigProperties getRequestConfigProperties(Pair<String, String> key) {
 		String methodAndUrl = key.getLeft() + " " + key.getRight();
 		RequestConfigProperties initial = getDefaultRequestConfig() ;
-		RequestConfigProperties res = getRequestConfig().entrySet().stream()
-			.filter(e -> {
-				return PatternUtils.matches(methodAndUrl, e.getKey()) ;
-			})
+		List<Map.Entry<String, RequestConfigProperties>> matching = getRequestConfig().entrySet().stream()
+			.filter(e -> PatternUtils.matches(methodAndUrl, e.getKey()))
 			.sorted(this::byMatcherPrecision)
-			.map(hc -> hc.getValue())
-			.reduce(initial, (current, toApply) -> { 
-				log.debug("Applying request config for {}", key);
-				return current.apply(toApply);	
-			}) ;
-			 
-		return res ;
+			.toList();
+		RequestConfigProperties result = initial;
+		String resolvedRule = HttpClient5Config.DEFAULT_HOST_KEY;
+		for (Map.Entry<String, RequestConfigProperties> entry : matching) {
+			log.debug("Applying request config for {}", key);
+			result = result.apply(entry.getValue());
+			resolvedRule = entry.getKey();
+		}
+		return result.resolvedAs(resolvedRule);
 	}
 
 	public RequestConfigProperties getDefaultRequestConfig() {

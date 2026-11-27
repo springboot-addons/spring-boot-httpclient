@@ -57,7 +57,19 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 
 	@Getter @Setter
 	@NestedConfigurationProperty
+	private AdaptiveTimeoutRuleProperties adaptiveTimeout ;
+
+	@Getter @Setter
+	@NestedConfigurationProperty
 	private Map<String, String> customRequestContext = new HashMap<>() ;
+
+	@Getter
+	private String resolvedRule;
+
+	public RequestConfigProperties resolvedAs(String rule) {
+		this.resolvedRule = rule;
+		return this;
+	}
 
 	public RequestConfigProperties(RequestConfigProperties origin) {
 		if (origin != null) {
@@ -66,9 +78,13 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 			this.errorManagement = origin.getErrorManagement().toBuilder().build() ;
 			this.headersPropagation = origin.getHeadersPropagation().toBuilder().build() ;
 			this.retryConfig = origin.getRetryConfig().toBuilder().build();
+			if (origin.getAdaptiveTimeout() != null) {
+				this.adaptiveTimeout = origin.getAdaptiveTimeout().toBuilder().build();
+			}
 			
 			this.customRequestContext = new HashMap(origin.getCustomRequestContext());
 			this.interceptors = new HashMap(origin.getInterceptors());
+			this.resolvedRule = origin.getResolvedRule();
 
 			if (origin.getCredentials() != null) {
 				this.credentials = origin.getCredentials().toBuilder().build() ;
@@ -97,6 +113,7 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 				.entrySet().stream()
 				.filter(e -> !Objects.equals(DEFAULT_PROPS.get(e.getKey()), e.getValue()))
 				.filter(e -> e.getValue() != null)
+				.filter(e -> !"resolvedRule".equals(e.getKey()))
 				.forEach(e -> {
 					log.debug("Applying request config : {} -> {}", e.getKey(), e.getValue());
 					if (e.getValue() instanceof Map) {
