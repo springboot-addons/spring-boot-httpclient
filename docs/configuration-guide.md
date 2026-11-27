@@ -207,19 +207,29 @@ spring:
 
 The policy is global: all sampled requests feed the same bounded window, including requests whose
 rule disables the policy. Disabling a rule only prevents the computed value from being applied to
-that rule. A request rule can only enable or disable the policy:
+that rule. The global `enabled` flag is `false` by default. A rule can enable the policy even when
+the global flag is false, or disable it when the global flag is true:
 
 ```yaml
 spring:
   httpclient5:
+    # Global switch: false by default. Leave it unset to disable the policy by default.
+    # adaptive-timeout:
+    #   enabled: false
     request-config:
+      # Enable the policy only for this rule
+      '[GET https://api.example.com/.*]':
+        adaptive-timeout:
+          enabled: true
+      # Explicitly disable it for a long-lived stream
       '[GET https://api.example.com/stream/.*]':
         adaptive-timeout:
           enabled: false
 ```
 
 The `enabled` flag of a rule overrides the global flag for the matching requests; when it is
-absent, the global value applies.
+absent, the global value applies. The policy parameters (`percentile`, `factor`, `window`, ...)
+remain global and apply to every rule that enables the policy.
 
 | Property | Default | Description |
 |---|---|---|
