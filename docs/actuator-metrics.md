@@ -423,5 +423,5 @@ On the 3.5 line, Prometheus therefore exposes
 Micrometer's OpenTelemetry convention, which produces the `http.client.request.duration`
 semantic-convention name.
 
-The adaptive timeout meters (`httpclient5.adaptive.*`) are specific to the 2.2.x line (`develop`).
-They are not backported to the 2.1.x, 2.0.x or 1.3.x lines.
+The adaptive timeout meters (`httpclient5.adaptive.*`) are available on the 2.0.x line.
+They are not backported to the 1.3.x line.

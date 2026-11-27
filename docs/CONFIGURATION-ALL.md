@@ -174,7 +174,7 @@ rules enables the policy only for those rules. The policy parameters are global;
 
 ## Adaptive response timeout (actuator starter)
 
-Available with `spring-boot-starter-httpclient5-actuator` on the 2.2.x line. The policy is global;
+Available with `spring-boot-starter-httpclient5-actuator` on the 2.0.x line. The policy is global;
 a request rule can only enable or disable it through
 `spring.httpclient5.request-config.<rule>.adaptive-timeout.enabled`.
 
