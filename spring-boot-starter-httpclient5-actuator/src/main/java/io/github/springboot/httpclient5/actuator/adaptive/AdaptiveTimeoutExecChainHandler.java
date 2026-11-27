@@ -24,6 +24,7 @@ import org.apache.hc.core5.util.Timeout;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
+import io.github.springboot.httpclient5.core.interceptors.RequestConfigExecChainHandler;
 import io.micrometer.core.instrument.Clock;
 
 /**
@@ -37,10 +38,13 @@ import io.micrometer.core.instrument.Clock;
 public class AdaptiveTimeoutExecChainHandler implements ExecChainHandler, AsyncExecChainHandler {
 
 	private final MicrometerAdaptiveTimeoutPolicy policy;
+	private final AdaptiveTimeoutRuleTracker tracker;
 	private final Clock clock;
 
-	public AdaptiveTimeoutExecChainHandler(MicrometerAdaptiveTimeoutPolicy policy, Clock clock) {
+	public AdaptiveTimeoutExecChainHandler(MicrometerAdaptiveTimeoutPolicy policy,
+			AdaptiveTimeoutRuleTracker tracker, Clock clock) {
 		this.policy = policy;
+		this.tracker = tracker;
 		this.clock = clock;
 	}
 
@@ -51,6 +55,7 @@ public class AdaptiveTimeoutExecChainHandler implements ExecChainHandler, AsyncE
 		try {
 			ClassicHttpResponse response = chain.proceed(request, scope);
 			policy.record(clock.monotonicTime() - start);
+			tracker.record(rule(scope.clientContext), effectiveTimeout(scope.clientContext), false, false);
 			return response;
 		} catch (IOException | HttpException | RuntimeException e) {
 			recordFailure(e, scope.clientContext);
@@ -102,8 +107,10 @@ public class AdaptiveTimeoutExecChainHandler implements ExecChainHandler, AsyncE
 					}
 					if (!failure) {
 						policy.record(clock.monotonicTime() - start);
-					} else if (error != null && isResponseTimeout(error)) {
-						policy.recordTimeout(effectiveTimeout(scope.clientContext));
+						tracker.record(rule(scope.clientContext), effectiveTimeout(scope.clientContext), false,
+								false);
+					} else if (error != null) {
+						recordFailure(error, scope.clientContext);
 					}
 				}
 			});
@@ -114,9 +121,23 @@ public class AdaptiveTimeoutExecChainHandler implements ExecChainHandler, AsyncE
 	}
 
 	private void recordFailure(Throwable error, HttpClientContext context) {
-		if (isResponseTimeout(error)) {
-			policy.recordTimeout(effectiveTimeout(context));
+		boolean responseTimeout = isResponseTimeout(error);
+		Timeout timeout = effectiveTimeout(context);
+		if (responseTimeout) {
+			policy.recordTimeout(timeout);
 		}
+		String rule = rule(context);
+		if (rule != null) {
+			tracker.record(rule, timeout, responseTimeout, !responseTimeout);
+		}
+	}
+
+	private static String rule(HttpClientContext context) {
+		if (context == null) {
+			return null;
+		}
+		Object value = context.getAttribute(RequestConfigExecChainHandler.REQUEST_CONFIG_RULE);
+		return value instanceof String rule ? rule : null;
 	}
 
 	private static boolean isResponseTimeout(Throwable error) {
