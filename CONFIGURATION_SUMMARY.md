@@ -12,9 +12,10 @@ short overview; see the [configuration guide](docs/configuration-guide.md) and t
 2. **Connection pools** – `spring.httpclient5.pool` (sync) and `spring.httpclient5.async-pool`
    (async): connections, timeouts, socket options, per-host overrides.
 3. **Request rules** – `spring.httpclient5.request-config`: regex rules on `METHOD + " " + URI`
-   that carry Apache `RequestConfig` values plus credentials, retries, interceptors, context and
-   Resilience4j settings.
-4. **Starter features** – header propagation, Actuator metrics and Resilience4j handlers.
+   that carry Apache `RequestConfig` values plus credentials, retries, interceptors, context,
+   Resilience4j settings and adaptive-timeout activation.
+4. **Starter features** – header propagation, Actuator metrics, adaptive response timeout and
+   Resilience4j handlers.
 
 ## Zero-configuration defaults
 
@@ -63,7 +64,8 @@ spring:
 - **web**: bidirectional header propagation (`headers-propagation`), request-context propagation to
   `@Async` tasks, `RestTemplate` customization.
 - **actuator**: request timer (`http.client.request.duration`) and pool gauges, tagged
-  `httpclient=httpclient5.pool` / `httpclient5.async-pool`.
+  `httpclient=httpclient5.pool` / `httpclient5.async-pool`; optional adaptive response timeout
+  policy (`httpclient5.adaptive.*`).
 - **resilience4j**: circuit breaker and, for non-`default` circuit names, a rate limiter with the
   same name.
 
