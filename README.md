@@ -226,7 +226,11 @@ Leave `spring.httpclient5.adaptive-timeout.enabled` unset to keep the policy dis
 then set `adaptive-timeout.enabled: true` on the rules that should use it.
 
 The timeout is `clamp(p99 × 1.5, max(2 × min observed TTFB, min-timeout), max-timeout)`. It is
-applied only after the warmup and the minimum number of samples. See the
+applied only after the warmup and the minimum number of samples.
+
+The Actuator endpoint `/actuator/httpclient5-adaptive-timeout` exposes the computed timeout and the
+per-rule delta with the configured timeout. A DEBUG log (every minute by default) reports only the
+rules whose effective timeout differs. See the
 [configuration guide](docs/configuration-guide.md#adaptive-response-timeout) and the
 [actuator metrics](docs/actuator-metrics.md#adaptive-timeout).
 

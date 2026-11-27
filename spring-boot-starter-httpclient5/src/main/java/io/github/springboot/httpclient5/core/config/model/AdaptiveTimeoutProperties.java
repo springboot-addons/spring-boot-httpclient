@@ -2,6 +2,7 @@ package io.github.springboot.httpclient5.core.config.model;
 
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -113,4 +114,37 @@ public class AdaptiveTimeoutProperties {
 	 */
 	@Builder.Default
 	private boolean includeTimeouts = true;
+
+	/**
+	 * Diagnostics and debug logging of the adaptive timeout policy.
+	 */
+	@NestedConfigurationProperty
+	@Builder.Default
+	private DiagnosticsProperties diagnostics = new DiagnosticsProperties();
+
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder(toBuilder = true)
+	public static class DiagnosticsProperties {
+
+		/**
+		 * Enable the periodic DEBUG log reporting rules whose effective timeout differs from the
+		 * configured one.
+		 */
+		@Builder.Default
+		private boolean logEnabled = true;
+
+		/**
+		 * Period between two diagnostic logs.
+		 */
+		@Builder.Default
+		private TimeValue logInterval = TimeValue.ofMinutes(1);
+
+		/**
+		 * Maximum number of differing rules logged per period. Remaining rules are summarized.
+		 */
+		@Builder.Default
+		private int logMaxRules = 20;
+	}
 }

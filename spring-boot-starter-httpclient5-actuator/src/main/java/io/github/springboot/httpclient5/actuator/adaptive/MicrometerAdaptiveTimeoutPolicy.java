@@ -1,5 +1,6 @@
 package io.github.springboot.httpclient5.actuator.adaptive;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -73,7 +74,7 @@ public class MicrometerAdaptiveTimeoutPolicy implements AdaptiveTimeoutPolicy {
 				properties.getMinSamples(), properties.getPercentile());
 		if (snapshot == null) {
 			if (current.isReady()) {
-				State kept = current.withNextRefresh(now, refreshNanos);
+				State kept = current.stale(now, refreshNanos);
 				state.set(kept);
 				return kept.getTimeout();
 			}
@@ -85,7 +86,8 @@ public class MicrometerAdaptiveTimeoutPolicy implements AdaptiveTimeoutPolicy {
 		long computed = (long) Math.ceil(snapshot.getPercentileNanos() * properties.getFactor());
 		long capped = Math.min(Math.max(floor, computed), properties.getMaxTimeout().toNanoseconds());
 		Timeout timeout = Timeout.ofNanoseconds(capped);
-		state.set(new State(timeout, snapshot.getPercentileNanos(), snapshot.getSamples(), now + refreshNanos));
+		state.set(new State(timeout, snapshot.getPercentileNanos(), snapshot.getMinNanos(), snapshot.getSamples(),
+				now + refreshNanos, clock.wallTime(), false));
 		return timeout;
 	}
 
@@ -131,6 +133,53 @@ public class MicrometerAdaptiveTimeoutPolicy implements AdaptiveTimeoutPolicy {
 	public double getCurrentPercentileSeconds() {
 		State current = state.get();
 		return current.isReady() ? current.getPercentileNanos() / 1_000_000_000d : Double.NaN;
+	}
+
+	public boolean isReady() {
+		return state.get().isReady();
+	}
+
+	public boolean isStale() {
+		return state.get().isStale();
+	}
+
+	/**
+	 * Current effective timeout in milliseconds, or {@code -1} when the policy is not ready.
+	 */
+	public long getCurrentTimeoutMillis() {
+		State current = state.get();
+		return current.isReady() ? current.getTimeout().toMilliseconds() : -1L;
+	}
+
+	/**
+	 * Current percentile value in milliseconds, or {@code -1} when the policy is not ready.
+	 */
+	public long getCurrentPercentileMillis() {
+		State current = state.get();
+		return current.isReady() ? TimeUnit.NANOSECONDS.toMillis(current.getPercentileNanos()) : -1L;
+	}
+
+	/**
+	 * Minimum observed TTFB in milliseconds, or {@code -1} when the policy is not ready.
+	 */
+	public long getCurrentMinObservedMillis() {
+		State current = state.get();
+		return current.isReady() ? TimeUnit.NANOSECONDS.toMillis(current.getMinObservedNanos()) : -1L;
+	}
+
+	/**
+	 * Wall-clock time of the last successful computation, or {@code 0} when never computed.
+	 */
+	public long getLastComputedAtMillis() {
+		return state.get().getLastComputedWallTimeMillis();
+	}
+
+	/**
+	 * Age of the last successful computation in milliseconds, or {@code -1} when never computed.
+	 */
+	public long getLastComputedAgeMillis() {
+		State current = state.get();
+		return current.isReady() ? Math.max(0L, clock.wallTime() - current.getLastComputedWallTimeMillis()) : -1L;
 	}
 
 	/**
@@ -199,22 +248,42 @@ public class MicrometerAdaptiveTimeoutPolicy implements AdaptiveTimeoutPolicy {
 		if (p.getMinTimeout().toNanoseconds() > p.getMaxTimeout().toNanoseconds()) {
 			throw new IllegalArgumentException("spring.httpclient5.adaptive-timeout.min-timeout must be <= max-timeout");
 		}
+		AdaptiveTimeoutProperties.DiagnosticsProperties diagnostics = p.getDiagnostics();
+		if (diagnostics == null) {
+			throw new IllegalArgumentException("spring.httpclient5.adaptive-timeout.diagnostics configuration is missing");
+		}
+		if (diagnostics.isLogEnabled() && (diagnostics.getLogInterval() == null
+				|| diagnostics.getLogInterval().toNanoseconds() <= 0)) {
+			throw new IllegalArgumentException(
+					"spring.httpclient5.adaptive-timeout.diagnostics.log-interval must be positive when log-enabled is true");
+		}
+		if (diagnostics.getLogMaxRules() <= 0) {
+			throw new IllegalArgumentException(
+					"spring.httpclient5.adaptive-timeout.diagnostics.log-max-rules must be > 0");
+		}
 	}
 
 	private static final class State {
 
-		private static final State NOT_READY = new State(null, 0L, 0, 0L);
+		private static final State NOT_READY = new State(null, 0L, 0L, 0, 0L, 0L, false);
 
 		private final Timeout timeout;
 		private final long percentileNanos;
+		private final long minObservedNanos;
 		private final int samples;
 		private final long nextRefreshNanos;
+		private final long lastComputedWallTimeMillis;
+		private final boolean stale;
 
-		private State(Timeout timeout, long percentileNanos, int samples, long nextRefreshNanos) {
+		private State(Timeout timeout, long percentileNanos, long minObservedNanos, int samples, long nextRefreshNanos,
+				long lastComputedWallTimeMillis, boolean stale) {
 			this.timeout = timeout;
 			this.percentileNanos = percentileNanos;
+			this.minObservedNanos = minObservedNanos;
 			this.samples = samples;
 			this.nextRefreshNanos = nextRefreshNanos;
+			this.lastComputedWallTimeMillis = lastComputedWallTimeMillis;
+			this.stale = stale;
 		}
 
 		private boolean isReady() {
@@ -229,6 +298,10 @@ public class MicrometerAdaptiveTimeoutPolicy implements AdaptiveTimeoutPolicy {
 			return percentileNanos;
 		}
 
+		private long getMinObservedNanos() {
+			return minObservedNanos;
+		}
+
 		private int getSamples() {
 			return samples;
 		}
@@ -237,8 +310,17 @@ public class MicrometerAdaptiveTimeoutPolicy implements AdaptiveTimeoutPolicy {
 			return nextRefreshNanos;
 		}
 
-		private State withNextRefresh(long now, long intervalNanos) {
-			return new State(timeout, percentileNanos, samples, now + intervalNanos);
+		private long getLastComputedWallTimeMillis() {
+			return lastComputedWallTimeMillis;
+		}
+
+		private boolean isStale() {
+			return stale;
+		}
+
+		private State stale(long now, long intervalNanos) {
+			return new State(timeout, percentileNanos, minObservedNanos, samples, now + intervalNanos,
+					lastComputedWallTimeMillis, true);
 		}
 	}
 }

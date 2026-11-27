@@ -164,7 +164,9 @@ After the release, merge the release commits back into `develop`.
   (`AdaptiveTimeoutPolicy`) applied by `HttpClient5Config` after the request configuration
   resolution. The actuator module supplies `MicrometerAdaptiveTimeoutPolicy` and
   `AdaptiveTimeoutExecChainHandler`. The policy is global; a request rule can only toggle it with
-  `adaptive-timeout.enabled`.
+  `adaptive-timeout.enabled`. Diagnostics are exposed by `AdaptiveTimeoutDiagnostics` (endpoint
+  `httpclient5-adaptive-timeout`) and `AdaptiveTimeoutDiagnosticsLogger` (DEBUG, only differences,
+  period `diagnostics.log-interval`).
 - Async and sync pools are independent (`pool` / `async-pool`).
 - Header propagation is wired by the web starter through request-scoped storages
   (`hc5DownHeaders` / `hc5UpHeaders`).

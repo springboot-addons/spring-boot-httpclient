@@ -245,6 +245,9 @@ remain global and apply to every rule that enables the policy.
 | `min-timeout` | `PT0S` | Optional absolute lower bound |
 | `max-timeout` | `PT60S` | Upper bound |
 | `include-timeouts` | `true` | Record response timeouts as censored samples |
+| `diagnostics.log-enabled` | `true` | Register the scheduled DEBUG log of differences |
+| `diagnostics.log-interval` | `PT1M` | Period between two diagnostic logs |
+| `diagnostics.log-max-rules` | `20` | Maximum differing rules logged per period |
 
 Limits:
 
@@ -260,6 +263,36 @@ Limits:
 - A timeout is seen as a failure by the Resilience4j circuit breaker.
 - Disable the policy per rule for long-lived streams or endpoints whose latency is not
   representative.
+
+### Diagnostics
+
+The actuator endpoint `/actuator/httpclient5-adaptive-timeout` exposes the current computed
+timeout, the policy state and, for each rule, the configured/inherited timeout, the effective
+timeout and the delta. Expose it with:
+
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,httpclient5-adaptive-timeout
+```
+
+The endpoint reports a `configuredSource` of `rule`, `default` or `unset` and a `differs` flag per
+rule. See the [Actuator metrics guide](actuator-metrics.md#adaptive-timeout-diagnostics-endpoint)
+for the full response.
+
+A DEBUG log is emitted every `diagnostics.log-interval` (one minute by default) for the rules whose
+effective timeout differs from the configured one. Only differences are logged:
+
+```yaml
+logging:
+  level:
+    io.github.springboot.httpclient5.actuator.adaptive.AdaptiveTimeoutDiagnosticsLogger: DEBUG
+```
+
+Set `diagnostics.log-enabled=false` to remove the scheduled task, and `diagnostics.log-max-rules` to
+cap the number of lines per period. The endpoint remains available when the log is disabled.
 
 ## Authentication
 

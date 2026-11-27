@@ -105,6 +105,9 @@ class HttpClient5ConfigTest {
 		assertEquals(1.5d, config.getAdaptiveTimeout().getFactor());
 		assertEquals(2.0d, config.getAdaptiveTimeout().getLowerBoundFactor());
 		assertEquals(60_000, config.getAdaptiveTimeout().getMaxTimeout().toMilliseconds());
+		assertTrue(config.getAdaptiveTimeout().getDiagnostics().isLogEnabled());
+		assertEquals(60_000, config.getAdaptiveTimeout().getDiagnostics().getLogInterval().toMilliseconds());
+		assertEquals(20, config.getAdaptiveTimeout().getDiagnostics().getLogMaxRules());
 	}
 
 	@Test
