@@ -150,6 +150,15 @@ An interceptor is a bean extending `ActivableHttpInterceptor`; its id is the map
 
 See [Resilience4j](#4-resilience4j) for the instance configuration.
 
+### Adaptive timeout per rule (actuator starter)
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.request-config.<rule>.adaptive-timeout.enabled` | unset (inherits the global flag) | Enable or disable the global adaptive response timeout policy for this rule |
+
+The policy parameters are global; see
+[Adaptive response timeout](#adaptive-response-timeout-actuator-starter).
+
 ### Header propagation per rule (web starter)
 
 | Full key | Default | Description |
@@ -159,6 +168,35 @@ See [Resilience4j](#4-resilience4j) for the instance configuration.
 | `spring.httpclient5.request-config.<rule>.headers-propagation.up` | `[]` | Regex list: outgoing response headers copied to the incoming response |
 | `spring.httpclient5.request-config.<rule>.headers-propagation.add` | `{}` | Static headers added to outgoing calls |
 | `spring.httpclient5.request-config.<rule>.headers-propagation.remove` | `[]` | Headers removed from outgoing calls |
+
+---
+
+## Adaptive response timeout (actuator starter)
+
+Available with `spring-boot-starter-httpclient5-actuator` on the 2.2.x line. The policy is global;
+a request rule can only enable or disable it through
+`spring.httpclient5.request-config.<rule>.adaptive-timeout.enabled`.
+
+| Full key | Default | Description |
+|---|---|---|
+| `spring.httpclient5.adaptive-timeout.enabled` | `false` | Global switch |
+| `spring.httpclient5.adaptive-timeout.percentile` | `0.99` | TTFB percentile used for the computation |
+| `spring.httpclient5.adaptive-timeout.factor` | `1.5` | Safety multiplier applied to the percentile |
+| `spring.httpclient5.adaptive-timeout.lower-bound-factor` | `2.0` | Lower bound = factor × minimum observed TTFB |
+| `spring.httpclient5.adaptive-timeout.window` | `PT5M` | Sliding window used to select samples |
+| `spring.httpclient5.adaptive-timeout.max-samples` | `1000` | Maximum samples kept in memory |
+| `spring.httpclient5.adaptive-timeout.min-samples` | `20` | Minimum samples required in the window |
+| `spring.httpclient5.adaptive-timeout.warmup-requests` | `100` | Samples recorded before the policy starts |
+| `spring.httpclient5.adaptive-timeout.refresh-interval` | `PT10S` | Minimum delay between two recalculations |
+| `spring.httpclient5.adaptive-timeout.min-timeout` | `PT0S` | Optional absolute lower bound |
+| `spring.httpclient5.adaptive-timeout.max-timeout` | `PT60S` | Upper bound |
+| `spring.httpclient5.adaptive-timeout.include-timeouts` | `true` | Record timeouts as censored samples |
+
+The effective timeout is `clamp(percentile × factor, floor, max-timeout)` where
+`floor = max(min-timeout, lower-bound-factor × minimum observed TTFB)`. It replaces the static
+`response-timeout` while the policy is ready. See the
+[configuration guide](configuration-guide.md#adaptive-response-timeout) for the algorithm and
+limits.
 
 ---
 

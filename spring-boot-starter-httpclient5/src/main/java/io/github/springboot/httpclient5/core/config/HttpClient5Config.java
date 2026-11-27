@@ -10,6 +10,7 @@ import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.pool.PoolConcurrencyPolicy;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -19,6 +20,7 @@ import org.springframework.util.ConcurrentLruCache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.springboot.httpclient5.core.config.model.AdaptiveTimeoutProperties;
 import io.github.springboot.httpclient5.core.config.model.AsyncConnectionManagerConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.CharCodingConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.ConnectionConfigProperties;
@@ -72,6 +74,9 @@ public class HttpClient5Config {
 	private IOReactorConfigProperties ioReactor = new IOReactorConfigProperties() ;
 	
 	@NestedConfigurationProperty
+	private AdaptiveTimeoutProperties adaptiveTimeout = new AdaptiveTimeoutProperties();
+
+	@NestedConfigurationProperty
 	private Map<String, RequestConfigProperties> requestConfig = new HashMap<String, RequestConfigProperties>();
 
 	@NestedConfigurationProperty
@@ -87,6 +92,11 @@ public class HttpClient5Config {
 
 	@Autowired(required = false)
 	private RequestConfigCustomizer requestConfigCustomizer = RequestConfigCustomizer.NOOP; 
+
+	@Getter(value = AccessLevel.NONE)
+	@Setter(value = AccessLevel.NONE)
+	@Autowired
+	private ObjectProvider<AdaptiveTimeoutPolicy> adaptiveTimeoutPolicyProvider;
 	
 	@Autowired
 	ConfigurableEnvironment env;
@@ -176,9 +186,27 @@ public class HttpClient5Config {
 	@SneakyThrows
 	public RequestConfigProperties getRequestConfigProperties(String method, String uri) {
 		RequestConfigProperties properties = new RequestConfigProperties(requestConfigPropertiesCache.get(Pair.of(method, uri))) ;
-		return requestConfigCustomizer.customizeRequestConfigProperties(method, uri, properties) ;
+		properties = requestConfigCustomizer.customizeRequestConfigProperties(method, uri, properties) ;
+		applyAdaptiveTimeout(method, uri, properties) ;
+		return properties ;
 //		return requestConfigPropertiesCache.get(Pair.of(method, uri)) ;
-	}		
+	}
+
+	private void applyAdaptiveTimeout(String method, String uri, RequestConfigProperties properties) {
+		if (adaptiveTimeoutPolicyProvider == null) {
+			return;
+		}
+		try {
+			adaptiveTimeoutPolicyProvider.ifAvailable(policy -> {
+				Timeout timeout = policy.resolveTimeout(method, uri, properties);
+				if (timeout != null) {
+					properties.setResponseTimeout(timeout);
+				}
+			});
+		} catch (RuntimeException e) {
+			log.warn("Unable to apply the adaptive response timeout for {} {}, keeping the static value", method, uri, e);
+		}
+	}
 	
 	private RequestConfigProperties getRequestConfigProperties(Pair<String, String> key) {
 		String methodAndUrl = key.getLeft() + " " + key.getRight();
