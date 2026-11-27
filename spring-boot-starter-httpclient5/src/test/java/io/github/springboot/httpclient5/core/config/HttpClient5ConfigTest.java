@@ -9,6 +9,7 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.util.Timeout;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -104,6 +105,25 @@ class HttpClient5ConfigTest {
 		assertEquals(1.5d, config.getAdaptiveTimeout().getFactor());
 		assertEquals(2.0d, config.getAdaptiveTimeout().getLowerBoundFactor());
 		assertEquals(60_000, config.getAdaptiveTimeout().getMaxTimeout().toMilliseconds());
+	}
+
+	@Test
+	void shouldBindPerRuleAdaptiveTimeoutActivationWhenGlobalIsDisabled() {
+		MockEnvironment environment = new MockEnvironment();
+		environment.setProperty(
+				"spring.httpclient5.request-config.[GET http://example.com/.*].adaptive-timeout.enabled", "true");
+		HttpClient5Config config = Binder.get(environment)
+				.bind("spring.httpclient5", HttpClient5Config.class)
+				.orElseGet(HttpClient5Config::new);
+		config.setEnv(environment);
+		config.setAutoconfig(false);
+		config.init();
+
+		assertFalse(config.getAdaptiveTimeout().isEnabled());
+		RequestConfigProperties rule = config.getRequestConfig().get("GET http://example.com/.*");
+		assertNotNull(rule);
+		assertNotNull(rule.getAdaptiveTimeout());
+		assertTrue(rule.getAdaptiveTimeout().getEnabled());
 	}
 
 	@Test

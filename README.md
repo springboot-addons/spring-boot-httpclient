@@ -222,6 +222,9 @@ spring:
           enabled: false
 ```
 
+Leave `spring.httpclient5.adaptive-timeout.enabled` unset to keep the policy disabled by default,
+then set `adaptive-timeout.enabled: true` on the rules that should use it.
+
 The timeout is `clamp(p99 × 1.5, max(2 × min observed TTFB, min-timeout), max-timeout)`. It is
 applied only after the warmup and the minimum number of samples. See the
 [configuration guide](docs/configuration-guide.md#adaptive-response-timeout) and the
