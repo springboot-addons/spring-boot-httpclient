@@ -156,7 +156,8 @@ See [Resilience4j](#4-resilience4j) for the instance configuration.
 |---|---|---|
 | `spring.httpclient5.request-config.<rule>.adaptive-timeout.enabled` | unset (inherits the global flag) | Enable or disable the global adaptive response timeout policy for this rule |
 
-The policy parameters are global; see
+The global switch defaults to `false`, so setting `adaptive-timeout.enabled: true` on selected
+rules enables the policy only for those rules. The policy parameters are global; see
 [Adaptive response timeout](#adaptive-response-timeout-actuator-starter).
 
 ### Header propagation per rule (web starter)
