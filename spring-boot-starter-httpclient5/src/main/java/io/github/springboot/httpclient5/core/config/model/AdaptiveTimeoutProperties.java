@@ -48,6 +48,13 @@ public class AdaptiveTimeoutProperties {
 	private boolean enabled = false;
 
 	/**
+	 * Compute and expose the adaptive timeout without applying it. Useful to measure the impact
+	 * before enabling the policy.
+	 */
+	@Builder.Default
+	private boolean dryRun = false;
+
+	/**
 	 * Percentile of the TTFB distribution used to compute the timeout (between 0 and 1).
 	 */
 	@Builder.Default
@@ -134,6 +141,19 @@ public class AdaptiveTimeoutProperties {
 		 */
 		@Builder.Default
 		private boolean logEnabled = true;
+
+		/**
+		 * Log an INFO event when the computed timeout changes by more than
+		 * {@link #changeLogThresholdPercent} or when the policy becomes STALE.
+		 */
+		@Builder.Default
+		private boolean changeLogEnabled = true;
+
+		/**
+		 * Relative change, in percent, required to log an INFO timeout-change event.
+		 */
+		@Builder.Default
+		private double changeLogThresholdPercent = 20.0d;
 
 		/**
 		 * Period between two diagnostic logs.

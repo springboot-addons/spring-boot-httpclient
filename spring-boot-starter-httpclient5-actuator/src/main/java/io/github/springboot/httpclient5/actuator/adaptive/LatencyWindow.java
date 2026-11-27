@@ -50,13 +50,21 @@ final class LatencyWindow {
 		}
 		Arrays.sort(scratch, 0, valid);
 		long min = scratch[0];
-		int index = (int) Math.ceil(percentile * valid) - 1;
+		return new Snapshot(min, percentile(scratch, valid, 0.50d), percentile(scratch, valid, 0.90d),
+				percentile(scratch, valid, 0.99d), percentile(scratch, valid, percentile), valid);
+	}
+
+	private static long percentile(long[] values, int count, double percentile) {
+		if (count == 0) {
+			return 0L;
+		}
+		int index = (int) Math.ceil(percentile * count) - 1;
 		if (index < 0) {
 			index = 0;
-		} else if (index >= valid) {
-			index = valid - 1;
+		} else if (index >= count) {
+			index = count - 1;
 		}
-		return new Snapshot(min, scratch[index], valid);
+		return values[index];
 	}
 
 	synchronized int size() {
@@ -66,17 +74,36 @@ final class LatencyWindow {
 	static final class Snapshot {
 
 		private final long minNanos;
+		private final long p50Nanos;
+		private final long p90Nanos;
+		private final long p99Nanos;
 		private final long percentileNanos;
 		private final int samples;
 
-		Snapshot(long minNanos, long percentileNanos, int samples) {
+		Snapshot(long minNanos, long p50Nanos, long p90Nanos, long p99Nanos, long percentileNanos,
+				int samples) {
 			this.minNanos = minNanos;
+			this.p50Nanos = p50Nanos;
+			this.p90Nanos = p90Nanos;
+			this.p99Nanos = p99Nanos;
 			this.percentileNanos = percentileNanos;
 			this.samples = samples;
 		}
 
 		long getMinNanos() {
 			return minNanos;
+		}
+
+		long getP50Nanos() {
+			return p50Nanos;
+		}
+
+		long getP90Nanos() {
+			return p90Nanos;
+		}
+
+		long getP99Nanos() {
+			return p99Nanos;
 		}
 
 		long getPercentileNanos() {

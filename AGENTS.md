@@ -165,8 +165,9 @@ After the release, merge the release commits back into `develop`.
   resolution. The actuator module supplies `MicrometerAdaptiveTimeoutPolicy` and
   `AdaptiveTimeoutExecChainHandler`. The policy is global; a request rule can only toggle it with
   `adaptive-timeout.enabled`. Diagnostics are exposed by `AdaptiveTimeoutDiagnostics` (endpoint
-  `httpclient5-adaptive-timeout`) and `AdaptiveTimeoutDiagnosticsLogger` (DEBUG, only differences,
-  period `diagnostics.log-interval`).
+  `httpclient5-adaptive-timeout`, per-rule/status gauges), `AdaptiveTimeoutRuleTracker` (per-rule
+  usage) and `AdaptiveTimeoutDiagnosticsLogger` (DEBUG differences plus INFO change/STALE events,
+  period `diagnostics.log-interval`). `adaptive-timeout.dry-run` computes without applying.
 - Async and sync pools are independent (`pool` / `async-pool`).
 - Header propagation is wired by the web starter through request-scoped storages
   (`hc5DownHeaders` / `hc5UpHeaders`).

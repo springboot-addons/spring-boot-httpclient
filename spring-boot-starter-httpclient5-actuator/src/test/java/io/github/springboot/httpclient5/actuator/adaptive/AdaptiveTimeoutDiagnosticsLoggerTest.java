@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 import org.junit.jupiter.api.AfterEach;
@@ -29,6 +31,7 @@ class AdaptiveTimeoutDiagnosticsLoggerTest {
 	private MockClock clock;
 	private HttpClient5Config config;
 	private MicrometerAdaptiveTimeoutPolicy policy;
+	private AdaptiveTimeoutRuleTracker tracker;
 	private AdaptiveTimeoutDiagnostics diagnostics;
 	private AdaptiveTimeoutDiagnosticsLogger logger;
 	private Logger logbackLogger;
@@ -67,10 +70,11 @@ class AdaptiveTimeoutDiagnosticsLoggerTest {
 		disabledRule.setAdaptiveTimeout(AdaptiveTimeoutRuleProperties.builder().enabled(false).build());
 		config.getRequestConfig().put(DISABLED_RULE, disabledRule);
 
+		tracker = new AdaptiveTimeoutRuleTracker(clock);
 		policy = new MicrometerAdaptiveTimeoutPolicy(config, clock);
 		policy.record(TimeValue.ofMilliseconds(10).toNanoseconds());
 		policy.resolveTimeout("GET", "http://example.com/", propertiesEnabled());
-		diagnostics = new AdaptiveTimeoutDiagnostics(config, policy);
+		diagnostics = new AdaptiveTimeoutDiagnostics(config, policy, tracker);
 		logger = new AdaptiveTimeoutDiagnosticsLogger(diagnostics, config, policy);
 
 		logbackLogger = (Logger) LoggerFactory.getLogger(AdaptiveTimeoutDiagnosticsLogger.class);
@@ -95,8 +99,10 @@ class AdaptiveTimeoutDiagnosticsLoggerTest {
 		String message = appender.list.get(0).getFormattedMessage();
 		assertTrue(message.contains(ENABLED_RULE));
 		assertTrue(message.contains("configured=10000ms"));
+		assertTrue(message.contains("candidate=20ms"));
 		assertTrue(message.contains("effective=20ms"));
 		assertTrue(message.contains("delta=-9980ms"));
+		assertTrue(message.contains("applied=true"));
 		assertFalse(message.contains(DISABLED_RULE));
 	}
 
@@ -107,9 +113,10 @@ class AdaptiveTimeoutDiagnosticsLoggerTest {
 		emptyConfig.setAutoconfig(false);
 		RequestConfigProperties rule = new RequestConfigProperties();
 		rule.setResponseTimeout(Timeout.ofSeconds(10));
-		emptyConfig.getRequestConfig().put("GET https://api.example.com/.*", rule);
+		emptyConfig.getRequestConfig().put(ENABLED_RULE, rule);
 		MicrometerAdaptiveTimeoutPolicy notReadyPolicy = new MicrometerAdaptiveTimeoutPolicy(emptyConfig, clock);
-		AdaptiveTimeoutDiagnostics notReadyDiagnostics = new AdaptiveTimeoutDiagnostics(emptyConfig, notReadyPolicy);
+		AdaptiveTimeoutDiagnostics notReadyDiagnostics = new AdaptiveTimeoutDiagnostics(emptyConfig, notReadyPolicy,
+				tracker);
 		AdaptiveTimeoutDiagnosticsLogger notReadyLogger = new AdaptiveTimeoutDiagnosticsLogger(notReadyDiagnostics,
 				emptyConfig, notReadyPolicy);
 
@@ -140,6 +147,34 @@ class AdaptiveTimeoutDiagnosticsLoggerTest {
 		logger.logDifferences();
 
 		assertTrue(appender.list.isEmpty());
+	}
+
+	@Test
+	void shouldLogInfoWhenTimeoutChangesByMoreThanThreshold() {
+		logger.logDifferences();
+		appender.list.clear();
+
+		policy.record(TimeValue.ofMilliseconds(100).toNanoseconds());
+		policy.resolveTimeout("GET", "http://example.com/", propertiesEnabled());
+		logger.logDifferences();
+
+		assertTrue(appender.list.stream()
+				.anyMatch(event -> event.getLevel() == Level.INFO
+						&& event.getFormattedMessage().contains("changed by")));
+	}
+
+	@Test
+	void shouldLogInfoWhenPolicyBecomesStale() {
+		logger.logDifferences();
+		appender.list.clear();
+
+		clock.add(2, TimeUnit.MINUTES);
+		policy.resolveTimeout("GET", "http://example.com/", propertiesEnabled());
+		logger.logDifferences();
+
+		assertTrue(appender.list.stream()
+				.anyMatch(event -> event.getLevel() == Level.INFO
+						&& event.getFormattedMessage().contains("became STALE")));
 	}
 
 	private static RequestConfigProperties propertiesEnabled() {

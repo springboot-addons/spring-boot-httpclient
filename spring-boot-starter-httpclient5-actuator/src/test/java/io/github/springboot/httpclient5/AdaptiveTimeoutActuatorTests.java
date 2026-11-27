@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -18,6 +19,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import io.github.springboot.httpclient5.actuator.adaptive.AdaptiveTimeoutEndpoint;
+import io.github.springboot.httpclient5.actuator.adaptive.AdaptiveTimeoutRuleTracker;
 import io.github.springboot.httpclient5.actuator.adaptive.MicrometerAdaptiveTimeoutPolicy;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -47,6 +49,9 @@ class AdaptiveTimeoutActuatorTests extends AbstractHttpBinTest {
 	@Autowired
 	private AdaptiveTimeoutEndpoint endpoint;
 
+	@Autowired
+	private AdaptiveTimeoutRuleTracker tracker;
+
 	@SuppressWarnings("unchecked")
 	@Test
 	void shouldApplyAdaptiveTimeoutAndExposeMetrics() throws Exception {
@@ -65,10 +70,25 @@ class AdaptiveTimeoutActuatorTests extends AbstractHttpBinTest {
 		Map<String, Object> snapshot = endpoint.snapshot();
 		assertEquals("READY", snapshot.get("status"));
 		assertEquals(true, snapshot.get("ready"));
+		assertEquals(false, snapshot.get("dryRun"));
 		Map<String, Object> current = (Map<String, Object>) snapshot.get("current");
 		assertEquals(2000L, current.get("timeoutMs"));
+		assertNotNull(current.get("p50Ms"));
+		assertNotNull(current.get("p90Ms"));
+		assertNotNull(current.get("p99Ms"));
+
 		Map<String, Object> rules = (Map<String, Object>) snapshot.get("rules");
 		assertTrue((Integer) rules.get("different") > 0);
+		List<Map<String, Object>> items = (List<Map<String, Object>>) rules.get("items");
+		assertTrue(items.stream().anyMatch(item -> ((Number) item.get("requests")).longValue() > 0));
+		assertNotNull(snapshot.get("lastRequest"));
+		assertNotNull(tracker.lastRequest());
+
+		Gauge status = meterRegistry.find("httpclient5.adaptive.status").gauge();
+		assertNotNull(status);
+		assertEquals(2.0d, status.value(), 0.001d);
+		assertTrue(meterRegistry.find("httpclient5.adaptive.rule.configured.timeout").gauges().size() > 0);
+		assertNotNull(meterRegistry.find("httpclient5.adaptive.p99").gauge());
 	}
 
 	private void executeGet(String path) throws Exception {

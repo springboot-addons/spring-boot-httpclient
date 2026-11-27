@@ -234,6 +234,7 @@ remain global and apply to every rule that enables the policy.
 | Property | Default | Description |
 |---|---|---|
 | `enabled` | `false` | Global switch; a rule can override it |
+| `dry-run` | `false` | Compute and expose the candidate without applying it |
 | `percentile` | `0.99` | TTFB percentile used for the computation |
 | `factor` | `1.5` | Safety multiplier applied to the percentile |
 | `lower-bound-factor` | `2.0` | Lower bound = this factor × the minimum observed TTFB |
@@ -245,9 +246,19 @@ remain global and apply to every rule that enables the policy.
 | `min-timeout` | `PT0S` | Optional absolute lower bound |
 | `max-timeout` | `PT60S` | Upper bound |
 | `include-timeouts` | `true` | Record response timeouts as censored samples |
-| `diagnostics.log-enabled` | `true` | Register the scheduled DEBUG log of differences |
-| `diagnostics.log-interval` | `PT1M` | Period between two diagnostic logs |
+| `diagnostics.log-enabled` | `true` | Log differing rules at DEBUG |
+| `diagnostics.change-log-enabled` | `true` | Log timeout changes and STALE transitions at INFO |
+| `diagnostics.change-log-threshold-percent` | `20.0` | Relative change required for an INFO timeout-change event |
+| `diagnostics.log-interval` | `PT1M` | Period between two diagnostic runs |
 | `diagnostics.log-max-rules` | `20` | Maximum differing rules logged per period |
+
+### Dry run
+
+Set `spring.httpclient5.adaptive-timeout.dry-run=true` to compute and expose the candidate timeout
+without applying it. The endpoint still shows `candidateTimeoutMs` and `differs`, while
+`effectiveTimeoutMs` remains the configured value and `applied=false`. The DEBUG/INFO diagnostics
+continue to report the potential differences, so the impact can be measured before enabling the
+policy.
 
 Limits:
 
@@ -278,12 +289,19 @@ management:
         include: health,info,metrics,prometheus,httpclient5-adaptive-timeout
 ```
 
-The endpoint reports a `configuredSource` of `rule`, `default` or `unset` and a `differs` flag per
-rule. See the [Actuator metrics guide](actuator-metrics.md#adaptive-timeout-diagnostics-endpoint)
-for the full response.
+The endpoint reports a `configuredSource` of `rule`, `default` or `unset`, the configured /
+candidate / effective timeouts, a `differs` flag and, per rule, the request count, timeout and
+failure counts and the last-seen values. It also exposes p50/p90/p99 and the last resolved request
+(without the raw URI). See the
+[Actuator metrics guide](actuator-metrics.md#adaptive-timeout-diagnostics-endpoint) for the full
+response.
+
+Per-rule gauges are available with the `rule` tag (`configured`, `candidate`, `effective`,
+`differs`, `requests`, `timeouts`, `failures`); see
+[Per-rule metrics](actuator-metrics.md#per-rule-metrics).
 
 A DEBUG log is emitted every `diagnostics.log-interval` (one minute by default) for the rules whose
-effective timeout differs from the configured one. Only differences are logged:
+candidate differs from the configured one. Only differences are logged:
 
 ```yaml
 logging:
@@ -291,8 +309,16 @@ logging:
     io.github.springboot.httpclient5.actuator.adaptive.AdaptiveTimeoutDiagnosticsLogger: DEBUG
 ```
 
-Set `diagnostics.log-enabled=false` to remove the scheduled task, and `diagnostics.log-max-rules` to
-cap the number of lines per period. The endpoint remains available when the log is disabled.
+Set `diagnostics.log-enabled=false` to disable the DEBUG differences, and
+`diagnostics.log-max-rules` to cap the number of lines per period. The scheduler also emits INFO
+events when the computed timeout changes by more than
+`diagnostics.change-log-threshold-percent` (default 20%) or when the policy becomes `STALE`;
+disable them with `diagnostics.change-log-enabled=false`. Set both log flags to `false` to remove
+the scheduled task entirely. The endpoint remains available when the logs are disabled.
+
+For alerting, use the `httpclient5.adaptive.status` gauge (`0=DISABLED`, `1=WARMING_UP`,
+`2=READY`, `3=STALE`), or the `httpclient5.adaptive.stale` / `httpclient5.adaptive.ready` gauges.
+See the [alerting examples](actuator-metrics.md#queries).
 
 ## Authentication
 
