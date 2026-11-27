@@ -160,6 +160,14 @@ After the release, merge the release commits back into `develop`.
 - Host-specific pool configuration keys are normalized (`http` → port 80, `https` → port 443).
 - Request configurations are resolved by pattern matching, then merged from least to most
   specific (`RequestConfigProperties.apply`).
+- The adaptive response timeout policy (actuator starter, 2.2.x only) is a core SPI
+  (`AdaptiveTimeoutPolicy`) applied by `HttpClient5Config` after the request configuration
+  resolution. The actuator module supplies `MicrometerAdaptiveTimeoutPolicy` and
+  `AdaptiveTimeoutExecChainHandler`. The policy is global; a request rule can only toggle it with
+  `adaptive-timeout.enabled`. Diagnostics are exposed by `AdaptiveTimeoutDiagnostics` (endpoint
+  `httpclient5-adaptive-timeout`, per-rule/status gauges), `AdaptiveTimeoutRuleTracker` (per-rule
+  usage) and `AdaptiveTimeoutDiagnosticsLogger` (DEBUG differences plus INFO change/STALE events,
+  period `diagnostics.log-interval`). `adaptive-timeout.dry-run` computes without applying.
 - Async and sync pools are independent (`pool` / `async-pool`).
 - Header propagation is wired by the web starter through request-scoped storages
   (`hc5DownHeaders` / `hc5UpHeaders`).

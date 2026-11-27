@@ -6,8 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.util.Timeout;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.mock.env.MockEnvironment;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import io.github.springboot.httpclient5.core.config.model.ConnectionConfigProperties;
 import io.github.springboot.httpclient5.core.config.model.RequestConfigProperties;
@@ -90,6 +94,93 @@ class HttpClient5ConfigTest {
 		config.init();
 
 		assertTrue(config.getRequestConfig().isEmpty());
+	}
+
+	@Test
+	void shouldExposeAdaptiveTimeoutDefaults() {
+		HttpClient5Config config = config(new MockEnvironment());
+
+		assertFalse(config.getAdaptiveTimeout().isEnabled());
+		assertFalse(config.getAdaptiveTimeout().isDryRun());
+		assertEquals(0.99d, config.getAdaptiveTimeout().getPercentile());
+		assertEquals(1.5d, config.getAdaptiveTimeout().getFactor());
+		assertEquals(2.0d, config.getAdaptiveTimeout().getLowerBoundFactor());
+		assertEquals(60_000, config.getAdaptiveTimeout().getMaxTimeout().toMilliseconds());
+		assertTrue(config.getAdaptiveTimeout().getDiagnostics().isLogEnabled());
+		assertTrue(config.getAdaptiveTimeout().getDiagnostics().isChangeLogEnabled());
+		assertEquals(20.0d, config.getAdaptiveTimeout().getDiagnostics().getChangeLogThresholdPercent());
+		assertEquals(60_000, config.getAdaptiveTimeout().getDiagnostics().getLogInterval().toMilliseconds());
+		assertEquals(20, config.getAdaptiveTimeout().getDiagnostics().getLogMaxRules());
+	}
+
+	@Test
+	void shouldBindPerRuleAdaptiveTimeoutActivationWhenGlobalIsDisabled() {
+		MockEnvironment environment = new MockEnvironment();
+		environment.setProperty(
+				"spring.httpclient5.request-config.[GET http://example.com/.*].adaptive-timeout.enabled", "true");
+		HttpClient5Config config = Binder.get(environment)
+				.bind("spring.httpclient5", HttpClient5Config.class)
+				.orElseGet(HttpClient5Config::new);
+		config.setEnv(environment);
+		config.setAutoconfig(false);
+		config.init();
+
+		assertFalse(config.getAdaptiveTimeout().isEnabled());
+		RequestConfigProperties rule = config.getRequestConfig().get("GET http://example.com/.*");
+		assertNotNull(rule);
+		assertNotNull(rule.getAdaptiveTimeout());
+		assertTrue(rule.getAdaptiveTimeout().getEnabled());
+	}
+
+	@Test
+	void shouldApplyAdaptiveTimeoutPolicyToResolvedRequestConfig() {
+		HttpClient5Config config = config(new MockEnvironment());
+		config.setAutoconfig(false);
+		RequestConfigProperties rule = new RequestConfigProperties();
+		rule.setResponseTimeout(Timeout.ofSeconds(30));
+		config.getRequestConfig().put(HttpClient5Config.DEFAULT_HOST_KEY, rule);
+
+		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		beanFactory.registerSingleton("adaptiveTimeoutPolicy", (AdaptiveTimeoutPolicy) (method, uri, properties) -> Timeout.ofSeconds(7));
+		ReflectionTestUtils.setField(config, "adaptiveTimeoutPolicyProvider",
+				beanFactory.getBeanProvider(AdaptiveTimeoutPolicy.class));
+
+		assertEquals(7000, config.getRequestConfig("GET", "http://example.com/").getResponseTimeout().toMilliseconds());
+	}
+
+	@Test
+	void shouldKeepStaticTimeoutInDryRun() {
+		HttpClient5Config config = config(new MockEnvironment());
+		config.setAutoconfig(false);
+		config.getAdaptiveTimeout().setDryRun(true);
+		RequestConfigProperties rule = new RequestConfigProperties();
+		rule.setResponseTimeout(Timeout.ofSeconds(30));
+		config.getRequestConfig().put(HttpClient5Config.DEFAULT_HOST_KEY, rule);
+
+		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		beanFactory.registerSingleton("adaptiveTimeoutPolicy", (AdaptiveTimeoutPolicy) (method, uri, properties) -> Timeout.ofSeconds(7));
+		ReflectionTestUtils.setField(config, "adaptiveTimeoutPolicyProvider",
+				beanFactory.getBeanProvider(AdaptiveTimeoutPolicy.class));
+
+		assertEquals(30000,
+				config.getRequestConfig("GET", "http://example.com/").getResponseTimeout().toMilliseconds());
+	}
+
+	@Test
+	void shouldExposeTheResolvedRule() {
+		HttpClient5Config config = config(new MockEnvironment());
+		config.setAutoconfig(false);
+		RequestConfigProperties defaultRule = new RequestConfigProperties();
+		defaultRule.setResponseTimeout(Timeout.ofSeconds(30));
+		config.getRequestConfig().put(HttpClient5Config.DEFAULT_HOST_KEY, defaultRule);
+		RequestConfigProperties specificRule = new RequestConfigProperties();
+		specificRule.setResponseTimeout(Timeout.ofSeconds(10));
+		config.getRequestConfig().put("GET http://example.com/.*", specificRule);
+
+		assertEquals("GET http://example.com/.*",
+				config.getRequestConfigProperties("GET", "http://example.com/test").getResolvedRule());
+		assertEquals(HttpClient5Config.DEFAULT_HOST_KEY,
+				config.getRequestConfigProperties("POST", "http://example.com/test").getResolvedRule());
 	}
 
 	private HttpClient5Config config(MockEnvironment environment) {
