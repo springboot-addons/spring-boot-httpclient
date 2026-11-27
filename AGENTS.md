@@ -160,7 +160,7 @@ After the release, merge the release commits back into `develop`.
 - Host-specific pool configuration keys are normalized (`http` → port 80, `https` → port 443).
 - Request configurations are resolved by pattern matching, then merged from least to most
   specific (`RequestConfigProperties.apply`).
-- The adaptive response timeout policy (actuator starter, 2.2.x only) is a core SPI
+- The adaptive response timeout policy (actuator starter, 2.1.x only) is a core SPI
   (`AdaptiveTimeoutPolicy`) applied by `HttpClient5Config` after the request configuration
   resolution. The actuator module supplies `MicrometerAdaptiveTimeoutPolicy` and
   `AdaptiveTimeoutExecChainHandler`. The policy is global; a request rule can only toggle it with
