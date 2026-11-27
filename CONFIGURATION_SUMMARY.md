@@ -62,8 +62,8 @@ spring:
 
 - **web**: bidirectional header propagation (`headers-propagation`), request-context propagation to
   `@Async` tasks, `RestTemplate` customization.
-- **actuator**: request observations and pool metrics (`httpclient5.pool`,
-  `httpclient5.async-pool`).
+- **actuator**: request timer (`http.client.request.duration`) and pool gauges, tagged
+  `httpclient=httpclient5.pool` / `httpclient5.async-pool`.
 - **resilience4j**: circuit breaker and, for non-`default` circuit names, a rate limiter with the
   same name.
 
@@ -72,5 +72,6 @@ spring:
 - [README](README.md) – quick start and compatibility
 - [Configuration guide](docs/configuration-guide.md) – concepts and examples
 - [Configuration reference](docs/CONFIGURATION-ALL.md) – every property and default
+- [Actuator metrics](docs/actuator-metrics.md) – meters, tags, Prometheus names and queries
 - [Usage examples](docs/usage-example.md) – sync, async, fluent, `RestTemplate`, propagation
-- [AGENTS.md](AGENTS.md) – build, test and release procedure
+- [AGENTS.md](AGENTS.md) – branch workflow, build, test and release procedure

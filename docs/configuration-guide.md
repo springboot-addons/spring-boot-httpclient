@@ -334,10 +334,24 @@ Disable it with `spring.httpclient5.web.rest-template.enabled=false`.
 Add `spring-boot-starter-httpclient5-actuator` and `spring-boot-starter-actuator`. The module
 registers:
 
-- an `ObservationExecChainHandler` for request observations;
-- connection-pool metrics binders named `httpclient5.pool` and `httpclient5.async-pool`.
+- an `ObservationExecChainHandler` that records `http.client.request.duration` for the sync and
+  async clients;
+- connection-pool gauges for both managers, tagged `httpclient=httpclient5.pool` and
+  `httpclient=httpclient5.async-pool`.
 
-Disable it with `spring.httpclient5.core.actuator.enabled=false`.
+The main meters are:
+
+| Meter | Type | Description |
+|---|---|---|
+| `http.client.request.duration` | timer | Request latency, tagged by method, host, port, status, outcome and error type |
+| `httpcomponents.httpclient.pool.total.connections` | gauge | `available` and `leased` connections |
+| `httpcomponents.httpclient.pool.total.pending` | gauge | Requests waiting for a connection |
+| `httpcomponents.httpclient.pool.total.max` | gauge | Configured total connection limit |
+| `httpcomponents.httpclient.pool.route.max.default` | gauge | Configured per-route limit |
+
+Disable it with `spring.httpclient5.core.actuator.enabled=false`. See
+[Actuator metrics](actuator-metrics.md) for tags, Prometheus names, queries and the metric-name
+differences between starter lines.
 
 ## Extension points
 

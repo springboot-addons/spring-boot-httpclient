@@ -7,7 +7,8 @@ release instructions are in [AGENTS.md](AGENTS.md); user documentation starts at
 ## Project snapshot
 
 - Group: `io.github.springboot-addons`
-- Current branch: `hc5-sb42` (Spring Boot 4.2.x)
+- Working branch: `develop` (Spring Boot 4.2.x); release branches: `hc5-sb42`, `hc5-sb41`,
+  `hc5-sb4`, `hc5-sb3`
 - Current version: `2.2.2-SNAPSHOT`; last release: `2.2.1`
 - Runtime target: Java 17; build validated with JDK 25
 - Maven Wrapper: 3.9.11
@@ -19,7 +20,7 @@ release instructions are in [AGENTS.md](AGENTS.md); user documentation starts at
 |---|---|
 | `spring-boot-starter-httpclient5` | `HttpClient5AutoConfiguration`, `HttpClient5Config`, `HttpClientConfigurer`, `HttpAsyncClientConfigurer`, `RequestConfigProperties` |
 | `spring-boot-starter-httpclient5-web` | `AsyncExecutorConfig`, `HeadersConfiguration`, `HeadersFilter`, `HeadersPropagationInterceptor`, `HttpClient5RestTemplateConfig` |
-| `spring-boot-starter-httpclient5-actuator` | `HttpClientActuatorAutoConfiguration` |
+| `spring-boot-starter-httpclient5-actuator` | `HttpClientActuatorAutoConfiguration` (request timer + pool gauges) |
 | `spring-boot-starter-httpclient5-resilience4j` | `HttpClientResilience4jAutoConfiguration`, `ResilienceExecChainHandler` |
 
 ## Configuration in one minute
@@ -35,6 +36,14 @@ release instructions are in [AGENTS.md](AGENTS.md); user documentation starts at
   30 s socket, 120 s TTL, 30 s idle timeout.
 
 See [docs/CONFIGURATION-ALL.md](docs/CONFIGURATION-ALL.md) for the full list.
+
+## Branch workflow
+
+1. All changes start on `develop`; keep one logical commit per change.
+2. Promote to `hc5-sb42` with a merge request or `git merge --no-ff develop`.
+3. Backport to `hc5-sb41` / `hc5-sb4` / `hc5-sb3` with `git cherry-pick -x` on a dedicated branch
+   and a merge request. Never merge `develop` into an older line.
+4. Release only from the `hc5-sb*` branches; merge the release commits back into `develop`.
 
 ## Invariants
 
@@ -63,5 +72,6 @@ See [docs/CONFIGURATION-ALL.md](docs/CONFIGURATION-ALL.md) for the full list.
 - [README.md](README.md) – user overview and quick start
 - [docs/configuration-guide.md](docs/configuration-guide.md) – configuration concepts
 - [docs/CONFIGURATION-ALL.md](docs/CONFIGURATION-ALL.md) – property reference
+- [docs/actuator-metrics.md](docs/actuator-metrics.md) – meters, tags and PromQL
 - [docs/usage-example.md](docs/usage-example.md) – code examples
-- [AGENTS.md](AGENTS.md) – contributor/build/release instructions
+- [AGENTS.md](AGENTS.md) – branch workflow, contributor/build/release instructions
