@@ -322,8 +322,19 @@ resilience4j:
 |---|---|---|
 | `spring.httpclient5.core.actuator.enabled` | `true` | Enable request observations and pool metrics |
 
-The module registers request observations and pool metrics under `httpclient5.pool` and
-`httpclient5.async-pool`.
+Meters registered by the module:
+
+| Meter | Type | Tags |
+|---|---|---|
+| `http.client.request.duration` | timer | `http.request.method`, `server.address`, `server.port`, `http.response.status_code`, `error.type`, `outcome` |
+| `httpcomponents.httpclient.pool.total.max` | gauge | `httpclient` |
+| `httpcomponents.httpclient.pool.total.connections` | gauge | `httpclient`, `state=available\|leased` |
+| `httpcomponents.httpclient.pool.total.pending` | gauge | `httpclient` |
+| `httpcomponents.httpclient.pool.route.max.default` | gauge | `httpclient` |
+
+The `httpclient` tag is `httpclient5.pool` for the synchronous pool and `httpclient5.async-pool`
+for the asynchronous pool. See [Actuator metrics](actuator-metrics.md) for Prometheus names,
+queries and per-line name differences.
 
 ---
 
