@@ -1,9 +1,11 @@
 package io.github.springboot.httpclient5.actuator.adaptive;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -99,6 +101,7 @@ class MicrometerAdaptiveTimeoutPolicyTest {
 		Timeout kept = policy.resolveTimeout("GET", "http://example.com/", properties());
 
 		assertEquals(20, kept.toMilliseconds());
+		assertTrue(policy.isStale());
 	}
 
 	@Test
@@ -147,6 +150,13 @@ class MicrometerAdaptiveTimeoutPolicyTest {
 		assertEquals(0.01d, policy.getCurrentPercentileSeconds(), 0.0001d);
 		assertEquals(1, policy.getCurrentSamples());
 		assertEquals(1, policy.getWindowSamples());
+		assertTrue(policy.isReady());
+		assertFalse(policy.isStale());
+		assertEquals(20L, policy.getCurrentTimeoutMillis());
+		assertEquals(10L, policy.getCurrentPercentileMillis());
+		assertEquals(10L, policy.getCurrentMinObservedMillis());
+		assertTrue(policy.getLastComputedAtMillis() > 0L);
+		assertTrue(policy.getLastComputedAgeMillis() >= 0L);
 	}
 
 	@Test
@@ -160,6 +170,22 @@ class MicrometerAdaptiveTimeoutPolicyTest {
 			p.setMaxSamples(10);
 			p.setMinSamples(11);
 		}));
+	}
+
+	@Test
+	void shouldRejectNonPositiveDiagnosticsLogInterval() {
+		assertThrows(IllegalArgumentException.class,
+				() -> createPolicy(p -> p.getDiagnostics().setLogInterval(TimeValue.ZERO_MILLISECONDS)));
+	}
+
+	@Test
+	void shouldAllowZeroDiagnosticsIntervalWhenLoggingIsDisabled() {
+		createPolicy(p -> {
+			p.getDiagnostics().setLogEnabled(false);
+			p.getDiagnostics().setLogInterval(TimeValue.ZERO_MILLISECONDS);
+		});
+
+		assertNotNull(policy);
 	}
 
 	private void createPolicy(Consumer<AdaptiveTimeoutProperties> customizer) {

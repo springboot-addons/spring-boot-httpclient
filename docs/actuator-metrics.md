@@ -120,6 +120,105 @@ whether the computed value is applied to the matching requests. See the
 [configuration guide](configuration-guide.md#adaptive-response-timeout) for the policy algorithm
 and properties.
 
+### Adaptive timeout diagnostics endpoint
+
+The actuator module registers a read-only endpoint:
+
+```text
+GET /actuator/httpclient5-adaptive-timeout
+```
+
+Expose it like any other endpoint:
+
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,httpclient5-adaptive-timeout
+```
+
+The response contains:
+
+| Field | Description |
+|---|---|
+| `status` | `DISABLED`, `WARMING_UP`, `READY` or `STALE` |
+| `globalEnabled`, `ready`, `stale` | Global switch, readiness and stale-window flags |
+| `lastComputedAt`, `ageMs` | Wall-clock time and age of the last computation |
+| `configuration` | Global policy parameters and diagnostics settings |
+| `current` | Effective timeout, percentile, minimum observed TTFB, sample counts, timeout rate and warmup progress |
+| `rules.enabled` / `rules.different` | Number of rules that enable the policy / whose effective timeout differs |
+| `rules.items[]` | Per rule: `rule`, `adaptiveEnabled`, `configuredTimeoutMs`, `configuredSource`, `effectiveTimeoutMs`, `deltaMs`, `differs` |
+
+`configuredSource` is one of `rule` (the rule declares `response-timeout`), `default` (it inherits
+the `[default]` rule value) or `unset`. The comparison uses the declared values; it does not resolve
+the full regex merge for a concrete URI.
+
+Example:
+
+```json
+{
+  "status": "READY",
+  "globalEnabled": true,
+  "ready": true,
+  "stale": false,
+  "lastComputedAt": "2026-11-27T13:00:00Z",
+  "ageMs": 1200,
+  "current": {
+    "timeoutMs": 45,
+    "percentileMs": 30,
+    "minObservedMs": 10,
+    "samples": 1234,
+    "totalSamples": 5000,
+    "timeouts": 12,
+    "timeoutRate": 0.0024,
+    "warmupProgress": 1.0
+  },
+  "rules": {
+    "enabled": 2,
+    "different": 1,
+    "items": [
+      {
+        "rule": "GET https://api.example.com/.*",
+        "adaptiveEnabled": true,
+        "configuredTimeoutMs": 10000,
+        "configuredSource": "rule",
+        "effectiveTimeoutMs": 45,
+        "deltaMs": -9955,
+        "differs": true
+      }
+    ]
+  }
+}
+```
+
+### Adaptive timeout debug log
+
+When `spring.httpclient5.adaptive-timeout.diagnostics.log-enabled=true` (default), a scheduled task
+logs, at DEBUG, only the rules whose effective timeout differs from the configured one:
+
+```text
+Adaptive timeout differs (samples=1234, p0.99=30ms, stale=false):
+rule='GET https://api.example.com/.*' configured=10000ms source=rule effective=45ms delta=-9955ms
+```
+
+Enable the logger:
+
+```yaml
+logging:
+  level:
+    io.github.springboot.httpclient5.actuator.adaptive.AdaptiveTimeoutDiagnosticsLogger: DEBUG
+```
+
+| Property | Default | Description |
+|---|---|---|
+| `spring.httpclient5.adaptive-timeout.diagnostics.log-enabled` | `true` | Register the scheduled diagnostic log |
+| `spring.httpclient5.adaptive-timeout.diagnostics.log-interval` | `PT1M` | Period between two logs (ISO-8601) |
+| `spring.httpclient5.adaptive-timeout.diagnostics.log-max-rules` | `20` | Maximum differing rules logged per period; the rest is summarized |
+
+The task logs nothing when the policy is not ready or when no rule differs. Set
+`diagnostics.log-enabled=false` to remove the scheduled task entirely.
+
 ## Connection-pool gauges
 
 Both pools expose the same four gauge names (five series). The only difference is the `httpclient`

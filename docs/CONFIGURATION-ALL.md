@@ -192,12 +192,23 @@ a request rule can only enable or disable it through
 | `spring.httpclient5.adaptive-timeout.min-timeout` | `PT0S` | Optional absolute lower bound |
 | `spring.httpclient5.adaptive-timeout.max-timeout` | `PT60S` | Upper bound |
 | `spring.httpclient5.adaptive-timeout.include-timeouts` | `true` | Record timeouts as censored samples |
+| `spring.httpclient5.adaptive-timeout.diagnostics.log-enabled` | `true` | Register the scheduled DEBUG log of differences |
+| `spring.httpclient5.adaptive-timeout.diagnostics.log-interval` | `PT1M` | Period between two diagnostic logs |
+| `spring.httpclient5.adaptive-timeout.diagnostics.log-max-rules` | `20` | Maximum differing rules logged per period |
 
 The effective timeout is `clamp(percentile × factor, floor, max-timeout)` where
 `floor = max(min-timeout, lower-bound-factor × minimum observed TTFB)`. It replaces the static
 `response-timeout` while the policy is ready. See the
 [configuration guide](configuration-guide.md#adaptive-response-timeout) for the algorithm and
 limits.
+
+Diagnostics:
+
+- `GET /actuator/httpclient5-adaptive-timeout` (exposed like any Actuator endpoint) returns the
+  current computed timeout, the policy state and the per-rule configured/effective/delta values.
+- The scheduled DEBUG log (`diagnostics.log-interval`, one minute by default) reports only the
+  rules whose effective timeout differs from the configured one. See
+  [Actuator metrics](actuator-metrics.md#adaptive-timeout-debug-log).
 
 ---
 

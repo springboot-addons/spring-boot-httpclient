@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Map;
+
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -15,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import io.github.springboot.httpclient5.actuator.adaptive.AdaptiveTimeoutEndpoint;
 import io.github.springboot.httpclient5.actuator.adaptive.MicrometerAdaptiveTimeoutPolicy;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -41,6 +44,10 @@ class AdaptiveTimeoutActuatorTests extends AbstractHttpBinTest {
 	@Autowired
 	private MeterRegistry meterRegistry;
 
+	@Autowired
+	private AdaptiveTimeoutEndpoint endpoint;
+
+	@SuppressWarnings("unchecked")
 	@Test
 	void shouldApplyAdaptiveTimeoutAndExposeMetrics() throws Exception {
 		executeGet("/headers");
@@ -54,6 +61,14 @@ class AdaptiveTimeoutActuatorTests extends AbstractHttpBinTest {
 		assertEquals(2.0d, gauge.value(), 0.001d);
 		assertTrue(policy.getCurrentSamples() > 0);
 		assertTrue(policy.getTotalSamples() >= 2);
+
+		Map<String, Object> snapshot = endpoint.snapshot();
+		assertEquals("READY", snapshot.get("status"));
+		assertEquals(true, snapshot.get("ready"));
+		Map<String, Object> current = (Map<String, Object>) snapshot.get("current");
+		assertEquals(2000L, current.get("timeoutMs"));
+		Map<String, Object> rules = (Map<String, Object>) snapshot.get("rules");
+		assertTrue((Integer) rules.get("different") > 0);
 	}
 
 	private void executeGet(String path) throws Exception {
