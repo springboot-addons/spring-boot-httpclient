@@ -2,6 +2,7 @@ package io.github.springboot.httpclient5.core.config.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
@@ -78,6 +79,24 @@ class RequestConfigPropertiesTest {
 
 		assertEquals(RequestConfig.DEFAULT.getConnectionRequestTimeout(),
 				properties.build().getConnectionRequestTimeout());
+	}
+
+	@Test
+	void shouldCopyResolvedRuleAndNotApplyItAsAConfigurationProperty() {
+		RequestConfigProperties origin = new RequestConfigProperties();
+		origin.resolvedAs("GET http://example.com/.*");
+
+		RequestConfigProperties copy = new RequestConfigProperties(origin);
+
+		assertEquals("GET http://example.com/.*", copy.getResolvedRule());
+
+		RequestConfigProperties base = new RequestConfigProperties();
+		RequestConfigProperties override = new RequestConfigProperties();
+		override.resolvedAs("GET http://example.com/.*");
+
+		RequestConfigProperties result = base.apply(override);
+
+		assertNull(result.getResolvedRule());
 	}
 
 	@Test

@@ -154,9 +154,27 @@ class MicrometerAdaptiveTimeoutPolicyTest {
 		assertFalse(policy.isStale());
 		assertEquals(20L, policy.getCurrentTimeoutMillis());
 		assertEquals(10L, policy.getCurrentPercentileMillis());
+		assertEquals(10L, policy.getCurrentP50Millis());
+		assertEquals(10L, policy.getCurrentP90Millis());
+		assertEquals(10L, policy.getCurrentP99Millis());
 		assertEquals(10L, policy.getCurrentMinObservedMillis());
 		assertTrue(policy.getLastComputedAtMillis() > 0L);
 		assertTrue(policy.getLastComputedAgeMillis() >= 0L);
+	}
+
+	@Test
+	void shouldComputeP50P90P99() {
+		createPolicy(p -> p.setMaxSamples(1000));
+		for (int i = 1; i <= 100; i++) {
+			record(i);
+		}
+
+		policy.resolveTimeout("GET", "http://example.com/", properties());
+
+		assertEquals(50L, policy.getCurrentP50Millis());
+		assertEquals(90L, policy.getCurrentP90Millis());
+		assertEquals(99L, policy.getCurrentP99Millis());
+		assertEquals(99L, policy.getCurrentPercentileMillis());
 	}
 
 	@Test
@@ -182,6 +200,7 @@ class MicrometerAdaptiveTimeoutPolicyTest {
 	void shouldAllowZeroDiagnosticsIntervalWhenLoggingIsDisabled() {
 		createPolicy(p -> {
 			p.getDiagnostics().setLogEnabled(false);
+			p.getDiagnostics().setChangeLogEnabled(false);
 			p.getDiagnostics().setLogInterval(TimeValue.ZERO_MILLISECONDS);
 		});
 

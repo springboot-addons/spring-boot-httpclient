@@ -32,6 +32,12 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class RequestConfigExecChainHandler implements ExecChainHandler, AsyncExecChainHandler {
 
+	/**
+	 * Name of the {@link HttpClientContext} attribute containing the rule key that produced the
+	 * request configuration.
+	 */
+	public static final String REQUEST_CONFIG_RULE = HttpClient5Config.class.getName() + ".request-rule";
+
 	private final HttpClient5Config config;
 
 	@Override
@@ -65,7 +71,9 @@ public class RequestConfigExecChainHandler implements ExecChainHandler, AsyncExe
 			// connection-request-timeout management, HttpRequestConfigurerInterceptor is too late in the process
 			RequestConfigProperties requestConfigProperties = config.getRequestConfigProperties(method, uri.toString());
 			RequestConfig requestConfig = requestConfigProperties.build();
-			HttpClientContext.castOrCreate(context).setRequestConfig(requestConfig); ;
+			HttpClientContext clientContext = HttpClientContext.castOrCreate(context);
+			clientContext.setRequestConfig(requestConfig);
+			clientContext.setAttribute(REQUEST_CONFIG_RULE, requestConfigProperties.getResolvedRule());
 			
 		} catch (URISyntaxException e) {
 			throw new HttpException(e.getMessage()) ;

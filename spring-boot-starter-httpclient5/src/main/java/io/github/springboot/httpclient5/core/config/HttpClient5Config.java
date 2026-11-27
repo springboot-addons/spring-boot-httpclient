@@ -2,6 +2,7 @@ package io.github.springboot.httpclient5.core.config;
 
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -190,7 +191,7 @@ public class HttpClient5Config {
 		try {
 			adaptiveTimeoutPolicyProvider.ifAvailable(policy -> {
 				Timeout timeout = policy.resolveTimeout(method, uri, properties);
-				if (timeout != null) {
+				if (timeout != null && !adaptiveTimeout.isDryRun()) {
 					properties.setResponseTimeout(timeout);
 				}
 			});
@@ -202,18 +203,18 @@ public class HttpClient5Config {
 	private RequestConfigProperties getRequestConfigProperties(Pair<String, String> key) {
 		String methodAndUrl = key.getLeft() + " " + key.getRight();
 		RequestConfigProperties initial = getDefaultRequestConfig() ;
-		RequestConfigProperties res = getRequestConfig().entrySet().stream()
-			.filter(e -> {
-				return PatternUtils.matches(methodAndUrl, e.getKey()) ;
-			})
+		List<Map.Entry<String, RequestConfigProperties>> matching = getRequestConfig().entrySet().stream()
+			.filter(e -> PatternUtils.matches(methodAndUrl, e.getKey()))
 			.sorted(this::byMatcherPrecision)
-			.map(hc -> hc.getValue())
-			.reduce(initial, (current, toApply) -> { 
-				log.debug("Applying request config for {}", key);
-				return current.apply(toApply);	
-			}) ;
-			 
-		return res ;
+			.toList();
+		RequestConfigProperties result = initial;
+		String resolvedRule = HttpClient5Config.DEFAULT_HOST_KEY;
+		for (Map.Entry<String, RequestConfigProperties> entry : matching) {
+			log.debug("Applying request config for {}", key);
+			result = result.apply(entry.getValue());
+			resolvedRule = entry.getKey();
+		}
+		return result.resolvedAs(resolvedRule);
 	}
 
 	public RequestConfigProperties getDefaultRequestConfig() {
