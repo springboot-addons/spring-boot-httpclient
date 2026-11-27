@@ -196,6 +196,47 @@ Add `spring-boot-starter-httpclient5-actuator` for Micrometer observations and p
 | `httpcomponents.httpclient.pool.route.max.default` | gauge | `httpclient` |
 
 See [Actuator metrics](docs/actuator-metrics.md) for PromQL queries and version differences.
+When the adaptive response timeout is enabled, the actuator module also exposes
+`httpclient5.adaptive.timeout`, `.percentile`, `.samples` and `.timeouts`.
+
+### Adaptive response timeout (actuator starter)
+
+The actuator module can replace the static `response-timeout` with a value derived from the
+observed time-to-first-byte (TTFB). The policy is global and can be enabled or disabled per
+request rule:
+
+```yaml
+spring:
+  httpclient5:
+    adaptive-timeout:
+      enabled: true
+      percentile: 0.99
+      factor: 1.5
+      lower-bound-factor: 2.0
+      warmup-requests: 100
+      window: PT5M
+      max-timeout: PT60S
+    request-config:
+      '[GET https://api.example.com/stream/.*]':
+        adaptive-timeout:
+          enabled: false
+```
+
+Leave `spring.httpclient5.adaptive-timeout.enabled` unset to keep the policy disabled by default,
+then set `adaptive-timeout.enabled: true` on the rules that should use it.
+
+The timeout is `clamp(p99 × 1.5, max(2 × min observed TTFB, min-timeout), max-timeout)`. It is
+applied only after the warmup and the minimum number of samples.
+
+The Actuator endpoint `/actuator/httpclient5-adaptive-timeout` exposes the computed timeout,
+p50/p90/p99, the last resolved request and the per-rule delta with the configured timeout. A DEBUG
+log (every minute by default) reports only the rules whose candidate differs, and INFO events are
+emitted on significant timeout changes or STALE transitions. Per-rule and status gauges are
+available for dashboards and alerts. Set `spring.httpclient5.adaptive-timeout.dry-run=true` to
+compute and expose the candidate without applying it. See the
+[configuration guide](docs/configuration-guide.md#adaptive-response-timeout) and the
+[actuator metrics](docs/actuator-metrics.md#adaptive-timeout).
+
 Add `spring-boot-starter-httpclient5-resilience4j` to apply a Resilience4j circuit breaker and,
 when the circuit name is not `default`, a rate limiter with the same name:
 
