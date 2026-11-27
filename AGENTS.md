@@ -16,13 +16,20 @@ Current version: `1.3.2-SNAPSHOT`. Last release: `1.3.1` (tag
 
 ## Branches
 
-| Branch | Spring Boot | Starter line |
-|---|---|---|
-| `hc5-sb42` | 4.2.x | 2.2.x |
-| `hc5-sb41` | 4.1.x | 2.1.x |
-| `hc5-sb4` | 4.0.x | 2.0.x |
-| `hc5-sb3` | 3.5.x | 1.3.x (current) |
+Development happens on **`develop`**. The `hc5-*` branches are release/maintenance branches:
+a change is merged or cherry-picked into them only when it must be released on that line.
 
+| Branch | Role | Spring Boot | Starter line | Released |
+|---|---|---|---|---|
+| `develop` | default integration branch, all new work | 4.2.x | 2.2.x | never |
+| `hc5-sb42` | release branch, 4.2 line | 4.2.x | 2.2.x | 2.2.x |
+| `hc5-sb41` | maintenance branch, 4.1 line | 4.1.x | 2.1.x | 2.1.x |
+| `hc5-sb4` | maintenance branch, 4.0 line | 4.0.x | 2.0.x | 2.0.x |
+| `hc5-sb3` | maintenance branch, 3.5 line | 3.5.x | 1.3.x | 1.3.x |
+
+Never merge `develop` into an older release branch: their Spring Boot, HttpClient and library
+versions differ. Promote to `hc5-sb42` with a merge, and backport to the other lines with
+`git cherry-pick -x` (see [Development workflow](#development-workflow)).
 
 ## Modules
 
@@ -96,11 +103,16 @@ Notes:
 
 ## Release
 
-The release is a **single command**:
+The release is a **single command**, run from the matching release branch (`hc5-sb42`,
+`hc5-sb41`, `hc5-sb4` or `hc5-sb3`) — never from `develop`:
 
 ```powershell
 .\mvnw.cmd release:prepare release:perform
 ```
+
+Before releasing `hc5-sb42`, merge the validated `develop` state into it (merge request or
+`git merge --no-ff develop`). For the maintenance lines, cherry-pick the fixes that must ship.
+After the release, merge the release commits back into `develop`.
 
 ### One-time setup
 
@@ -159,6 +171,55 @@ The release is a **single command**:
 
 ## Development workflow
 
+### Branch flow
+
+1. Implement and test every change on `develop` first; normal merge requests target `develop`.
+2. Keep one logical commit per change so it can be cherry-picked cleanly.
+3. Promote to `hc5-sb42` (same Spring Boot line) with a merge request from `develop`, or with a
+   fast-forward/merge when the branch has not diverged.
+4. Backport to `hc5-sb41`, `hc5-sb4` and `hc5-sb3` from a dedicated branch with
+   `git cherry-pick -x <commit>`, then open a merge request. Adapt the code only for the
+   Boot/HttpClient API differences; do not bump the libraries of older branches.
+5. Release only from the `hc5-sb*` branches. `develop` keeps a `-SNAPSHOT` version and is never
+   released.
+6. After a release, merge the release commits (`[maven-release-plugin] prepare release` and the
+   next `-SNAPSHOT` bump) back into `develop`, so both branches share the same version.
+
+### Commands
+
+```powershell
+# 1. Work on develop
+git switch develop
+# ... edit, test ...
+git commit -m "feat: ..."
+git push origin develop
+
+# 2. Promote to the 4.2 release branch (prefer a merge request)
+git switch hc5-sb42
+git merge --no-ff develop
+git push origin hc5-sb42
+
+# 3. Backport one commit to a maintenance line (prefer a merge request)
+git switch -c backport/my-fix hc5-sb41
+git cherry-pick -x <commit>
+.\mvnw.cmd test -pl <affected-module>
+git push -u origin backport/my-fix
+
+# 4. Sync develop after a release
+git switch develop
+git merge --no-ff hc5-sb42
+```
+
+Cherry-pick rules:
+
+- Always use `-x`; the original commit is then recorded in the message.
+- Never cherry-pick a `[maven-release-plugin]` commit to another line.
+- POM version and API conflicts are expected: resolve them with the **target** branch's versions.
+- A change that cannot compile on an older line stays specific to that line and must say so in
+  its commit message.
+
+### Implementation rules
+
 1. Change the core module first.
 2. Add/extend unit tests; prefer plain unit tests over Spring contexts for configuration logic.
 3. Run `.\mvnw.cmd test -pl <module>` then `.\mvnw.cmd clean verify`.
@@ -167,3 +228,4 @@ The release is a **single command**:
 6. When a configuration property or behaviour changes, update `docs/configuration-guide.md`,
    `docs/CONFIGURATION-ALL.md` and, if relevant, `README.md`. Documentation must match the code,
    not the old AI-generated examples.
+7. When an actuator meter, tag or observation changes, update `docs/actuator-metrics.md`.

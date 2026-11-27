@@ -9,6 +9,23 @@ References:
 - https://maven.apache.org/plugins/maven-gpg-plugin/sign-mojo.html
 
 
+Branching model
+---------------
+
+- develop          integration branch: all changes start and are tested here; never released.
+- hc5-sb42         release branch for Spring Boot 4.2.x (2.2.x line).
+- hc5-sb41         maintenance branch for Spring Boot 4.1.x (2.1.x line).
+- hc5-sb4          maintenance branch for Spring Boot 4.0.x (2.0.x line).
+- hc5-sb3          maintenance branch for Spring Boot 3.5.x (1.3.x line).
+
+Promote develop to hc5-sb42 with a merge request (or `git merge --no-ff develop`).
+Backport a fix to an older line with a dedicated branch and `git cherry-pick -x <commit>`,
+then open a merge request. Never merge develop into an older line.
+
+Run the release from the target release branch, never from develop. After the release, merge the
+release commits back into develop so both branches share the next -SNAPSHOT version.
+
+
 Prerequisites (one-time setup)
 ------------------------------
 
@@ -36,6 +53,10 @@ Prerequisites (one-time setup)
 Release (one command)
 ---------------------
 
+From the release branch (example for the 4.2 line):
+
+    git switch hc5-sb42
+    git pull --ff-only
     .\mvnw.cmd release:prepare release:perform
 
 or, with a Maven installation instead of the wrapper:

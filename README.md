@@ -19,7 +19,8 @@ Published on Maven Central under `io.github.springboot-addons`.
 
 "Recommended" is the latest release of the corresponding starter line.
 
-This branch: Spring Boot 3.5.x, current version `1.3.2-SNAPSHOT`, last release `1.3.1`.
+`hc5-sb3` is the maintenance branch for Spring Boot 3.5.x; current version `1.3.2-SNAPSHOT`,
+last release `1.3.1`. Fixes are backported from `develop` by cherry-pick.
 
 Java 17 is the runtime target. The build runs on JDK 17 up to JDK 25.
 
@@ -183,7 +184,17 @@ The web starter also:
 
 ## Actuator and Resilience4j
 
-Add `spring-boot-starter-httpclient5-actuator` for Micrometer observations and pool metrics.
+Add `spring-boot-starter-httpclient5-actuator` for Micrometer observations and pool metrics:
+
+| Meter | Type | Tags |
+|---|---|---|
+| `httpcomponents.httpclient.request` | timer | `method`, `uri`, `status`, `outcome`, `exception`, `target.host`, `target.port`, `target.scheme` |
+| `httpcomponents.httpclient.pool.total.connections` | gauge | `httpclient`, `state=available\|leased` |
+| `httpcomponents.httpclient.pool.total.pending` | gauge | `httpclient` |
+| `httpcomponents.httpclient.pool.total.max` | gauge | `httpclient` |
+| `httpcomponents.httpclient.pool.route.max.default` | gauge | `httpclient` |
+
+See [Actuator metrics](docs/actuator-metrics.md) for PromQL queries and version differences.
 Add `spring-boot-starter-httpclient5-resilience4j` to apply a Resilience4j circuit breaker and,
 when the circuit name is not `default`, a rate limiter with the same name:
 
@@ -221,8 +232,9 @@ HTTP 5xx responses and exceptions count as failures. `broken-circuit-action` acc
 
 - [Configuration guide](docs/configuration-guide.md) – concepts, pools, request rules, web/actuator/Resilience4j
 - [Configuration reference](docs/CONFIGURATION-ALL.md) – all properties and defaults
+- [Actuator metrics](docs/actuator-metrics.md) – meters, tags, Prometheus names and queries
 - [Usage examples](docs/usage-example.md) – sync, async, fluent, `RestTemplate`, header propagation
-- [AGENTS.md](AGENTS.md) – build, test and release procedure for contributors
+- [AGENTS.md](AGENTS.md) – branch workflow, build, test and release procedure for contributors
 
 ## Build and test
 
