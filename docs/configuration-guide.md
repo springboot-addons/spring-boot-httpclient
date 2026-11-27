@@ -171,6 +171,86 @@ spring:
           circuit-name: api
 ```
 
+## Adaptive response timeout
+
+The adaptive response timeout is an optional, **global** policy implemented in
+`spring-boot-starter-httpclient5-actuator`. When enabled, the starter replaces the
+`response-timeout` of a request with a value derived from the observed time-to-first-byte (TTFB)
+of recent requests:
+
+1. the configured percentile (default `0.99`) of the samples in the sliding window;
+2. multiplied by a safety factor (default `1.5`);
+3. floored by `max(min-timeout, lower-bound-factor × min observed TTFB)` (default factor `2.0`);
+4. capped by `max-timeout` (default `60s`).
+
+The policy stays inactive until `warmup-requests` samples have been recorded and at least
+`min-samples` samples are present in the window. While it is inactive, the static
+`response-timeout` applies.
+
+```yaml
+spring:
+  httpclient5:
+    adaptive-timeout:
+      enabled: true
+      percentile: 0.99
+      factor: 1.5
+      lower-bound-factor: 2.0
+      window: PT5M
+      max-samples: 1000
+      min-samples: 20
+      warmup-requests: 100
+      refresh-interval: PT10S
+      min-timeout: PT0S
+      max-timeout: PT60S
+      include-timeouts: true
+```
+
+The policy is global: all sampled requests feed the same bounded window, including requests whose
+rule disables the policy. Disabling a rule only prevents the computed value from being applied to
+that rule. A request rule can only enable or disable the policy:
+
+```yaml
+spring:
+  httpclient5:
+    request-config:
+      '[GET https://api.example.com/stream/.*]':
+        adaptive-timeout:
+          enabled: false
+```
+
+The `enabled` flag of a rule overrides the global flag for the matching requests; when it is
+absent, the global value applies.
+
+| Property | Default | Description |
+|---|---|---|
+| `enabled` | `false` | Global switch; a rule can override it |
+| `percentile` | `0.99` | TTFB percentile used for the computation |
+| `factor` | `1.5` | Safety multiplier applied to the percentile |
+| `lower-bound-factor` | `2.0` | Lower bound = this factor × the minimum observed TTFB |
+| `window` | `PT5M` | Sliding window used to select samples |
+| `max-samples` | `1000` | Maximum samples kept in memory |
+| `min-samples` | `20` | Minimum samples required in the window |
+| `warmup-requests` | `100` | Samples recorded before the policy starts |
+| `refresh-interval` | `PT10S` | Minimum delay between two recalculations |
+| `min-timeout` | `PT0S` | Optional absolute lower bound |
+| `max-timeout` | `PT60S` | Upper bound |
+| `include-timeouts` | `true` | Record response timeouts as censored samples |
+
+Limits:
+
+- `response-timeout` is a socket inactivity timeout, not a total deadline. The policy uses the
+  TTFB as a proxy; a slow body or a streaming response is not reflected in the sample.
+- The policy is evaluated per JVM and is not shared between instances.
+- It has no effect on HTTP/2 multiplexed connections, where HttpClient ignores
+  `response-timeout`.
+- The measured duration includes retries and redirects handled below the sampling handler.
+- A timed-out request is recorded at the effective timeout when `include-timeouts` is `true`.
+  This is what prevents the percentile from collapsing; set it to `false` to compute the
+  percentile on successful responses only.
+- A timeout is seen as a failure by the Resilience4j circuit breaker.
+- Disable the policy per rule for long-lived streams or endpoints whose latency is not
+  representative.
+
 ## Authentication
 
 The `credentials` value accepts three forms:

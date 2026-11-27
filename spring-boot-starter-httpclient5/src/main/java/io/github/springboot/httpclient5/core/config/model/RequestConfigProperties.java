@@ -57,6 +57,10 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 
 	@Getter @Setter
 	@NestedConfigurationProperty
+	private AdaptiveTimeoutRuleProperties adaptiveTimeout ;
+
+	@Getter @Setter
+	@NestedConfigurationProperty
 	private Map<String, String> customRequestContext = new HashMap<>() ;
 
 	public RequestConfigProperties(RequestConfigProperties origin) {
@@ -66,6 +70,9 @@ public class RequestConfigProperties implements ConfigProvider<RequestConfig> {
 			this.errorManagement = origin.getErrorManagement().toBuilder().build() ;
 			this.headersPropagation = origin.getHeadersPropagation().toBuilder().build() ;
 			this.retryConfig = origin.getRetryConfig().toBuilder().build();
+			if (origin.getAdaptiveTimeout() != null) {
+				this.adaptiveTimeout = origin.getAdaptiveTimeout().toBuilder().build();
+			}
 			
 			this.customRequestContext = new HashMap(origin.getCustomRequestContext());
 			this.interceptors = new HashMap(origin.getInterceptors());

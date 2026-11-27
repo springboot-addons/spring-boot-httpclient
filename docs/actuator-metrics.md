@@ -5,7 +5,8 @@ It adds:
 
 - one **request observation** (timer, and a span when tracing is enabled) for the synchronous
   and the asynchronous clients;
-- **connection-pool gauges** for each connection manager (sync and async).
+- **connection-pool gauges** for each connection manager (sync and async);
+- **adaptive timeout gauges** when the optional adaptive response timeout policy is enabled.
 
 No custom endpoint or health indicator is added: all meters go through the standard Spring Boot
 Actuator / Micrometer pipeline (`/actuator/metrics`, Prometheus, OTLP, ...).
@@ -101,6 +102,24 @@ management:
         http.client.request.duration: 100ms,500ms,1s
 ```
 
+## Adaptive timeout
+
+When the adaptive response timeout policy is active, the actuator module exposes the state of the
+policy in addition to the standard request timer:
+
+| Micrometer name | Type | Tags | Description |
+|---|---|---|---|
+| `httpclient5.adaptive.timeout` | gauge | none | Current effective response timeout, in seconds. `NaN` until the policy is ready. |
+| `httpclient5.adaptive.percentile` | gauge | none | Current TTFB percentile used by the policy, in seconds |
+| `httpclient5.adaptive.samples` | gauge | none | Number of samples used by the last computation |
+| `httpclient5.adaptive.timeouts` | function counter | none | Response timeouts observed by the policy |
+
+The latency window is **global and bounded**: no per-rule tag is added, so cardinality stays
+constant. All requests feed the window; the per-rule `adaptive-timeout.enabled` flag only controls
+whether the computed value is applied to the matching requests. See the
+[configuration guide](configuration-guide.md#adaptive-response-timeout) for the policy algorithm
+and properties.
+
 ## Connection-pool gauges
 
 Both pools expose the same four gauge names (five series). The only difference is the `httpclient`
@@ -136,6 +155,10 @@ The Prometheus registry converts dots to underscores and appends the base unit f
 | `httpcomponents.httpclient.pool.total.connections` | `httpcomponents_httpclient_pool_total_connections` |
 | `httpcomponents.httpclient.pool.total.pending` | `httpcomponents_httpclient_pool_total_pending` |
 | `httpcomponents.httpclient.pool.route.max.default` | `httpcomponents_httpclient_pool_route_max_default` |
+| `httpclient5.adaptive.timeout` | `httpclient5_adaptive_timeout_seconds` |
+| `httpclient5.adaptive.percentile` | `httpclient5_adaptive_percentile_seconds` |
+| `httpclient5.adaptive.samples` | `httpclient5_adaptive_samples` |
+| `httpclient5.adaptive.timeouts` | `httpclient5_adaptive_timeouts_total` |
 
 Tag keys become `httpclient`, `state`, `http_request_method`, `server_address`, `server_port`,
 `http_response_status_code`, `error_type` and `outcome`.
@@ -176,6 +199,12 @@ sum by (httpclient) (httpcomponents_httpclient_pool_total_connections{state="lea
 
 # Requests waiting for a connection
 sum by (httpclient) (httpcomponents_httpclient_pool_total_pending)
+
+# Current adaptive response timeout
+httpclient5_adaptive_timeout_seconds
+
+# Response timeouts observed by the adaptive policy
+rate(httpclient5_adaptive_timeouts_total[5m])
 ```
 
 Individual meters can be disabled with the standard Boot property. Bracket notation keeps the
@@ -204,3 +233,6 @@ On the 3.5 line, Prometheus therefore exposes
 `httpcomponents_httpclient_request_seconds`. On Boot 4.0 and later, the starter explicitly uses
 Micrometer's OpenTelemetry convention, which produces the `http.client.request.duration`
 semantic-convention name.
+
+The adaptive timeout meters (`httpclient5.adaptive.*`) are specific to the 2.2.x line (`develop`).
+They are not backported to the 2.1.x, 2.0.x or 1.3.x lines.
